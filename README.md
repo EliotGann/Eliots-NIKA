@@ -1,9 +1,11 @@
 # Eliot's-NIKA
 Branch of NIKA which adds custom functionality for RSoXS and GIWAXS based in Igor Pro
+
 developed by Eliot Gann at North Carolina State University with the help of many other people (most notably Brian Collins)
 contact Eliot Gann (eliot.gann@nist.gov) with any questions.  Although this isn't actively maintained in any sense, I will probably be able to help with any reasonable requests.
 
 This is largely extending upon on older altered version of NIKA.  Over the years, it has added many many options and capabilities beyond the version of NIKA which was used as the basis.  
+
 These are a set of useful tools which I have used in my research over the last decade, and which I made before I knew how to code properly.  I include the branched NIKA files which have been edited from the original signifigantly, but are still under that license.  Please cite NIKA properly if you use this to analyze any data.  (see https://usaxs.xray.aps.anl.gov/software/nika for how to cite NIKA as well as the much updated current version of NIKA which is  of course NOT compatible with any of these procedures anymore, but has also added some of these features over the years)
 
 Suggested Installation Method:
