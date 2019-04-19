@@ -9,11 +9,17 @@ These are a set of useful tools which I have used in my research over the last d
 Suggested Installation Method:
 
 1.) clone this repository to your local machine.
+
 2.) uninstall or temporarily move any existing NIKA installation from the active igor pro folder
+
 3.) open your users files directory (from Igor Pro  select Help-> Igor Pro User Files)
     usually this is in the documents/wavemetrics/ folder
     (close Igor after this step)
+
 4.) create a shortcut (windows) or alias (Mac) of EliotMenus.ipf and Boot Nika.ipf files in the "Igor Procedures" directory
+
 5.) create a shortcut or alias of all of the rest of the files and those in the subdirectory into a NIKA directory (make one if there isn't one already) within the "User Procedures" cirectory
+
 6.) Install XMLUtils (https://www.wavemetrics.com/project/XMLutils)
+
 7.) Restart Igor Pro, you should see the menu items appear under Macros
