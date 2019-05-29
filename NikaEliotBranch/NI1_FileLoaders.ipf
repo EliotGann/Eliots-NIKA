@@ -38,14 +38,114 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 
 	if(cmpstr(FileType,".tif")==0 || cmpstr(FileType,"tiff")==0)
 		FileNameToLoad= FileName
-		if(cmpstr(FileName[strlen(FileName)-4,inf],".tif")!=0)
+		if(cmpstr(FileName[strlen(FileName)-4,inf],".tif")!=0 && cmpstr(FileName[strlen(FileName)-5,inf],".tiff")!=0)
 			FileNameToLoad= FileName+ ".tif"
 		endif
 		ImageLoad/P=$(PathName)/T=tiff/O/N=$(NewWaveName) FileNameToLoad
 		wave LoadedWvHere=$(NewWaveName)
 		Redimension/N=(-1,-1,0) 	LoadedWvHere			//this is fix for 3 layer tiff files...
 		NewNote+="DataFileName="+FileNameToLoad+";"
-		NewNote+="DataFileType="+".tif"+";"
+		NewNote+="DataFileType="+".tif"+";.tiff"+";"
+		
+	elseif(cmpstr(FileType,"BS_Suitcase_Tiff")==0)
+		FileNameToLoad= FileName
+		if(cmpstr(FileName[strlen(FileName)-4,inf],".tif")!=0 && cmpstr(FileName[strlen(FileName)-5,inf],".tiff")!=0)
+			FileNameToLoad= FileName+ ".tif"
+		endif
+		ImageLoad/P=$(PathName)/T=tiff/O/N=$(NewWaveName) FileNameToLoad
+		string detectortype = ""
+		if(stringmatch(FileNameToLoad,"*Small and Wide Angle Synced CCD Detectors_saxs*"))
+			detectortype= "Small Angle CCD Detector_"
+		else
+			detectortype = "Wide Angle CCD Detector_"
+		endif
+		
+		
+		
+		
+		string teststring= indexedfile($(PathName),-1,".csv")
+		teststring = greplist(teststring,"^"+FileNametoLoad[0,8]+".*baseline")
+		LoadWave/Q/O/J/M/U={0,0,1,0}/D/A=wave/K=0/L={0,2,0,0,0}/P=$(PathName)  stringfromlist(0,teststring)
+		wave /z datawave = $(stringfromlist(0,S_waveNames))
+		if(waveexists(datawave))
+			DeletePoints 1,1, datawave
+			DeletePoints 2,1, datawave
+			teststring = Colwavetostring(datawave)
+			
+			nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
+			pxsizex = 0.015 * numberbykey(detectortype+ "cam_bin_x",teststring)
+			nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
+			pxsizey = 0.015 * numberbykey(detectortype+ "cam_bin_x",teststring)
+			nvar SampleI0=root:Packages:Convert2Dto1D:samplei0
+			
+			nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
+			SampleMeasurementTime = numberbykey(detectortype+ "cam_acquire_time",teststring)
+			nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
+			xrayenergy = numberbykey("Beamline Energy_energy_setpoint",teststring)/1000
+			
+			nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
+			wavelength = 1.239/xrayenergy
+			nvar Sampletransmission = root:Packages:Convert2Dto1D:SampleTransmission
+			svar UserFileName=root:Packages:Convert2Dto1D:OutputDataName
+			string imagenum
+			splitstring /e="^([1234567890]*)-([^-]*)" filenametoload, imagenum,  userfilename
+			UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100)/100)+"eV_"+detectortype[0] + "_" + imagenum
+			NewNote += teststring
+		endif
+		teststring= indexedfile($(PathName),-1,".csv")
+		teststring = greplist(teststring,"^"+FileNametoLoad[0,8]+".*Izero")
+		LoadWave/Q/O/J/M/U={0,0,1,0}/D/A=wave/K=0/L={0,2,0,0,0}/P=$(PathName)  stringfromlist(0,teststring)
+		wave /z datawave = $(stringfromlist(0,S_waveNames))
+		if(waveexists(datawave))
+			extract /free datawave, testwave,  datawave*0==0
+			redimension /N=(dimsize(testwave,0)/3,3) testwave
+			matrixop /o colsums = sumcols(testwave)
+			SampleI0 = colsums[1]
+		endif
+		string metadata=""
+		teststring= indexedfile($(PathName),-1,".json")
+		string metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*json"))
+		string kvalue
+		grep /LIST/q/e="\"institution\": \"([^\"]*)\""/P=$(PathName) metadatafilename
+		splitstring /e="\"institution\": \"([^\"]*)\"" s_value, kvalue
+		metadata = addlistitem("insitution:"+kvalue,metadata)
+		grep /LIST/q/e="\"project\": \"([^\"]*)\""/P=$(PathName) metadatafilename
+		splitstring /e="\"project\": \"([^\"]*)\"" s_value, kvalue
+		metadata = addlistitem("project:"+kvalue,metadata)
+		grep /LIST/q/e="\"proposal_id\": \"([^\"]*)\""/P=$(PathName) metadatafilename
+		splitstring /e="\"proposal_id\": \"([^\"]*)\"" s_value, kvalue
+		metadata = addlistitem("proposal_id:"+kvalue,metadata)
+		grep /LIST/q/e="\"sample\": \"([^\"]*)\""/P=$(PathName) metadatafilename
+		splitstring /e="\"sample\": \"([^\"]*)\"" s_value, kvalue
+		metadata = addlistitem("sample:"+kvalue,metadata)
+		grep /LIST/q/e="\"sample_desc\": \"([^\"]*)\""/P=$(PathName) metadatafilename
+		splitstring /e="\"sample_desc\": \"([^\"]*)\"" s_value, kvalue
+		metadata = addlistitem("sample_desc:"+kvalue,metadata)
+		grep /LIST/q/e="\"sampleid\": \"([^\"]*)\""/P=$(PathName) metadatafilename
+		splitstring /e="\"sampleid\": \"([^\"]*)\"" s_value, kvalue
+		metadata = addlistitem("sampleid:"+kvalue,metadata)
+		grep /LIST/q/e="\"sampleset\": \"([^\"]*)\""/P=$(PathName) metadatafilename
+		splitstring /e="\"sampleset\": \"([^\"]*)\"" s_value, kvalue
+		metadata = addlistitem("sampleset:"+kvalue,metadata)
+		grep /LIST/q/e="\"user\": \"([^\"]*)\""/P=$(PathName) metadatafilename
+		splitstring /e="\"user\": \"([^\"]*)\"" s_value, kvalue
+		metadata = addlistitem("user:"+kvalue,metadata)
+		grep /LIST/q/e="\"userid\": \"([^\"]*)\""/P=$(PathName) metadatafilename
+		splitstring /e="\"userid\": \"([^\"]*)\"" s_value, kvalue
+		metadata = addlistitem("userid:"+kvalue,metadata)
+		grep /LIST/q/e="\"notes\": \"([^\"]*)\""/P=$(PathName) metadatafilename
+		splitstring /e="\"notes\": \"([^\"]*)\"" s_value, kvalue
+		metadata = addlistitem("notes:"+kvalue,metadata)
+		grep /LIST/q/e="\"uid\": \"([^\"]*)\""/P=$(PathName) metadatafilename
+		splitstring /e="\"uid\": \"([^\"]*)\"" s_value, kvalue
+		metadata = addlistitem("uid:"+kvalue,metadata)
+		
+		NewNote +=metadata+";"
+		
+		wave LoadedWvHere=$(NewWaveName)
+		Redimension/N=(-1,-1,0) 	LoadedWvHere			//this is fix for 3 layer tiff files...
+		NewNote+="DataFileName="+FileNameToLoad+";"
+		NewNote+="DataFileType="+".tif"+";.tiff"+";"
 	
 	elseif(cmpstr(FileType,"AUSW")==0)
 		//check if we need to look into XML file (and if XML file is loaded)
@@ -2924,3 +3024,15 @@ Function AUSW_Browse_but(ba) : ButtonControl
 
 	return 0
 End
+function /s Colwavetostring(wavein)
+	wave wavein
+	variable col, colvalue
+	string stringout="", dimlabel=""
+	matrixop /o/free colsum = sumcols(wavein)
+	for(col=0;col<dimsize(wavein,1);col+=1)
+		dimlabel = getdimlabel(wavein,1,col)
+		colvalue = colsum(col)/2
+		stringout = addlistitem(dimlabel +":"+num2str(colvalue),stringout) 	
+	endfor
+	return stringout
+end

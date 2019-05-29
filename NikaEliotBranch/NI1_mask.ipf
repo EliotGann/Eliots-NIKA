@@ -365,9 +365,10 @@ Function NI1M_UpdateMaskListBox()
 		Wave SelectionsofCCDDataInCCDPath=root:Packages:Convert2Dto1D:SelectionsofCCDDataInCCDPath
 		SVAR CCDFileExtension=root:Packages:Convert2Dto1D:CCDFileExtension
 		SVAR EmptyDarkNameMatchStr=root:Packages:Convert2Dto1D:EmptyDarkNameMatchStr
-		string RealExtension				//for starnge extensions
-		if(cmpstr(CCDFileExtension,".tif")==0)
-			RealExtension=CCDFileExtension
+		string RealExtension, realext2=""				//for starnge extensions
+		if(cmpstr(CCDFileExtension,".tif")==0 || cmpstr(CCDFileExtension,"BS_Suitcase_Tiff")==0)
+			RealExtension=".tif"
+			realext2 = ".tiff"
 		elseif(cmpstr(CCDFileExtension,"ADSC")==0)
 			RealExtension=".img"
 		elseif(cmpstr(CCDFileExtension,".fits")==0)
@@ -394,10 +395,14 @@ Function NI1M_UpdateMaskListBox()
 			abort
 		endif
 
-		ListOfAvailableCompounds=IndexedFile(Convert2Dto1DMaskPath,-1,RealExtension)
-			if(strlen(ListOfAvailableCompounds)<2)	//none found
-				ListOfAvailableCompounds="--none--;"
-			endif
+		ListOfAvailableCompounds=IndexedFile(Convert2Dto1DMaskPath,-1,RealExtension)	
+		if(strlen(realext2)>0)
+			ListOfAvailableCompounds+=IndexedFile(Convert2Dto1DMaskPath,-1,realext2)
+			ListOfAvailableCompounds = sortlist(ListOfAvailableCompounds, ";", 16)
+		endif
+		if(strlen(ListOfAvailableCompounds)<2)	//none found
+			ListOfAvailableCompounds="--none--;"
+		endif
 		redimension/N=(ItemsInList(ListOfAvailableCompounds)) ListOfCCDDataInCCDPath
 		redimension/N=(ItemsInList(ListOfAvailableCompounds)) SelectionsofCCDDataInCCDPath
 		variable i

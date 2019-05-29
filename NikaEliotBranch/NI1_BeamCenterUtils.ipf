@@ -1366,9 +1366,10 @@ Function NI1BC_UpdateBmCntrListBox()
 		Wave/T  ListOfCCDDataInBmCntrPath=root:Packages:Convert2Dto1D:ListOfCCDDataInBmCntrPath
 		Wave SelofCCDDataInBmCntrDPath=root:Packages:Convert2Dto1D:SelofCCDDataInBmCntrDPath
 		SVAR BmCntrFileType=root:Packages:Convert2Dto1D:BmCntrFileType
-		string RealExtension				//for starnge extensions
-		if(cmpstr(BmCntrFileType,".tif")==0)
-			RealExtension=BmCntrFileType
+		string RealExtension, realext2=""				//for starnge extensions
+		if(cmpstr(BmCntrFileType,".tif")==0 || cmpstr(BmCntrFileType,"BS_Suitcase_Tiff")==0)
+			RealExtension=".tif"
+			realext2 = ".tiff"
 		elseif(cmpstr(BmCntrFileType,".fits")==0)
 			RealExtension=".fits"
 		elseif (cmpstr(BmCntrFileType,"Pilatus")==0)
@@ -1397,6 +1398,10 @@ Function NI1BC_UpdateBmCntrListBox()
 		endif
 
 		ListOfAvailableCompounds=IndexedFile(Convert2Dto1DBmCntrPath,-1,RealExtension)
+		if(strlen(realext2)>0)
+			ListOfAvailableCompounds+=IndexedFile(Convert2Dto1DBmCntrPath,-1,realext2)
+			ListOfAvailableCompounds = sortlist(ListOfAvailableCompounds, ";", 16)
+		endif
 		if(strlen(ListOfAvailableCompounds)<2)	//none found
 			ListOfAvailableCompounds="--none--;"
 		endif

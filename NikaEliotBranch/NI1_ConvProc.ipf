@@ -1423,7 +1423,7 @@ Function NI1A_PopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 		if(cmpstr(popStr,"Pilatus")==0)
 			NI1_PilatusLoaderPanelFnct()
 		endif
-		if (cmpstr(popStr,"tif")==0 || cmpstr(popStr,"AUSW")==0)
+		if (cmpstr(popStr,"tif")==0 || cmpstr(popStr,"AUSW")==0|| cmpstr(popStr,"BS_Suitcase_Tiff")==0)
 			MaskFileExtension=".tif"
 		elseif (cmpstr(popStr,"AUSY")==0)
 			MaskFileExtension=".tif"
@@ -1562,9 +1562,10 @@ Function NI1A_UpdateEmptyDarkListBox()
 		SVAR BlankFileExtension=root:Packages:Convert2Dto1D:BlankFileExtension
 		SVAR EmptyDarkNameMatchStr=root:Packages:Convert2Dto1D:EmptyDarkNameMatchStr
 		variable i
-		string tempstr, realExtension
+		string tempstr, realExtension, realext2=""
 		if(cmpstr(BlankFileExtension, ".tif")==0)
 			realExtension=BlankFileExtension
+			realext2 = ".tiff"
 		elseif(cmpstr(BlankFileExtension, "ADSC")==0)
 			realExtension=".img"
 		elseif(cmpstr(BlankFileExtension, ".fits")==0)
@@ -1588,6 +1589,10 @@ Function NI1A_UpdateEmptyDarkListBox()
 		if(V_Flag==1)
 
 		ListOfAvailableDataSets=IndexedFile(Convert2Dto1DEmptyDarkPath,-1,realExtension)
+		if(strlen(realext2)>0)
+			ListOfAvailableDataSets+=IndexedFile(Convert2Dto1DEmptyDarkPath,-1,realext2)
+			ListOfAvailableDataSets = sortlist(ListOfAvailableDataSets, ";", 16)
+		endif
 		if(strlen(ListOfAvailableDataSets)<2)	//none found
 			ListOfAvailableDataSets="--none--;"
 		endif
@@ -3121,9 +3126,10 @@ Function NI1A_UpdateDataListBox()
 		Wave ListOf2DSampleDataNumbers=root:Packages:Convert2Dto1D:ListOf2DSampleDataNumbers
 		SVAR DataFileExtension=root:Packages:Convert2Dto1D:DataFileExtension
 		SVAR SampleNameMatchStr = root:Packages:Convert2Dto1D:SampleNameMatchStr
-		string realExtension		//set to real extension for data types with weird extensions...
-		if(cmpstr(DataFileExtension, ".tif")==0)
-			realExtension=DataFileExtension
+		string realExtension, realext2=""		//set to real extension for data types with weird extensions...
+		if(cmpstr(DataFileExtension, ".tif")==0 || cmpstr(DataFileExtension,"BS_Suitcase_Tiff")==0)
+			realExtension=".tif"
+			realext2 = ".tiff"
 		elseif(cmpstr(DataFileExtension, "ADSC")==0)
 			realExtension=".img"
 		elseif(cmpstr(DataFileExtension, ".fits")==0)
@@ -3139,6 +3145,12 @@ Function NI1A_UpdateDataListBox()
 		PathInfo Convert2Dto1DDataPath
 		if(V_Flag)	//path exists...
 			ListOfAvailableCompounds=IndexedFile(Convert2Dto1DDataPath,-1,realExtension)	
+			if(strlen(realext2)>0)
+				ListOfAvailableCompounds+=IndexedFile(Convert2Dto1DDataPath,-1,realext2)
+				ListOfAvailableCompounds = sortlist(ListOfAvailableCompounds, ";", 16)
+			endif
+		
+			
 			if(strlen(ListOfAvailableCompounds)<2)	//none found
 				ListOfAvailableCompounds="--none--;"
 			endif
@@ -3212,8 +3224,12 @@ Function/T NI1A_CleanListOfFilesForTypes(ListOfAvailableCompounds,DataFileType, 
 							result+= tempFileName +";"
 						endif
 					endif
-				elseif(cmpstr(DataFileType,"AUSW")==0)		//display only *.img files (Fuji image plate)
+				elseif(cmpstr(DataFileType,"AUSW")==0)
 					if(stringmatch(tempFileName, "*.tif" ) && !stringmatch(tempfilename,"*_CR*")&& !stringmatch(tempfilename,"*_UR*")&& !stringmatch(tempfilename,"*_LL*") && !stringmatch(tempfilename,"*CR_*")&& !stringmatch(tempfilename,"*UR_*")&& !stringmatch(tempfilename,"*LL_*"))
+						result+= tempFileName +";"
+					endif
+				elseif(cmpstr(DataFileType,"BS_Suitcase_Tiff")==0)
+					if(stringmatch(tempFileName, "*.tif" ) || stringmatch(tempFileName, "*.tiff" ) )
 						result+= tempFileName +";"
 					endif
 				else

@@ -50,7 +50,7 @@ Function NI1A_Initialize2Dto1DConversion()
 	NewDataFolder/O/S root:Packages:Convert2Dto1D
 
 	//internal loaders
-	string/g ListOfKnownExtensions=".tif;AUSW;GeneralBinary;Pilatus;BrukerCCD;mpa/bin;mpa/asc;mp/bin;mp/asc;BSRC/Gold;DND/txt;RIGK/Raxis;ADSC;WinView spe (Princeton);ASCII;ibw;BSL/SAXS;BSL/WAXS;ascii512x512;ESRFedf;"
+	string/g ListOfKnownExtensions=".tif;AUSW;BS_Suitcase_Tiff;GeneralBinary;Pilatus;BrukerCCD;mpa/bin;mpa/asc;mp/bin;mp/asc;BSRC/Gold;DND/txt;RIGK/Raxis;ADSC;WinView spe (Princeton);ASCII;ibw;BSL/SAXS;BSL/WAXS;ascii512x512;ESRFedf;"
 	ListOfKnownExtensions+="Fuji/img;.fits;---;"
 #if(Exists("ccp4unpack"))	
 	ListOfKnownExtensions+="MarIP/xop;"
