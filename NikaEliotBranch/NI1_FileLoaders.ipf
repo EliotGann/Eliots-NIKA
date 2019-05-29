@@ -59,49 +59,66 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		else
 			detectortype = "Wide Angle CCD Detector_"
 		endif
-		
-		
+		variable imnum
+		string st1
+		splitstring /e="([0123456789]*).tif" FileNameToLoad, st1
+		imnum = str2num(st1)
+		if(imnum*0!=0)
+			imnum = 0
+		endif
 		
 		
 		string teststring= indexedfile($(PathName),-1,".csv")
-		teststring = greplist(teststring,"^"+FileNametoLoad[0,8]+".*baseline")
-		LoadWave/Q/O/J/M/U={0,0,1,0}/D/A=wave/K=0/L={0,2,0,0,0}/P=$(PathName)  stringfromlist(0,teststring)
+		string baselinestring = greplist(teststring,"^"+FileNametoLoad[0,8]+".*baseline")
+		newdatafolder /o/s importdata
+		LoadWave/Q/O/J/M/U={0,0,1,0}/D/A=wave/K=0/L={0,1,0,0,0}/P=$(PathName)  stringfromlist(0,baselinestring)
 		wave /z datawave = $(stringfromlist(0,S_waveNames))
 		if(waveexists(datawave))
-			DeletePoints 1,1, datawave
-			DeletePoints 2,1, datawave
 			teststring = Colwavetostring(datawave)
-			
 			nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
 			pxsizex = 0.015 * numberbykey(detectortype+ "cam_bin_x",teststring)
 			nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
 			pxsizey = 0.015 * numberbykey(detectortype+ "cam_bin_x",teststring)
-			nvar SampleI0=root:Packages:Convert2Dto1D:samplei0
 			
 			nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
 			SampleMeasurementTime = numberbykey(detectortype+ "cam_acquire_time",teststring)
+			
+			//this is only in case energy is not in the primary scan (it was not scanned), we can get the baseline energy
 			nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
 			xrayenergy = numberbykey("Beamline Energy_energy_setpoint",teststring)/1000
-			
 			nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
 			wavelength = 1.239/xrayenergy
+			
 			nvar Sampletransmission = root:Packages:Convert2Dto1D:SampleTransmission
 			svar UserFileName=root:Packages:Convert2Dto1D:OutputDataName
 			string imagenum
 			splitstring /e="^([1234567890]*)-([^-]*)" filenametoload, imagenum,  userfilename
-			UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100)/100)+"eV_"+detectortype[0] + "_" + imagenum
+			UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100)/100)+"eV_"+detectortype[0] + "_" + imagenum + "_" + num2str(imnum)
 			NewNote += teststring
 		endif
 		teststring= indexedfile($(PathName),-1,".csv")
-		teststring = greplist(teststring,"^"+FileNametoLoad[0,8]+".*Izero")
-		LoadWave/Q/O/J/M/U={0,0,1,0}/D/A=wave/K=0/L={0,2,0,0,0}/P=$(PathName)  stringfromlist(0,teststring)
+		teststring = greplist(teststring,"^"+FileNametoLoad[0,8]+".*primary")
+		LoadWave/Q/O/J/D/A/K=0/P=$(PathName)/W  stringfromlist(0,teststring)
 		wave /z datawave = $(stringfromlist(0,S_waveNames))
 		if(waveexists(datawave))
-			extract /free datawave, testwave,  datawave*0==0
-			redimension /N=(dimsize(testwave,0)/3,3) testwave
-			matrixop /o colsums = sumcols(testwave)
-			SampleI0 = colsums[1]
+			nvar SampleI0=root:Packages:Convert2Dto1D:samplei0
+			//extract /free datawave, testwave,  datawave*0==0
+			//redimension /N=(dimsize(testwave,0)/3,3) testwave
+			//matrixop /o colsums = sumcols(testwave)
+			//SampleI0 = colsums[1]
+			wave /z Izero_Mesh_Drain_Current, Beamline_Energy_monoen_readback
+			if(waveexists(Izero_Mesh_Drain_Current))
+				SampleI0 = Izero_Mesh_Drain_Current[imnum]
+			endif
+			if(waveexists(Beamline_Energy_monoen_readback))
+				nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
+				xrayenergy = Beamline_Energy_monoen_readback[imnum]/1000
+				nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
+				wavelength = 1.239/xrayenergy
+			endif
 		endif
+		setdatafolder ::
+		
 		string metadata=""
 		teststring= indexedfile($(PathName),-1,".json")
 		string metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*json"))
