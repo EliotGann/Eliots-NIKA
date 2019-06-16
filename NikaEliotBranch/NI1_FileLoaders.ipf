@@ -85,7 +85,7 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			
 			//this is only in case energy is not in the primary scan (it was not scanned), we can get the baseline energy
 			nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
-			xrayenergy = numberbykey("Beamline Energy_energy_setpoint",teststring)/1000
+			xrayenergy = numberbykey("en_energy_setpoint",teststring)/1000
 			nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
 			wavelength = 1.239/xrayenergy
 			
@@ -93,7 +93,7 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			svar UserFileName=root:Packages:Convert2Dto1D:OutputDataName
 			string imagenum
 			splitstring /e="^([1234567890]*)-([^-]*)" filenametoload, imagenum,  userfilename
-			UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100)/100)+"eV_"+detectortype[0] + "_" + imagenum + "_" + num2str(imnum)
+			UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100000)/100)+"eV_"+detectortype[0] + "_" + imagenum + "_" + num2str(imnum)
 			NewNote += teststring
 		endif
 		teststring= indexedfile($(PathName),-1,".csv")
@@ -121,44 +121,33 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		
 		string metadata=""
 		teststring= indexedfile($(PathName),-1,".json")
-		string metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*json"))
-		string kvalue
-		grep /LIST/q/e="\"institution\": \"([^\"]*)\""/P=$(PathName) metadatafilename
-		splitstring /e="\"institution\": \"([^\"]*)\"" s_value, kvalue
-		metadata = addlistitem("insitution:"+kvalue,metadata)
-		grep /LIST/q/e="\"project\": \"([^\"]*)\""/P=$(PathName) metadatafilename
-		splitstring /e="\"project\": \"([^\"]*)\"" s_value, kvalue
-		metadata = addlistitem("project:"+kvalue,metadata)
-		grep /LIST/q/e="\"proposal_id\": \"([^\"]*)\""/P=$(PathName) metadatafilename
-		splitstring /e="\"proposal_id\": \"([^\"]*)\"" s_value, kvalue
-		metadata = addlistitem("proposal_id:"+kvalue,metadata)
-		grep /LIST/q/e="\"sample\": \"([^\"]*)\""/P=$(PathName) metadatafilename
-		splitstring /e="\"sample\": \"([^\"]*)\"" s_value, kvalue
-		metadata = addlistitem("sample:"+kvalue,metadata)
-		grep /LIST/q/e="\"sample_desc\": \"([^\"]*)\""/P=$(PathName) metadatafilename
-		splitstring /e="\"sample_desc\": \"([^\"]*)\"" s_value, kvalue
-		metadata = addlistitem("sample_desc:"+kvalue,metadata)
-		grep /LIST/q/e="\"sampleid\": \"([^\"]*)\""/P=$(PathName) metadatafilename
-		splitstring /e="\"sampleid\": \"([^\"]*)\"" s_value, kvalue
-		metadata = addlistitem("sampleid:"+kvalue,metadata)
-		grep /LIST/q/e="\"sampleset\": \"([^\"]*)\""/P=$(PathName) metadatafilename
-		splitstring /e="\"sampleset\": \"([^\"]*)\"" s_value, kvalue
-		metadata = addlistitem("sampleset:"+kvalue,metadata)
-		grep /LIST/q/e="\"user\": \"([^\"]*)\""/P=$(PathName) metadatafilename
-		splitstring /e="\"user\": \"([^\"]*)\"" s_value, kvalue
-		metadata = addlistitem("user:"+kvalue,metadata)
-		grep /LIST/q/e="\"userid\": \"([^\"]*)\""/P=$(PathName) metadatafilename
-		splitstring /e="\"userid\": \"([^\"]*)\"" s_value, kvalue
-		metadata = addlistitem("userid:"+kvalue,metadata)
-		grep /LIST/q/e="\"notes\": \"([^\"]*)\""/P=$(PathName) metadatafilename
-		splitstring /e="\"notes\": \"([^\"]*)\"" s_value, kvalue
-		metadata = addlistitem("notes:"+kvalue,metadata)
-		grep /LIST/q/e="\"uid\": \"([^\"]*)\""/P=$(PathName) metadatafilename
-		splitstring /e="\"uid\": \"([^\"]*)\"" s_value, kvalue
-		metadata = addlistitem("uid:"+kvalue,metadata)
-		
+		if(strlen(teststring) > 4)
+			string metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*json"))
+			string kvalue
+			metadata = addmetadatafromjson(PathName,"institution",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"project",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"proposal_id",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"sample",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"sample_desc",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"sampleid",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"sampleset",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"user",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"user_id",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"notes",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"uid",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"dim1",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"dim2",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"dim3",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"chemical_formula",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"density",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"project",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"project_desc",metadatafilename,metadata)
+
+		else
+			print "Currently can't load metadata until the end of a scan"
+		endif	
 		NewNote +=metadata+";"
-		
+			
 		wave LoadedWvHere=$(NewWaveName)
 		Redimension/N=(-1,-1,0) 	LoadedWvHere			//this is fix for 3 layer tiff files...
 		NewNote+="DataFileName="+FileNameToLoad+";"
@@ -3052,4 +3041,14 @@ function /s Colwavetostring(wavein)
 		stringout = addlistitem(dimlabel +":"+num2str(colvalue),stringout) 	
 	endfor
 	return stringout
+end
+
+
+function /s addmetadatafromjson(path, key, filename, metadatalist)
+	string path, key, filename, metadatalist
+	string kvalue
+	grep /LIST/q/e="\"" + key+ "\": \"([^\"]*)\""/P=$(path) filename
+	splitstring /e="\"" + key+ "\": \"([^\"]*)\"" s_value, kvalue
+	metadatalist = addlistitem(key+":"+kvalue,metadatalist)
+	return metadatalist
 end
