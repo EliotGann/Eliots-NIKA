@@ -126,9 +126,19 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		killdatafolder /z importdata
 		string metadata=""
 		teststring= indexedfile($(PathName),-1,".jsonl")
-		if(strlen(teststring) > 4)
-			string metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*jsonl"))
-			string kvalue
+		variable jsonfound=0
+		string metadatafilename
+		if(strlen(teststring) < 5)
+			teststring= indexedfile($(PathName),-1,".json")
+			if(strlen(teststring) > 4)
+				jsonfound = 1
+				metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*json"))
+			endif
+		else
+			jsonfound = 1
+			metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*jsonl"))
+		endif
+		if(jsonfound)
 			metadata = addmetadatafromjson(PathName,"institution",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"project",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"proposal_id",metadatafilename,metadata)
@@ -147,9 +157,8 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			metadata = addmetadatafromjson(PathName,"density",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"project",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"project_desc",metadatafilename,metadata)
-
 		else
-			print "Currently can't load metadata until the end of a scan"
+			print "Currently can't load metadata json or jsonl file"
 		endif	
 		NewNote +=metadata+";"
 			
