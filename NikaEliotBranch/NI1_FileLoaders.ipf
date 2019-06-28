@@ -116,13 +116,18 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 				nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
 				wavelength = 1.239/xrayenergy
 			endif
+			wave /z RSoXS_Diagnostic_Picoammeter_exposure_time
+			if(waveexists(RSoXS_Diagnostic_Picoammeter_exposure_time))
+				nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
+				samplemeasurementtime = RSoXS_Diagnostic_Picoammeter_exposure_time[imnum]
+			endif
 		endif
 		setdatafolder ::
-		
+		killdatafolder /z importdata
 		string metadata=""
-		teststring= indexedfile($(PathName),-1,".json")
+		teststring= indexedfile($(PathName),-1,".jsonl")
 		if(strlen(teststring) > 4)
-			string metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*json"))
+			string metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*jsonl"))
 			string kvalue
 			metadata = addmetadatafromjson(PathName,"institution",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"project",metadatafilename,metadata)
