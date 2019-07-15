@@ -1,6 +1,6 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#include "NI1_ADE-ALS11012"
-#include "NI1_Loader"
+#include "EGN_ADE-ALS11012"
+#include "EGN_Loader"
 function initialize1101panel()
 	String CurrentFolder=GetDataFolder(1)
 	NewDataFolder/O/S root:Packages
@@ -1730,31 +1730,31 @@ End
 function convertpathtonika([main,mask,dark,beamcenter])
 	variable mask,dark,beamcenter,main
 	PathInfo Path_1101panelccd
-	NI1_FitsLoaderPanelFnct()
+	EGN_FitsLoaderPanelFnct()
 	doupdate
 	if(main)
-		NI1A_Convert2Dto1DMainPanel()
+		EGNA_Convert2Dto1DMainPanel()
 		svar SampleNameMatchStr = root:Packages:Convert2Dto1D:SampleNameMatchStr
 		SampleNameMatchStr = ""
-		popupmenu Select2DDataType win=NI1A_Convert2Dto1DPanel, popmatch="*fits"
+		popupmenu Select2DDataType win=EGNA_Convert2Dto1DPanel, popmatch="*fits"
 		newpath /O/Q/Z Convert2Dto1DDataPath S_path
 		SVAR MainPathInfoStr=root:Packages:Convert2Dto1D:MainPathInfoStr
 		MainPathInfoStr=S_path
-		TitleBox PathInfoStrt, win =NI1A_Convert2Dto1DPanel, variable=MainPathInfoStr
-		NI1A_UpdateDataListBox()	
+		TitleBox PathInfoStrt, win =EGNA_Convert2Dto1DPanel, variable=MainPathInfoStr
+		EGNA_UpdateDataListBox()	
 	endif
 	if(mask)
-		NI1M_CreateMask()
+		EGNM_CreateMask()
 		newpath /O/Q/Z Convert2Dto1DMaskPath S_path
-		popupmenu CCDFileExtension win=NI1M_ImageROIPanel, popmatch="*fits"
+		popupmenu CCDFileExtension win=EGNM_ImageROIPanel, popmatch="*fits"
 		SVAR CCDFileExtension=root:Packages:Convert2Dto1D:CCDFileExtension
 		CCDFileExtension = ".fits"
-		NI1M_UpdateMaskListBox()
+		EGNM_UpdateMaskListBox()
 	endif
 	if(dark)
-		NI1A_Convert2Dto1DMainPanel()
+		EGNA_Convert2Dto1DMainPanel()
 		newpath /O/Q/Z Convert2Dto1DEmptyDarkPath S_path
-		popupmenu SelectBlank2DDataType win=NI1A_Convert2Dto1DPanel, popmatch="*fits"
+		popupmenu SelectBlank2DDataType win=EGNA_Convert2Dto1DPanel, popmatch="*fits"
 		nVAR usedarkfield=root:Packages:Convert2Dto1D:UseDarkField
 		usedarkfield=1
 		SVAR BlankFileExtension=root:Packages:Convert2Dto1D:BlankFileExtension
@@ -1763,17 +1763,17 @@ function convertpathtonika([main,mask,dark,beamcenter])
 		DataFileExtension = ".fits"
 		svar EmptyDarkNameMatchStr = root:Packages:Convert2Dto1D:EmptyDarkNameMatchStr
 		EmptyDarkNameMatchStr = ""
-		NI1A_UpdateEmptyDarkListBox()	
+		EGNA_UpdateEmptyDarkListBox()	
 	endif
 	if(beamcenter)
-		NI1_CreateBmCntrFile()
+		EGN_CreateBmCntrFile()
 		newpath /O/Q/Z Convert2Dto1DBmCntrPath S_path
-		popupmenu BmCntrFileType win=NI1_CreateBmCntrFieldPanel, popmatch="*fits"
+		popupmenu BmCntrFileType win=EGN_CreateBmCntrFieldPanel, popmatch="*fits"
 		SVAR BmCntrFileType=root:Packages:Convert2Dto1D:BmCntrFileType
 		BmCntrFileType = ".fits"
 		SVAR BCPathInfoStr=root:Packages:Convert2Dto1D:BCPathInfoStr
 		BCPathInfoStr=S_Path
-		NI1BC_UpdateBmCntrListBox()
+		EGNBC_UpdateBmCntrListBox()
 	endif
 end
 
@@ -1794,7 +1794,7 @@ function convertnikafilelist(filenamelist)
 		endif
 	endfor
 	doupdate
-	NI1A_CheckParametersForConv()
+	EGNA_CheckParametersForConv()
 	//set selections for using RAW/Converted data...
 	NVAR LineProfileUseRAW=root:Packages:Convert2Dto1D:LineProfileUseRAW
 	NVAR LineProfileUseCorrData=root:Packages:Convert2Dto1D:LineProfileUseCorrData
@@ -1805,7 +1805,7 @@ function convertnikafilelist(filenamelist)
 	SectorsUseRAWData=0
 	SectorsUseCorrData=1
 	//selection done
-	NI1A_LoadManyDataSetsForConv()
+	EGNA_LoadManyDataSetsForConv()
 end
 
 function convertnikafilelistsmart(filenamelist,dark)
@@ -1823,7 +1823,7 @@ function convertnikafilelistsmart(filenamelist,dark)
 	
 	ListOf2DSampleDataNumbers = 0
 	string filename = stringfromlist(0,filenamelist)
-	NI1A_CheckParametersForConv()
+	EGNA_CheckParametersForConv()
 	//set selections for using RAW/Converted data...
 	NVAR LineProfileUseRAW=root:Packages:Convert2Dto1D:LineProfileUseRAW
 	NVAR LineProfileUseCorrData=root:Packages:Convert2Dto1D:LineProfileUseCorrData
@@ -1839,16 +1839,16 @@ function convertnikafilelistsmart(filenamelist,dark)
 		if(dark[i])
 			FindValue /TEXT=filename /TXOP=6 /Z ListOfdarkfilenames
 			if(v_value>=0)
-				listbox Select2DMaskDarkWave win=NI1A_Convert2Dto1DPanel, selrow=v_value 
+				listbox Select2DMaskDarkWave win=EGNA_Convert2Dto1DPanel, selrow=v_value 
 				doupdate
-				NI1A_LoadEmptyOrDark("Dark")
+				EGNA_LoadEmptyOrDark("Dark")
 			endif
 		else
 			FindValue /TEXT=filename /TXOP=6 /Z ListOf2DSampleData
 			if(v_value>=0)
 				ListOf2DSampleDataNumbers = p==v_value ? 1 : 0
 				doupdate
-				NI1A_LoadManyDataSetsForConv()
+				EGNA_LoadManyDataSetsForConv()
 			endif
 		endif
 	endfor
@@ -1875,7 +1875,7 @@ function convertnikafilelistsel(filenamelist)
 		endif
 	endfor
 	doupdate
-	NI1A_CheckParametersForConv()
+	EGNA_CheckParametersForConv()
 	//set selections for using RAW/Converted data...
 	NVAR LineProfileUseRAW=root:Packages:Convert2Dto1D:LineProfileUseRAW
 	NVAR LineProfileUseCorrData=root:Packages:Convert2Dto1D:LineProfileUseCorrData
@@ -1886,13 +1886,13 @@ function convertnikafilelistsel(filenamelist)
 	SectorsUseRAWData=0
 	SectorsUseCorrData=1
 	//selection done
-	NI1A_LoadManyDataSetsForConv()
+	EGNA_LoadManyDataSetsForConv()
 end
 function loadasdarkinnika(filenamelist)
-//dark image load						NI1A_LoadEmptyOrDark("Dark")
+//dark image load						EGNA_LoadEmptyOrDark("Dark")
 //	Wave/T ListOf2DEmptyData=root:Packages:Convert2Dto1D:ListOf2DEmptyData
 //	string SelectedFileToLoad
-//	controlInfo /W=NI1A_Convert2Dto1DPanel Select2DMaskDarkWave
+//	controlInfo /W=EGNA_Convert2Dto1DPanel Select2DMaskDarkWave
 //	variable selection = V_Value
 //	if(selection<0)
 //		setDataFolder OldDf
@@ -1908,17 +1908,17 @@ function loadasdarkinnika(filenamelist)
 		filename = stringfromlist(i,filenamelist)
 		FindValue /TEXT=filename /TXOP=6 /Z ListOffilenames
 		if(v_value>=0)
-			listbox Select2DMaskDarkWave win=NI1A_Convert2Dto1DPanel, selrow=v_value 
+			listbox Select2DMaskDarkWave win=EGNA_Convert2Dto1DPanel, selrow=v_value 
 			doupdate
-			NI1A_LoadEmptyOrDark("Dark")
+			EGNA_LoadEmptyOrDark("Dark")
 		endif
 	endfor
 end
 function loadformaskinnika(filename)
-//mask load image for making mask		NI1M_MaskCreateImage() 
+//mask load image for making mask		EGNM_MaskCreateImage() 
 //
 //	Wave/T  ListOfCCDDataInCCDPath=root:Packages:Convert2Dto1D:ListOfCCDDataInCCDPath
-//	controlInfo /W=NI1M_ImageROIPanel CCDDataSelection
+//	controlInfo /W=EGNM_ImageROIPanel CCDDataSelection
 	string filename
 	convertpathtonika(mask=1)
 	doupdate
@@ -1926,16 +1926,16 @@ function loadformaskinnika(filename)
 	variable i
 	FindValue /TEXT=filename /TXOP=6 /Z ListOffilenames
 	if(v_value>=0)
-		listbox CCDDataSelection win=NI1M_ImageROIPanel, selrow=v_value 
+		listbox CCDDataSelection win=EGNM_ImageROIPanel, selrow=v_value 
 		doupdate
-		NI1M_MaskCreateImage() 
+		EGNM_MaskCreateImage() 
 	endif
 end
 function loadforbeamcenteringinNIKA(filename)
 //beam center load					
 //	setDataFOlder root:Packages:Convert2Dto1D
 //	Wave/T  ListOfCCDDataInBmCntrPath=root:Packages:Convert2Dto1D:ListOfCCDDataInBmCntrPath
-//	controlInfo /W=NI1_CreateBmCntrFieldPanel CCDDataSelection
+//	controlInfo /W=EGN_CreateBmCntrFieldPanel CCDDataSelection
 //	variable selection = V_Value
 //	if(selection<0)
 //		setDataFolder OldDf
@@ -1951,22 +1951,22 @@ function loadforbeamcenteringinNIKA(filename)
 	Wave/T  ListOffilenames=root:Packages:Convert2Dto1D:ListOfCCDDataInBmCntrPath
 	FindValue /TEXT=filename /TXOP=6 /Z ListOffilenames
 	if(v_value>=0)
-		listbox CCDDataSelection win=NI1_CreateBmCntrFieldPanel, selrow=v_value 
+		listbox CCDDataSelection win=EGN_CreateBmCntrFieldPanel, selrow=v_value 
 		doupdate
-		NI1BC_BmCntrCreateImage()
+		EGNBC_BmCntrCreateImage()
 		//set slider
 		NVAR BMMaxCircleRadius=root:Packages:Convert2Dto1D:BMMaxCircleRadius
 		Wave BmCntrFieldImg=root:Packages:Convert2Dto1D:BmCntrCCDImg 
 		BMMaxCircleRadius=sqrt(DimSize(BmCntrFieldImg, 0 )^2 + DimSize(BmCntrFieldImg, 1 )^2)
-		Slider BMHelpCircleRadius,limits={1,BMMaxCircleRadius,0}, win=NI1_CreateBmCntrFieldPanel
-		SetVariable BMHelpCircleRadiusV,limits={1,BMMaxCircleRadius,0}, win=NI1_CreateBmCntrFieldPanel
+		Slider BMHelpCircleRadius,limits={1,BMMaxCircleRadius,0}, win=EGN_CreateBmCntrFieldPanel
+		SetVariable BMHelpCircleRadiusV,limits={1,BMMaxCircleRadius,0}, win=EGN_CreateBmCntrFieldPanel
 		NVAR BMImageRangeMinLimit= root:Packages:Convert2Dto1D:BMImageRangeMinLimit
 		NVAR BMImageRangeMaxLimit = root:Packages:Convert2Dto1D:BMImageRangeMaxLimit
-		Slider ImageRangeMin,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=NI1_CreateBmCntrFieldPanel
-		Slider ImageRangeMax,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=NI1_CreateBmCntrFieldPanel
-		NI1BC_DisplayHelpCircle()
-		NI1BC_DisplayMask()
-		TabControl BmCntrTab, value=0, win=NI1_CreateBmCntrFieldPanel
+		Slider ImageRangeMin,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=EGN_CreateBmCntrFieldPanel
+		Slider ImageRangeMax,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=EGN_CreateBmCntrFieldPanel
+		EGNBC_DisplayHelpCircle()
+		EGNBC_DisplayMask()
+		TabControl BmCntrTab, value=0, win=EGN_CreateBmCntrFieldPanel
 		showinfo /w=CCDImageForBmCntr
 	endif
 end

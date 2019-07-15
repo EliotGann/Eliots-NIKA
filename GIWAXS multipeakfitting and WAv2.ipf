@@ -1,5 +1,5 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
-//#include "NI1_Loader"
+//#include "EGN_Loader"
 #include <Multi-peak fitting 2.0>
 #include "wa_procs"
 //#include "3DSimulationsv3"

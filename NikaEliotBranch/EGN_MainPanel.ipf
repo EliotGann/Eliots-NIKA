@@ -15,18 +15,18 @@
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1A_Convert2Dto1DMainPanel()
+Function EGNA_Convert2Dto1DMainPanel()
 	
 	//first initialize 
-	NI1A_Initialize2Dto1DConversion()
+	EGNA_Initialize2Dto1DConversion()
 
 
-	DoWindow NI1A_Convert2Dto1DPanel
+	DoWindow EGNA_Convert2Dto1DPanel
 	if(V_Flag)
-		DoWindow/K NI1A_Convert2Dto1DPanel
+		DoWindow/K EGNA_Convert2Dto1DPanel
 	endif
-	Execute("NI1A_Convert2Dto1DPanel()")
-	NI1A_TabProc("nothing",0)
+	Execute("EGNA_Convert2Dto1DPanel()")
+	EGNA_TabProc("nothing",0)
 end
 
 
@@ -38,7 +38,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1A_Initialize2Dto1DConversion()
+Function EGNA_Initialize2Dto1DConversion()
 
 	string OldDf=GetDataFolder(1)
 	variable FirstRun
@@ -422,7 +422,7 @@ Function NI1A_Initialize2Dto1DConversion()
 	//BSL files support...
 	//josh add: I added BSL sumoverframes and BSLlog 
 	setDataFolder root:Packages
-	NewDataFolder/O/S root:Packages:NI1_BSLFiles
+	NewDataFolder/O/S root:Packages:EGN_BSLFiles
 	
 	variable/g BSLpixels, BSLpixels1, BSLframes, BSLcurrentframe, BSLsumframes, BSLwaxsframes, BSLI1, BSLI2, BSLwaxschannels, BSLAverage, BSLFoundFrames,BSLfromframe,BSLtoframe
 	make/o/t/n=10 BSLheadnote,BSLlogfile
@@ -440,7 +440,7 @@ end
 //*******************************************************************************************************************************************
 
 
-Function NI1A_Convert2DTo1D()
+Function EGNA_Convert2DTo1D()
 		
 	string OldDf = GetDataFolder(1)
 	setDataFolder root:Packages:Convert2Dto1D
@@ -466,11 +466,11 @@ Function NI1A_Convert2DTo1D()
 	//parameters are set, now process the data as needed..
 	//print "1: ", stopmstimer(timer)
 	//timer=startmstimer
-	NI1A_Check2DConversionData()		//this should check if input data are OK, stuff any necessary consistency checks here...
+	EGNA_Check2DConversionData()		//this should check if input data are OK, stuff any necessary consistency checks here...
 	
 	//print "2: ", stopmstimer(timer)
 	//timer=startmstimer
-	NI1A_CorrectDataPerUserReq("","")		//here we need to do all of the corrections as user selected...
+	EGNA_CorrectDataPerUserReq("","")		//here we need to do all of the corrections as user selected...
 	
 	//print "3: ", stopmstimer(timer)
 	//timer=startmstimer
@@ -492,28 +492,28 @@ Function NI1A_Convert2DTo1D()
 		endif	
 		For(i=0;i<ItemsInList(ListOfOrientations);i+=1)
 			CurOrient = stringFromList(i,ListOfOrientations)
-			NI1A_FixNumPntsIfNeeded(CurOrient,wavelengths)
+			EGNA_FixNumPntsIfNeeded(CurOrient,wavelengths)
 			
-			//print "NI1A_FixNumPntsIfNeeded: ", stopmstimer(timer)
+			//print "EGNA_FixNumPntsIfNeeded: ", stopmstimer(timer)
 			//timer=startmstimer
-			NI1A_CheckGeometryWaves(CurOrient,wavelengths)			//checks if geometry waves exist and if they are correct, makes them correct if needed
+			EGNA_CheckGeometryWaves(CurOrient,wavelengths)			//checks if geometry waves exist and if they are correct, makes them correct if needed
 		
-			//print "NI1A_CheckGeometryWaves: ", stopmstimer(timer)
+			//print "EGNA_CheckGeometryWaves: ", stopmstimer(timer)
 			//timer=startmstimer
-			NI1A_AverageDataPerUserReq(CurOrient,wavelengths)
+			EGNA_AverageDataPerUserReq(CurOrient,wavelengths)
 			
-			//print "NI1A_AverageDataPerUserReq: ", stopmstimer(timer)
+			//print "EGNA_AverageDataPerUserReq: ", stopmstimer(timer)
 			//timer=startmstimer
-			NI1A_SaveDataPerUserReq(CurOrient,wavelengths)
-			//print "NI1A_SaveDataPerUserReq: ", stopmstimer(timer)
+			EGNA_SaveDataPerUserReq(CurOrient,wavelengths)
+			//print "EGNA_SaveDataPerUserReq: ", stopmstimer(timer)
 			//timer=startmstimer
 			DoUpdate
 		endfor
 	endif
 	//line profile averages are here... 
 	if(UseLineProfile)
-		NI1A_LineProf_CreateLP()		//thsi creates line profile as user set conditions... 
-			//print "NI1A_LineProf_CreateLP: ", stopmstimer(timer)
+		EGNA_LineProf_CreateLP()		//thsi creates line profile as user set conditions... 
+			//print "EGNA_LineProf_CreateLP: ", stopmstimer(timer)
 			//timer=startmstimer
 		//note for future. There is a lot of unnecessary calculations here. This could be sped up by better programming. 
 		//figure out which Q we analyzed...
@@ -541,11 +541,11 @@ Function NI1A_Convert2DTo1D()
 		endif
 //		nvar supexchar = root:Packages:Nika1101:SupExChar
 //		if(supexchar)
-//			NI1A_SaveDataPerUserReq(tempStr1,wavelengths)
+//			EGNA_SaveDataPerUserReq(tempStr1,wavelengths)
 //		else
-			NI1A_SaveDataPerUserReq(tempStr1+tempStr,wavelengths)
+			EGNA_SaveDataPerUserReq(tempStr1+tempStr,wavelengths)
 			
-			//print "NI1A_SaveDataPerUserReq: ", stopmstimer(timer)
+			//print "EGNA_SaveDataPerUserReq: ", stopmstimer(timer)
 			//timer=startmstimer
 //		endif
 		doUpdate
@@ -558,7 +558,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1A_FixNumPntsIfNeeded(CurOrient,wavelengths)
+Function EGNA_FixNumPntsIfNeeded(CurOrient,wavelengths)
 	string CurOrient,wavelengths
 	
 	//here we fix the num pnts to max number if requested by user
@@ -648,12 +648,12 @@ Function NI1A_FixNumPntsIfNeeded(CurOrient,wavelengths)
 			//variable OldHorizontalTilt=numberByKey("HorizontalTilt",OldNote,"=")
 			//variable OldVerticalTilt=numberByKey("VerticalTilt",OldNote,"=")
 			if(cmpstr(OldCntrX, num2str(BeamCenterX))!=0 || cmpstr(OldCntrY,num2str(BeamCenterY))!=0 || OldPixX!=PixelSizeX || OldPixY!=PixelSizeY)///|| OldHorizontalTilt!=HorizontalTilt || OldVerticalTilt!=VerticalTilt) lets not worry here about the tilt
-				NI1A_Create2DPixRadiusWave(CCDImageToConvert)
-				NI1A_Create2DAngleWave(CCDImageToConvert)
+				EGNA_Create2DPixRadiusWave(CCDImageToConvert)
+				EGNA_Create2DAngleWave(CCDImageToConvert)
 			endif
 		else
-			NI1A_Create2DPixRadiusWave(CCDImageToConvert)
-			NI1A_Create2DAngleWave(CCDImageToConvert)
+			EGNA_Create2DPixRadiusWave(CCDImageToConvert)
+			EGNA_Create2DAngleWave(CCDImageToConvert)
 		endif
 		//Ok, now the 2DRadiusWave must exist... and be correct.
 
@@ -715,7 +715,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1A_Create2DPixRadiusWave(DataWave)
+Function EGNA_Create2DPixRadiusWave(DataWave)
 	wave DataWave
 
 	
@@ -757,11 +757,11 @@ Function NI1A_Create2DPixRadiusWave(DataWave)
 	Duplicate/O DataWave, PixRadius2DWave
 	Redimension/S PixRadius2DWave
 	//PixRadius2DWave = sqrt((cos(HorizontalTilt*pi/180)*(p-BeamCenterX))^2 + (cos(VerticalTilt*pi/180)*(q-BeamCenterY))^2)
-//	need to use new function... NI1T_TiltedToCorrectedR(TiltedR,SaDetDistance,alpha)
+//	need to use new function... EGNT_TiltedToCorrectedR(TiltedR,SaDetDistance,alpha)
 //	tilts added again 6/22/2005
 //	variable tm=ticks
 //	if(HorizontalTilt!=0 || VerticalTilt!=0)
-//		PixRadius2DWave = sqrt((NI1T_TiltedToCorrectedR(p-BeamCenterX,XSaDetDitsInPix,HorizontalTilt))^2 + (NI1T_TiltedToCorrectedR(q-BeamCenterY,YSaDetDitsInPix,VerticalTilt))^2)
+//		PixRadius2DWave = sqrt((EGNT_TiltedToCorrectedR(p-BeamCenterX,XSaDetDitsInPix,HorizontalTilt))^2 + (EGNT_TiltedToCorrectedR(q-BeamCenterY,YSaDetDitsInPix,VerticalTilt))^2)
 //	else
 	//Note, I do not think this wave needs to be fixed for tilts. All we use it for is to get max number of pixels for any particular direction... 
 		PixRadius2DWave = sqrt((cos(HorizontalTilt*pi/180)*(p-BeamCenterX))^2 + (cos(VerticalTilt*pi/180)*(q-BeamCenterY))^2)
@@ -784,7 +784,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-//Function NI1A_CalcTiltedDetDistance(DistOnDetector, TiltAngle, SaDetDistInPix)
+//Function EGNA_CalcTiltedDetDistance(DistOnDetector, TiltAngle, SaDetDistInPix)
 //	variable DistOnDetector, TiltAngle, SaDetDistInPix
 //	
 //	variable Alpha = TiltAngle * pi /180
@@ -804,7 +804,7 @@ end
 
 //following code added 6 22 2005 to finish the tilts...
 
-Function NI1T_TiltedToCorrectedR(TiltedR,SaDetDistance,alpha)			
+Function EGNT_TiltedToCorrectedR(TiltedR,SaDetDistance,alpha)			
 	variable TiltedR,SaDetDistance,alpha
 	//this function returns distance from beam center corrected for the effect of tilt
 	//Definitions:
@@ -813,11 +813,11 @@ Function NI1T_TiltedToCorrectedR(TiltedR,SaDetDistance,alpha)
 	//SaDetDistance is distance between the sample and the beam center position on thte detector Use same units as for TiltedR
 	//alpha is tilt angle in particular plane. It is positive when the detector is tilted forward for X (or y) positive. It is in degrees
 	 variable alphaRad=(alpha*pi/180)
-	return TiltedR*cos(alphaRad) + TiltedR*sin(alphaRad)*tan(NI1T_CalcThetaForTiltToTheor(TiltedR,SaDetDistance,alphaRad))
+	return TiltedR*cos(alphaRad) + TiltedR*sin(alphaRad)*tan(EGNT_CalcThetaForTiltToTheor(TiltedR,SaDetDistance,alphaRad))
 	
 end
 
-Function NI1T_CalcThetaForTiltToTheor(radius,Distance,alphaRad)
+Function EGNT_CalcThetaForTiltToTheor(radius,Distance,alphaRad)
 		variable radius,Distance,alphaRad
 		
 		variable temp =radius * abs(cos(alphaRad))
@@ -825,7 +825,7 @@ Function NI1T_CalcThetaForTiltToTheor(radius,Distance,alphaRad)
 		return asin(temp)
 end
 
-Function NI1T_TheoreticalToTilted(TheoreticalR,SaDetDistance,alpha)
+Function EGNT_TheoreticalToTilted(TheoreticalR,SaDetDistance,alpha)
 		variable TheoreticalR,SaDetDistance,alpha
 		//this function returns distance on tilted detector compared to theoretical distacne in perpendicular plane
 		//for either x or y directions
@@ -842,7 +842,7 @@ Function NI1T_TheoreticalToTilted(TheoreticalR,SaDetDistance,alpha)
 		return res
 
 end
-Function NI1BC_CalculatePathWvs(dspacing, wvX,wvY)
+Function EGNBC_CalculatePathWvs(dspacing, wvX,wvY)
 	wave wvX, wvY
 	variable dspacing
 
@@ -874,14 +874,14 @@ Function NI1BC_CalculatePathWvs(dspacing, wvX,wvY)
 	
 	NVAR xcenter=root:Packages:Convert2Dto1D:BeamCenterX
 	//Ok, this should just return simple Bragg law with little trigonometry, NO tilts yet
-	variable radX = NI1BC_GetPixelFromDSpacing(dspacing, "X")
-	variable radY = NI1BC_GetPixelFromDSpacing(dspacing, "Y")
+	variable radX = EGNBC_GetPixelFromDSpacing(dspacing, "X")
+	variable radY = EGNBC_GetPixelFromDSpacing(dspacing, "Y")
  	pixelDist = SampleToCCDDistance *tan(2* asin( Wavelength /(2* dspacing) )  )
-//			pixelDist = NI1T_TheoreticalToTilted(pixelDist,SampleToCCDDistance,HorizontalTilt) / PixelSizeX 
-	pixelDistXleft = NI1T_TheoreticalToTilted(pixelDist,SampleToCCDDistance,HorizontalTilt) / PixelSizeX
-	pixelDistXright = NI1T_TheoreticalToTilted(pixelDist,SampleToCCDDistance,-1*HorizontalTilt) / PixelSizeX
-	pixelDistYtop = NI1T_TheoreticalToTilted(pixelDist,SampleToCCDDistance,VerticalTilt) / PixelSizeY
-	pixelDistYbot = NI1T_TheoreticalToTilted(pixelDist,SampleToCCDDistance,-1*VerticalTilt) / PixelSizeY
+//			pixelDist = EGNT_TheoreticalToTilted(pixelDist,SampleToCCDDistance,HorizontalTilt) / PixelSizeX 
+	pixelDistXleft = EGNT_TheoreticalToTilted(pixelDist,SampleToCCDDistance,HorizontalTilt) / PixelSizeX
+	pixelDistXright = EGNT_TheoreticalToTilted(pixelDist,SampleToCCDDistance,-1*HorizontalTilt) / PixelSizeX
+	pixelDistYtop = EGNT_TheoreticalToTilted(pixelDist,SampleToCCDDistance,VerticalTilt) / PixelSizeY
+	pixelDistYbot = EGNT_TheoreticalToTilted(pixelDist,SampleToCCDDistance,-1*VerticalTilt) / PixelSizeY
 	redimension/N=360 wvX, wvY
 	SetScale/I x 0,(2*pi),"", wvX, wvY
 	wvX = ((x>=pi/2)&&(x<3*pi/2))? (xcenter+pixelDistXright*cos(x)) : (xcenter+pixelDistXleft*cos(x))
@@ -891,7 +891,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1A_RemoveInfNaNsFrom8Waves(Wv1,wv2,wv3,wv4,wv5,wv6,wv7,wv8)							//removes NaNs from 3 waves
+Function EGNA_RemoveInfNaNsFrom8Waves(Wv1,wv2,wv3,wv4,wv5,wv6,wv7,wv8)							//removes NaNs from 3 waves
 	Wave Wv1,wv2,wv3,wv4,wv5,wv6,wv7,wv8					//assume same number of points in the waves
 	
 	variable i=0, imax=numpnts(Wv1)
@@ -925,7 +925,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1A_SaveDataPerUserReq(CurOrient,wavelengths)
+Function EGNA_SaveDataPerUserReq(CurOrient,wavelengths)
 	string CurOrient,wavelengths
 
 	string OldDf=getDataFOlder(1)
@@ -976,15 +976,15 @@ Function NI1A_SaveDataPerUserReq(CurOrient,wavelengths)
 	string UseName
 	string LongUseName
 	if (Use2DdataName)
-		controlinfo/W=NI1A_Convert2Dto1Dpanel Select2DDataType
+		controlinfo/W=EGNA_Convert2Dto1Dpanel Select2DDataType
 		//JOSH ADD....
 		if(cmpstr(S_Value,"BSL/SAXS")==0)
 		//JOSH ADD....
-			NVAR BSLcurrentframe=$("root:Packages:NI1_BSLFiles:BSLcurrentframe")
-			NVAR BSLfromframe=$("root:Packages:NI1_BSLFiles:BSLfromframe")
-			NVAR BSLtoframe=$("root:Packages:NI1_BSLFiles:BSLtoframe")
-			NVAR BSLaverage=$("root:Packages:NI1_BSLFiles:BSLaverage")
-			NVAR BSLsumframes=$("root:Packages:NI1_BSLFiles:BSLsumframes")
+			NVAR BSLcurrentframe=$("root:Packages:EGN_BSLFiles:BSLcurrentframe")
+			NVAR BSLfromframe=$("root:Packages:EGN_BSLFiles:BSLfromframe")
+			NVAR BSLtoframe=$("root:Packages:EGN_BSLFiles:BSLtoframe")
+			NVAR BSLaverage=$("root:Packages:EGN_BSLFiles:BSLaverage")
+			NVAR BSLsumframes=$("root:Packages:EGN_BSLFiles:BSLsumframes")
 			if(BSLaverage)
 			UseName=LoadedFile[0,9]+"_Average_"+CurOrient
 			elseif(BSLsumframes)
@@ -1037,7 +1037,7 @@ Function NI1A_SaveDataPerUserReq(CurOrient,wavelengths)
 	
 	//split for code for line profile and sectors...
 	if(stringmatch(CurOrient, "*LP*") || stringmatch(CurOrient, "*GH*") || stringmatch(CurOrient, "*GV*")  )		//Line profile code goes here...***************
-		//NI1A_RemoveInfNaNsFrom8Waves(LineProfileIntensity,LineProfileError,LineProfileQ,LineProfileQy,LineProfileYValsPix,LineProfileQz,LineProfileQx,tempWv1234 )
+		//EGNA_RemoveInfNaNsFrom8Waves(LineProfileIntensity,LineProfileError,LineProfileQ,LineProfileQy,LineProfileYValsPix,LineProfileQz,LineProfileQx,tempWv1234 )
 		// replaced antiquated function with following for loop  (Eliot)
 		variable j, imax = numpnts(LineProfileIntensity)
 		for(j=imax-1;j>=0;j-=1)
@@ -1116,32 +1116,32 @@ Function NI1A_SaveDataPerUserReq(CurOrient,wavelengths)
 				Wave Int=$cleanupname("r_"+UseName,1)
 				Wave Qvec=$cleanupname("qy_"+UseName,1)
 				Wave err=$cleanupname("s_"+UseName,1)
-				NI1A_DisplayLineoutAfterProc(int,Qvec,Err,1,1)			
+				EGNA_DisplayLineoutAfterProc(int,Qvec,Err,1,1)			
 			elseif(stringmatch(LineProf_CurveType,"GI_Horizontal Line"))
 				Wave Int=$cleanupname("r_"+UseName,1)
 				Wave Qvec=$cleanupname("xy_"+UseName,1)
 				Wave err=$cleanupname("s_"+UseName,1)
-				NI1A_DisplayLineoutAfterProc(int,Qvec,Err,1,1)
+				EGNA_DisplayLineoutAfterProc(int,Qvec,Err,1,1)
 			elseif(stringmatch(LineProf_CurveType,"Vertical Line")||stringmatch(LineProf_CurveType,"GI_Vertical Line"))
 				Wave Int=$cleanupname("r_"+UseName,1)
 				Wave Qvec=$cleanupname("qz_"+UseName,1)
 				Wave err=$cleanupname("s_"+UseName,1)
-				NI1A_DisplayLineoutAfterProc(int,Qvec,Err,1,1)
+				EGNA_DisplayLineoutAfterProc(int,Qvec,Err,1,1)
 			elseif(stringmatch(LineProf_CurveType,"Ellipse"))
 				Wave Int=$cleanupname("r_"+UseName,1)
 				Wave Avec=$cleanupname("Xi_"+UseName,1)
 				Wave err=$cleanupname("s_"+UseName,1)
-				NI1A_DisplayLineoutAfterProc(int,Avec,Err,1,4)
+				EGNA_DisplayLineoutAfterProc(int,Avec,Err,1,4)
 			else
 				Wave Int=$cleanupname("r_"+UseName,1)
 				Wave Qvec=$cleanupname("qy_"+UseName,1)
 				Wave err=$cleanupname("s_"+UseName,1)
-				NI1A_DisplayLineoutAfterProc(int,Qvec,Err,1,1)
+				EGNA_DisplayLineoutAfterProc(int,Qvec,Err,1,1)
 			endif
 		endif
 		KillWaves/Z tempWv1234
 	else		//sectors profiles goes here. *****************
-		NI1A_RemoveInfNaNsFrom8Waves(Intensity,Qvector,Error,Qsmearing,TwoTheta,TwoThetaWidth,Dspacing,DspacingWidth )	
+		EGNA_RemoveInfNaNsFrom8Waves(Intensity,Qvector,Error,Qsmearing,TwoTheta,TwoThetaWidth,Dspacing,DspacingWidth )	
 		if(StoreDataInIgor)
 			NewDataFolder/O/S root:SAS
 			if(DataFolderExists(LongUseName) && !OverwriteDataIfExists)
@@ -1225,17 +1225,17 @@ Function NI1A_SaveDataPerUserReq(CurOrient,wavelengths)
 				Wave Int=$("r_"+UseName)
 				Wave Qvec=$("q_"+UseName)
 				Wave err=$("s_"+UseName)
-				NI1A_DisplayLineoutAfterProc(int,Qvec,Err,1,1)
+				EGNA_DisplayLineoutAfterProc(int,Qvec,Err,1,1)
 			elseif(UseTheta)
 				Wave Int=$("r_"+UseName)
 				Wave TwoTheta=$("t_"+UseName)
 				Wave err=$("s_"+UseName)
-				NI1A_DisplayLineoutAfterProc(int,TwoTheta,Err,1,3)
+				EGNA_DisplayLineoutAfterProc(int,TwoTheta,Err,1,3)
 			elseif(UseDspacing)
 				Wave Int=$("r_"+UseName)
 				Wave Dspacing=$("d_"+UseName)
 				Wave err=$("s_"+UseName)
-				NI1A_DisplayLineoutAfterProc(int,Dspacing,Err,1,2)
+				EGNA_DisplayLineoutAfterProc(int,Dspacing,Err,1,2)
 			else
 				abort "Error - no output type selected"
 			endif
@@ -1251,7 +1251,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1A_DisplayLineoutAfterProc(int,Qvec,Err,NumOfWavesToKeep,typeGraph)
+Function EGNA_DisplayLineoutAfterProc(int,Qvec,Err,NumOfWavesToKeep,typeGraph)
 	wave int,Qvec,Err
 	variable NumOfWavesToKeep
 	variable typeGraph	//1 for q, 2 for d, and 3 for twoTheta
@@ -1309,7 +1309,7 @@ Function NI1A_DisplayLineoutAfterProc(int,Qvec,Err,NumOfWavesToKeep,typeGraph)
 			Doupdate
 		endif		
 	else
-		Abort "error in NI1A_DisplayLineoutAfterProc"
+		Abort "error in EGNA_DisplayLineoutAfterProc"
 	endif
 		//ModifyGraph/Z rgb[0]=(0,0,0), rgb[1]=(65280,0,0), rgb[2]=(0,65280,0),rgb[3]=(0,0,65280), rgb[4]=(52224,0,41728), rgb[5]=(52224,52224,0), rgb[6]=(0,0,39168)
 		colorlines("SpectrumBlack")
@@ -1318,7 +1318,7 @@ Function NI1A_DisplayLineoutAfterProc(int,Qvec,Err,NumOfWavesToKeep,typeGraph)
 End
 
 //end
-//Function NI1A_DoCircularAveraging(DataWave,QvectorWave,MaskWave,imin, imax, jmin, jmax)
+//Function EGNA_DoCircularAveraging(DataWave,QvectorWave,MaskWave,imin, imax, jmin, jmax)
 //	wave DataWave, QvectorWave, MaskWave
 //	variable imin, imax, jmin, jmax
 //	
@@ -1358,7 +1358,7 @@ End
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1A_CCD21D_SetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
+Function EGNA_CCD21D_SetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
 	String varStr
@@ -1376,7 +1376,7 @@ End
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1A_setupData(updateLUT)
+Function EGNA_setupData(updateLUT)
 		variable updateLUT
 
 		wave QVectorWave=root:Packages:Convert2Dto1D:QVectorWave
@@ -1390,12 +1390,12 @@ Function NI1A_setupData(updateLUT)
 		variable transmission=0.991
 		CorrectedDataWave=(1/transmission)*(CCDImageToConvert-DarkCurrentWave) - (EmptyData-DarkCurrentWave)
 
-		NI1A_CreateConversionLUT(updateLUT, QVectorWave, CorrectedDataWave,M_ROIMask )
+		EGNA_CreateConversionLUT(updateLUT, QVectorWave, CorrectedDataWave,M_ROIMask )
 		killwaves/Z temp2D, CorrectedDataWave
 end
 
 
-Function NI1A_CreateConversionLUT(updateLUT, QVectorWave, CCDImageToConvert,M_ROIMask )
+Function EGNA_CreateConversionLUT(updateLUT, QVectorWave, CCDImageToConvert,M_ROIMask )
 		variable updateLUT
 		wave QVectorWave, CCDImageToConvert,M_ROIMask
 		
@@ -1404,7 +1404,7 @@ Function NI1A_CreateConversionLUT(updateLUT, QVectorWave, CCDImageToConvert,M_RO
 	nvar wavelength
 	string wavelengths = num2str(round(100*wavelength))
 	if(updateLUT)
-		NI1A_CreateLUT("C",wavelengths)
+		EGNA_CreateLUT("C",wavelengths)
 	endif
 		Wave LUT=root:Packages:Convert2Dto1D:LUT
 		Wave HistWave=root:Packages:Convert2Dto1D:HistWave

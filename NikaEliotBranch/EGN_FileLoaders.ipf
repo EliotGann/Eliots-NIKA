@@ -15,7 +15,7 @@ string/g imagekeys
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
+Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 	string PathName,FileName,FileType,NewWaveName
 	
 	string OldDf=GetDataFOlder(1)
@@ -618,8 +618,8 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 
 	elseif(cmpstr(FileType,"RIGK/Raxis")==0)
 		FileNameToLoad= FileName
-		string RigakuHeader = NI1A_ReadRigakuUsingStructure(PathName, FileNameToLoad)
-		//variable offsetFile = NI1A_FindFirstNonZeroChar(PathName, FileNameToLoad)
+		string RigakuHeader = EGNA_ReadRigakuUsingStructure(PathName, FileNameToLoad)
+		//variable offsetFile = EGNA_FindFirstNonZeroChar(PathName, FileNameToLoad)
 		variable offsetFile = NumberByKey("RecordLengthByte", RigakuHeader )
 		print "Found offset in the file to be: "+num2str(offsetFile)
 		variable 	RigNumOfXPoint=NumberByKey("xDirectionPixNumber", RigakuHeader)
@@ -666,7 +666,7 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			//nothing needed, let's not worry...
 		elseif(OutPutRatioHighLow>0 && V_min<0)
 			//fix the negative values...
-			NI1A_RigakuFixNegValues(w,OutPutRatioHighLow)
+			EGNA_RigakuFixNegValues(w,OutPutRatioHighLow)
 		else
 			Abort "Problem loading the Rigaku file format. Header and values do not agree... Please contact author (ilavsky@aps.anl.gov) and send the offending file with as much info as possible for evaluation"
 		endif
@@ -707,15 +707,15 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 	     newnote +=";datafilename="+filename+";"
 	elseif(cmpstr(FileType,"BSL/SAXS")==0 || cmpstr(FileType,"BSL/WAXS")==0)
    	     //Josh add
-   	     NVAR BSLsumframes=$("root:Packages:NI1_BSLFiles:BSLsumframes")
-   	     NVAR BSLfromframe=$("root:Packages:NI1_BSLFiles:BSLfromframe")
-   	     NVAR BSLtoframe=$("root:Packages:NI1_BSLFiles:BSLtoframe")
+   	     NVAR BSLsumframes=$("root:Packages:EGN_BSLFiles:BSLsumframes")
+   	     NVAR BSLfromframe=$("root:Packages:EGN_BSLFiles:BSLfromframe")
+   	     NVAR BSLtoframe=$("root:Packages:EGN_BSLFiles:BSLtoframe")
    	     
    	     PathInfo $(PathName)
    	     KillWaves/Z $(NewWaveName)
   	     FileNameToLoad=   FileName
-   	     variable AveragedFrame=NI1_LoadBSLFiles(FileNameToLoad)
- 		Wave temp2DWave = $("root:Packages:NI1_BSLFiles:temp2DWave")
+   	     variable AveragedFrame=EGN_LoadBSLFiles(FileNameToLoad)
+ 		Wave temp2DWave = $("root:Packages:EGN_BSLFiles:temp2DWave")
 		duplicate/O temp2DWave, $(NewWaveName)
 		string AveFrame=""
 		if(AveragedFrame==0)
@@ -730,8 +730,8 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 	elseif(cmpstr(FileType,"Fuji/img")==0)
 		string FujiHeader
       		FileNameToLoad=   FileName
-		FujiHeader = NI1_ReadFujiImgHeader(PathName, FileNameToLoad)
-		NI1_ReadFujiImgFile(PathName, FileNameToLoad, FujiHeader)
+		FujiHeader = EGN_ReadFujiImgHeader(PathName, FileNameToLoad)
+		EGN_ReadFujiImgFile(PathName, FileNameToLoad, FujiHeader)
 		Wave Loadedwave0
 		duplicate/O Loadedwave0, $(NewWaveName)
 		killwaves Loadedwave0
@@ -797,18 +797,18 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 	elseif(cmpstr(FileType,"DND/txt")==0)
 		FileNameToLoad= FileName
 		open /R/P=$(PathName) RefNum as FileNameToLoad
-		HeaderStr=NI1_ReadDNDHeader(RefNum)		//read the header from the text file
+		HeaderStr=EGN_ReadDNDHeader(RefNum)		//read the header from the text file
 		close RefNum
 		//header string contains now all information from the text file... Now need to open the tiff file
-		string tiffFilename=NI1_FineDNDTifFile(PathName,FileName,HeaderStr)
+		string tiffFilename=EGN_FineDNDTifFile(PathName,FileName,HeaderStr)
 		//and also established data path "DNDDataPath" where teh data are
-		NI1A_UniversalLoader("DNDDataPath",tiffFilename,".tif",NewWaveName)
+		EGNA_UniversalLoader("DNDDataPath",tiffFilename,".tif",NewWaveName)
 		//append wave note...
 		NewNote+="DataFileName="+FileNameToLoad+";"
 		NewNote+="DataFileType="+"DND/txt"+";"
 		NewNote+=HeaderStr
 		//parse the header for DND CAT stuff to separate folder for use in data reduction
-		NI1_ParseDNDHeader(HeaderStr, FileNameToLoad)
+		EGN_ParseDNDHeader(HeaderStr, FileNameToLoad)
 	elseif(cmpstr(FileType,"ASCII")==0)
 		//LoadWave/G/M/D/N=junk/P=LinusPath theFile
 		FileNameToLoad= FileName
@@ -940,7 +940,7 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 	elseif(cmpstr(FileType,"WinView spe (Princeton)")==0)
 		PathInfo $(PathName)
 		FileNameToLoad=  S_path + FileName
-		NI1_LoadWinViewFile(FileNameToLoad, NewWaveName)
+		EGN_LoadWinViewFile(FileNameToLoad, NewWaveName)
 		NewNote+="DataFileName="+FileNameToLoad+";"
 		NewNote+="DataFileType="+"WinView spe (Princeton)"+";"
 	elseif(cmpstr(FileType,"ADSC")==0)
@@ -1114,7 +1114,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1_GBLoaderCheckProc(ctrlName,checked) : CheckBoxControl
+Function EGN_GBLoaderCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	
@@ -1132,7 +1132,7 @@ End
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1_GBLoadSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
+Function EGN_GBLoadSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
 	String varStr
@@ -1152,7 +1152,7 @@ End
 //*******************************************************************************************************************************************
 
 
-Function NI1_GBPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
+Function EGN_GBPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum
 	String popStr
@@ -1183,7 +1183,7 @@ End
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1_GBLoaderPanelFnct() : Panel
+Function EGN_GBLoaderPanelFnct() : Panel
 	
 	DoWindow  NI_GBLoaderPanel
 	if(V_Flag)
@@ -1208,9 +1208,9 @@ Function NI1_GBLoaderPanelFnct() : Panel
 		DrawText 28,36,"Nika General Binary Loader Config"
 		SetDrawEnv fsize= 16,fstyle= 1,textrgb= (0,0,65280)
 		DrawText 141,156,"Image type:"
-		CheckBox UseSearchEndTerm,pos={234,54},size={158,14},proc=NI1_GBLoaderCheckProc,title="Use ASCII header terminator?"
+		CheckBox UseSearchEndTerm,pos={234,54},size={158,14},proc=EGN_GBLoaderCheckProc,title="Use ASCII header terminator?"
 		CheckBox UseSearchEndTerm,variable= root:Packages:Convert2Dto1D:NIGBUseSearchEndTerm, help={"Selectm if yo want to search for ASCII terminator of header. 40k of file searched!"}
-		SetVariable SkipHeaderBytes,pos={16,53},size={200,16},proc=NI1_GBLoadSetVarProc,title="Skip Bytes :         ", help={"Number of bytes to skip"}
+		SetVariable SkipHeaderBytes,pos={16,53},size={200,16},proc=EGN_GBLoadSetVarProc,title="Skip Bytes :         ", help={"Number of bytes to skip"}
 		SetVariable SkipHeaderBytes,value= root:Packages:Convert2Dto1D:NIGBSkipHeaderBytes, disable=NIGBUseSearchEndTerm
 		SetVariable NIGBSearchEndTermInHeader,pos={12,86},size={330,16},title="Header terminator ", disable=!NIGBUseSearchEndTerm
 		SetVariable NIGBSearchEndTermInHeader,help={"Input ASCII text which ends the ASCII header"}
@@ -1221,12 +1221,12 @@ Function NI1_GBLoaderPanelFnct() : Panel
 		SetVariable NIGBNumberOfXPoints,value= root:Packages:Convert2Dto1D:NIGBNumberOfXPoints
 		SetVariable NIGBNumberOfYPoints,pos={40,188},size={250,16},title="Y number of points    ", help={"Size of the data file to load in Y direction"}
 		SetVariable NIGBNumberOfYPoints,value= root:Packages:Convert2Dto1D:NIGBNumberOfYPoints
-		PopupMenu NIGBImageType,pos={77,213},size={122,21},proc=NI1_GBPopMenuProc,title="Data Type :  "
+		PopupMenu NIGBImageType,pos={77,213},size={122,21},proc=EGN_GBPopMenuProc,title="Data Type :  "
 		PopupMenu NIGBImageType,help={"Select data type :"}
 		PopupMenu NIGBImageType,mode=1,popvalue=NIGBDataType,value= #"\"Double Float;Single Float;32 bit signed integer;16 bit signed integer;8 bit signed integer;32 bit unsigned integer;16 bit unsigned integer;8 bit unsigned integer;\""
-		PopupMenu NIGBByteOrder,pos={82,240},size={117,21},proc=NI1_GBPopMenuProc,title="Byte order : ", help={"Byte orider - high byte default (Motorola), or low byte first (Intel)"}
+		PopupMenu NIGBByteOrder,pos={82,240},size={117,21},proc=EGN_GBPopMenuProc,title="Byte order : ", help={"Byte orider - high byte default (Motorola), or low byte first (Intel)"}
 		PopupMenu NIGBByteOrder,mode=1,popvalue=NIGBByteOrder,value= #"\"High Byte First;Low Byte First;\""
-		PopupMenu NIGBFloatDataType,pos={82,268},size={117,21},proc=NI1_GBPopMenuProc,title="Float type : "//, disable=!WhichDataType
+		PopupMenu NIGBFloatDataType,pos={82,268},size={117,21},proc=EGN_GBPopMenuProc,title="Float type : "//, disable=!WhichDataType
 		PopupMenu NIGBFloatDataType,mode=1,popvalue=NIGBFloatDataType,value= #"\"IEEE;VAX;\"", help={"IEEE Floating point or VAX floating point"}
 		CheckBox NIGBSaveHeaderInWaveNote,pos={48,292},size={157,14},title="Save Header in Wave note? "
 		CheckBox NIGBSaveHeaderInWaveNote,help={"Save all of the ASCII header in wave note?"}
@@ -1242,7 +1242,7 @@ EndMacro
 //*******************************************************************************************************************************************
 
 
-Function NI1_PilatusLoaderPanelFnct() : Panel
+Function EGN_PilatusLoaderPanelFnct() : Panel
 	
 	DoWindow  NI_PilatusLoaderPanel
 	if(V_Flag)
@@ -1261,15 +1261,15 @@ Function NI1_PilatusLoaderPanelFnct() : Panel
 		DrawText 10,250,"Use hook function :  "
 		DrawText 10,265,"             PilatusHookFunction(FileNameToLoad)"
 		DrawText 10,280,"to add functionality.  Called after loading the file."
-		PopupMenu PilatusType,pos={15,70},size={122,21},proc=NI1_PilatusPopMenuProc,title="Detector Type :  "
+		PopupMenu PilatusType,pos={15,70},size={122,21},proc=EGN_PilatusPopMenuProc,title="Detector Type :  "
 		PopupMenu PilatusType,help={"Select detector type :"}
 		PopupMenu PilatusType,mode=1,popvalue=PilatusType,value= #"\"Pilatus100k;Pilatus1M;Pilatus2M;\""
 
-		PopupMenu PilatusFileType,pos={15,100},size={122,21},proc=NI1_PilatusPopMenuProc,title="File Type :  "
+		PopupMenu PilatusFileType,pos={15,100},size={122,21},proc=EGN_PilatusPopMenuProc,title="File Type :  "
 		PopupMenu PilatusFileType,help={"Select file type :"}
 		PopupMenu PilatusFileType,mode=1,popvalue=PilatusFileType,value= #"\"tiff;edf;img;float-tiff;\""
 
-		PopupMenu PilatusColorDepth,pos={15,130},size={122,21},proc=NI1_PilatusPopMenuProc,title="Color depth :  "
+		PopupMenu PilatusColorDepth,pos={15,130},size={122,21},proc=EGN_PilatusPopMenuProc,title="Color depth :  "
 		PopupMenu PilatusColorDepth,help={"Color depth (likely 32) :"}
 		PopupMenu PilatusColorDepth,mode=1,popvalue=PilatusColorDepth,value= #"\"8;16;32;64;\""
 
@@ -1289,7 +1289,7 @@ EndMacro
 //*******************************************************************************************************************************************
 
 
-Function NI1_PilatusPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
+Function EGN_PilatusPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum
 	String popStr
@@ -1427,15 +1427,15 @@ Function ReadBrukerCCD_SMARTFile(FileToOpen, NewWaveName)	//returns wave with im
 		HeaderLine += 1
 	While (HeaderLine < NumHeaderElements)
 //Load variables from header:
-	NumRows = str2num(NI1_GetHeaderVal("NROWS", SiemensHeader))		//Number of rows
-	NumCols = str2num(NI1_GetHeaderVal("NCOLS", SiemensHeader))			//Number of columns
-	BytesPerPixel = str2num(NI1_GetHeaderVal("NPIXELB", SiemensHeader))	//Number of bytes per pixel
-	CreateDate = (NI1_GetHeaderVal("CREATED", SiemensHeader))
-	SampDetDist  = str2num(NI1_GetHeaderVal("DISTANC", SiemensHeader))
-	Center = (NI1_GetHeaderVal("CENTER", SiemensHeader))
+	NumRows = str2num(EGN_GetHeaderVal("NROWS", SiemensHeader))		//Number of rows
+	NumCols = str2num(EGN_GetHeaderVal("NCOLS", SiemensHeader))			//Number of columns
+	BytesPerPixel = str2num(EGN_GetHeaderVal("NPIXELB", SiemensHeader))	//Number of bytes per pixel
+	CreateDate = (EGN_GetHeaderVal("CREATED", SiemensHeader))
+	SampDetDist  = str2num(EGN_GetHeaderVal("DISTANC", SiemensHeader))
+	Center = (EGN_GetHeaderVal("CENTER", SiemensHeader))
 	Xcenter = str2num(Center)
 	Ycenter = NumCols - str2num(Center[17,strlen(Center)])	//Siemens refs vs lower left, we do upper left corner
-	NumberOfOverflows = str2num(NI1_GetHeaderVal("NOVERFL", SiemensHeader))	//Number of pixel overflows
+	NumberOfOverflows = str2num(EGN_GetHeaderVal("NOVERFL", SiemensHeader))	//Number of pixel overflows
 	SizeOfOverflowTable = NumberOfOverflows * 16 + 1		//noverfl * 16 chars per entry
 //Now only use description passed through DescriptionFromInput
 	StartOfImage = NumHeaderBlocks * 512	//512 bytes per header block.
@@ -1498,7 +1498,7 @@ Function ReadBrukerCCD_SMARTFile(FileToOpen, NewWaveName)	//returns wave with im
 	NewWaveNote+="FileType:"+FileType+";"
 	variable i
 	For(i=0;i<numpnts(SiemensHeader);i+=1)
-		NewWaveNote=ReplaceStringByKey(NI1_RemoveLeadTermSpaces(SiemensHeader[0][i]), NewWaveNote, NI1_RemoveLeadTermSpaces(SiemensHeader[1][i]), ":", ";")
+		NewWaveNote=ReplaceStringByKey(EGN_RemoveLeadTermSpaces(SiemensHeader[0][i]), NewWaveNote, EGN_RemoveLeadTermSpaces(SiemensHeader[1][i]), ":", ";")
 	endfor
 	note ImageData, NewWaveNote
 	setDataFolder OldDf
@@ -1520,7 +1520,7 @@ End
 //*******************************************************************************************************************************************
 
 
-static Function/S NI1_GetHeaderVal(HeadVar, SiemensHeader)
+static Function/S EGN_GetHeaderVal(HeadVar, SiemensHeader)
 	String HeadVar
 	Wave /T SiemensHeader
 	Variable NumEntries = DimSize(SiemensHeader, 0)
@@ -1546,7 +1546,7 @@ End
 //*******************************************************************************************************************************************
 
 
-static Function/S NI1_RemoveLeadTermSpaces(InputStr)	//removes leading and terminating spaces from string
+static Function/S EGN_RemoveLeadTermSpaces(InputStr)	//removes leading and terminating spaces from string
 	String InputStr
 	
 	string OutputStr=InputStr
@@ -1819,7 +1819,7 @@ endstructure
 //*******************************************************************************************************************************************
 
 
-static Function/T NI1A_ReadRigakuUsingStructure(PathName, FileNameToLoad)
+static Function/T EGNA_ReadRigakuUsingStructure(PathName, FileNameToLoad)
 		string PathName, FileNameToLoad
 		
 		string Headerline
@@ -1999,7 +1999,7 @@ end
 //*******************************************************************************************************************************************
 
 
-static Function NI1A_RigakuFixNegValues(w,ratio)
+static Function EGNA_RigakuFixNegValues(w,ratio)
 	wave w
 	variable ratio
 	
@@ -2021,7 +2021,7 @@ structure  RigakuReadByte
 	int32 TestByte
 endstructure
 
-Function NI1A_FindFirstNonZeroChar(PathName, FileNameToLoad)
+Function EGNA_FindFirstNonZeroChar(PathName, FileNameToLoad)
 	string PathName, FileNameToLoad
 
 		STRUCT RigakuReadByte RH
@@ -2047,7 +2047,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function/S NI1_LoadWinViewFile(fName, NewWaveName)
+Function/S EGN_LoadWinViewFile(fName, NewWaveName)
 	String fName											// fully qualified name of file to open
 	String NewWaveName		
 
@@ -2060,7 +2060,7 @@ Function/S NI1_LoadWinViewFile(fName, NewWaveName)
 //		return ""
 //	endif
 
-	String wName = NI1_WinViewReadROI(fName,0,-1,0,-1)	// load file into wName
+	String wName = EGN_WinViewReadROI(fName,0,-1,0,-1)	// load file into wName
 	if (strlen(wName)<1)
 		return ""
 	endif
@@ -2076,7 +2076,7 @@ Function/S NI1_LoadWinViewFile(fName, NewWaveName)
 		endif
 		printf "\r"
 		printf "total length = %d x %d  = %d points\r", xdim,ydim,xdim*ydim
-		print "number type is  '"+NI1_WinViewFileTypeString(NumberByKey("numType", wnote,"="))+"'"
+		print "number type is  '"+EGN_WinViewFileTypeString(NumberByKey("numType", wnote,"="))+"'"
 //		print "Created a 2-d wave    '"+wName+"'"
 //		DoAlert 1, "Display this image"
 //		if (V_Flag==1)
@@ -2098,39 +2098,39 @@ End
 //*******************************************************************************************************************************************
 
 
-proc NI1_BSLWindow()
+proc EGN_BSLWindow()
 
 	string DF
 	DF=getdatafolder(1)
 	setdatafolder root:Packages:
 
-	DoWindow NI1_BSLpanel
+	DoWindow EGN_BSLpanel
 	if(V_flag)
-		DoWindow/F NI1_BSLpanel
-		setvariable bslcurrentframes, win=NI1_BSLpanel, limits={1,root:Packages:NI1_BSLFiles:BSLFrames,1}
+		DoWindow/F EGN_BSLpanel
+		setvariable bslcurrentframes, win=EGN_BSLpanel, limits={1,root:Packages:EGN_BSLFiles:BSLFrames,1}
 	else
 	//Josh add:  o.k., we need to add a way to sum over a few selected frames.  this is prolly something that 
 	//only I will use, but still
-		SetDataFolder root:Packages:NI1_BSLFiles
+		SetDataFolder root:Packages:EGN_BSLFiles
 		if(BSLcurrentframe==0)
-			root:Packages:NI1_BSLFiles:BSLAverage=1
+			root:Packages:EGN_BSLFiles:BSLAverage=1
 		endif
-		NewPanel/K=1/W=(200,100,550,400)/N=NI1_BSLpanel
+		NewPanel/K=1/W=(200,100,550,400)/N=EGN_BSLpanel
 		
-		setvariable pixels, win=NI1_BSLpanel, title="pixels count", value=root:Packages:NI1_BSLFiles:BSLpixels, pos={10,10}, size={120,20}, noedit=1
-		setvariable bypixels, win=NI1_BSLpanel, title="by", value=root:Packages:NI1_BSLFiles:BSLpixels1, pos={140,10}, size={120,20},noedit=1
-//		setvariable BSLFoundFrames, win=NI1_BSLpanel, title="Found frames", value=root:Packages:NI1_BSLFiles:BSLFoundFrames, pos={10,30}, size={120,20}, noedit=1
-		setvariable bslframes, win=NI1_BSLpanel, title="Found Frames :", value=root:Packages:NI1_BSLFiles:BSLframes, pos={10,30}, size={160,20}, noedit=1
-		setvariable bslcurrentframes, win=NI1_BSLpanel, title="Selected frame", value=root:Packages:NI1_BSLFiles:BSLcurrentframe, pos={10,50}, size={150,20}, limits={1,root:Packages:NI1_BSLFiles:BSLFoundFrames,1}
-		checkbox Average, win=NI1_BSLpanel, title="or - Average all frames?", variable=root:Packages:NI1_BSLFiles:BSLAverage, pos={170,50}, size={100,20} , proc=NI1_BSLCheckProc
-		setvariable BSLIo, win=NI1_BSLpanel, title="Io", value=root:Packages:NI1_BSLFiles:BSLI1, pos={10,70}, size={120,20}
-		setvariable BLSIs, win=NI1_BSLpanel, title="Is", value=root:Packages:NI1_BSLFiles:BSLI2, pos={160,70}, size={120,20}
-		 listbox saxsnote, win=NI1_BSLpanel, listwave=root:Packages:NI1_BSLFiles:BSLheadnote, pos={5,105}, size={295,85}
+		setvariable pixels, win=EGN_BSLpanel, title="pixels count", value=root:Packages:EGN_BSLFiles:BSLpixels, pos={10,10}, size={120,20}, noedit=1
+		setvariable bypixels, win=EGN_BSLpanel, title="by", value=root:Packages:EGN_BSLFiles:BSLpixels1, pos={140,10}, size={120,20},noedit=1
+//		setvariable BSLFoundFrames, win=EGN_BSLpanel, title="Found frames", value=root:Packages:EGN_BSLFiles:BSLFoundFrames, pos={10,30}, size={120,20}, noedit=1
+		setvariable bslframes, win=EGN_BSLpanel, title="Found Frames :", value=root:Packages:EGN_BSLFiles:BSLframes, pos={10,30}, size={160,20}, noedit=1
+		setvariable bslcurrentframes, win=EGN_BSLpanel, title="Selected frame", value=root:Packages:EGN_BSLFiles:BSLcurrentframe, pos={10,50}, size={150,20}, limits={1,root:Packages:EGN_BSLFiles:BSLFoundFrames,1}
+		checkbox Average, win=EGN_BSLpanel, title="or - Average all frames?", variable=root:Packages:EGN_BSLFiles:BSLAverage, pos={170,50}, size={100,20} , proc=EGN_BSLCheckProc
+		setvariable BSLIo, win=EGN_BSLpanel, title="Io", value=root:Packages:EGN_BSLFiles:BSLI1, pos={10,70}, size={120,20}
+		setvariable BLSIs, win=EGN_BSLpanel, title="Is", value=root:Packages:EGN_BSLFiles:BSLI2, pos={160,70}, size={120,20}
+		 listbox saxsnote, win=EGN_BSLpanel, listwave=root:Packages:EGN_BSLFiles:BSLheadnote, pos={5,105}, size={295,85}
 		// josh add
-		checkbox sumoverframes,win=NI1_BSLpanel,title="sum over selected frames",variable=root:Packages:NI1_BSLFiles:BSLsumframes,pos={5,200},proc=NI1_BSLCheckProc
-		button displaylog, win=NI1_BSLpanel,title="show the log file",pos={5,230},size={200,20},proc=NI1_BSLbuttonProc
-		setvariable fromframe, win=NI1_BSLpanel,title="from frame",pos={5,260},size={180,20},variable=root:Packages:NI1_BSLFiles:BSLfromframe,disable=1
-		setvariable toframe, win=NI1_BSLpanel,title="to frame",pos={200,260},size={180,20},variable=root:Packages:NI1_BSLFiles:BSLtoframe,disable=1
+		checkbox sumoverframes,win=EGN_BSLpanel,title="sum over selected frames",variable=root:Packages:EGN_BSLFiles:BSLsumframes,pos={5,200},proc=EGN_BSLCheckProc
+		button displaylog, win=EGN_BSLpanel,title="show the log file",pos={5,230},size={200,20},proc=EGN_BSLbuttonProc
+		setvariable fromframe, win=EGN_BSLpanel,title="from frame",pos={5,260},size={180,20},variable=root:Packages:EGN_BSLFiles:BSLfromframe,disable=1
+		setvariable toframe, win=EGN_BSLpanel,title="to frame",pos={200,260},size={180,20},variable=root:Packages:EGN_BSLFiles:BSLtoframe,disable=1
 	endif
 	setDataFolder Df
 endmacro
@@ -2141,13 +2141,13 @@ Function BSL_SetVarProc(sva) : SetVariableControl
 
 	switch( sva.eventCode )
 		case 1: // mouse up
-//				controlInfo /W=NI1A_Convert2Dto1DPanel Select2DInputWave
+//				controlInfo /W=EGNA_Convert2Dto1DPanel Select2DInputWave
 //				Wave/T ListOf2DSampleData = root:Packages:Convert2Dto1D:ListOf2DSampleData
-//				NI1_BSLloadbslinfo(ListOf2DSampleData[V_Value])
+//				EGN_BSLloadbslinfo(ListOf2DSampleData[V_Value])
 		case 2: // Enter key
-				controlInfo /W=NI1A_Convert2Dto1DPanel Select2DInputWave
+				controlInfo /W=EGNA_Convert2Dto1DPanel Select2DInputWave
 				Wave/T ListOf2DSampleData = root:Packages:Convert2Dto1D:ListOf2DSampleData
-				NI1_BSLloadbslinfo(ListOf2DSampleData[V_Value])
+				EGN_BSLloadbslinfo(ListOf2DSampleData[V_Value])
 				break
 		case 3: // Live update
 			Variable dval = sva.dval
@@ -2159,7 +2159,7 @@ Function BSL_SetVarProc(sva) : SetVariableControl
 End
 
 
-//NI1_BSLloadbslinfo(SelectedWv, resetCounter)
+//EGN_BSLloadbslinfo(SelectedWv, resetCounter)
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
@@ -2168,7 +2168,7 @@ End
 //*******************************************************************************************************************************************
 
 
-Function NI1_BSLCheckProc(cba) : CheckBoxControl
+Function EGN_BSLCheckProc(cba) : CheckBoxControl
 	STRUCT WMCheckboxAction &cba
 
 	switch( cba.eventCode )
@@ -2177,7 +2177,7 @@ Function NI1_BSLCheckProc(cba) : CheckBoxControl
 			
 			Variable checked = cba.checked
 			if(cmpstr(cba.ctrlname,"Average")==0)
-				NVAR BSLcurrentframe = root:Packages:NI1_BSLFiles:BSLcurrentframe
+				NVAR BSLcurrentframe = root:Packages:EGN_BSLFiles:BSLcurrentframe
 				if(checked)
 					BSLcurrentframe=0
 				else
@@ -2185,11 +2185,11 @@ Function NI1_BSLCheckProc(cba) : CheckBoxControl
 				endif
 				elseif(cmpstr(cba.ctrlname,"sumoverframes")==0)
 					if(checked)
-					setvariable fromframe, win=NI1_BSLpanel,disable=0
-					setvariable toframe, win=NI1_BSLpanel,disable=0
+					setvariable fromframe, win=EGN_BSLpanel,disable=0
+					setvariable toframe, win=EGN_BSLpanel,disable=0
 					else
-					setvariable fromframe, win=NI1_BSLpanel,disable=1
-					setvariable toframe, win=NI1_BSLpanel,disable=1
+					setvariable fromframe, win=EGN_BSLpanel,disable=1
+					setvariable toframe, win=EGN_BSLpanel,disable=1
 					endif
 				endif
 				break
@@ -2198,7 +2198,7 @@ Function NI1_BSLCheckProc(cba) : CheckBoxControl
 	return 0
 End
 
-function NI1_BSLbuttonProc(ctrlname):buttoncontrol
+function EGN_BSLbuttonProc(ctrlname):buttoncontrol
 string ctrlname
 if(cmpstr(ctrlname,"displaylog")==0)
 wave/t Listof2DSampleData=$("root:Packages:Convert2Dto1D:ListOf2DSampleData")
@@ -2245,7 +2245,7 @@ end
 
 
 
-Function NI1_MainListBoxProc(ctrlName,row,col,event) : ListBoxControl
+Function EGN_MainListBoxProc(ctrlName,row,col,event) : ListBoxControl
 	String ctrlName
 	Variable row
 	Variable col
@@ -2256,16 +2256,16 @@ Function NI1_MainListBoxProc(ctrlName,row,col,event) : ListBoxControl
 		wave ListOf2DSampleDataNumbers=root:Packages:Convert2Dto1D:ListOf2DSampleDataNumbers
 		wave/t ListOf2DSampleData=root:Packages:Convert2Dto1D:ListOf2DSampleData
 	if(event==4)
-		controlinfo/W=NI1A_Convert2Dto1Dpanel Select2DDataType
+		controlinfo/W=EGNA_Convert2Dto1Dpanel Select2DDataType
 		if(cmpstr(S_Value,"BSL/SAXS")==0 || cmpstr(S_Value,"BSL/WAXS")==0)
 			
 			for(i=0;i<(dimsize(ListOf2DSampleDataNumbers,0));i+=1)
 				if(ListOf2DSampleDataNumbers[i]==1)
-					NI1_BSLloadbslinfo(ListOf2DSampleData[i])
+					EGN_BSLloadbslinfo(ListOf2DSampleData[i])
 					break //just display fist selected file
 				endif
 			endfor
-			execute "NI1_BSLWindow()"
+			execute "EGN_BSLWindow()"
 		endif
 	endif
 	endif
@@ -2280,7 +2280,7 @@ End
 //*******************************************************************************************************************************************
 
 
-static function NI1_BSLloadbslinfo(SelectedWv)
+static function EGN_BSLloadbslinfo(SelectedWv)
 		string SelectedWv
 		
 		string OldDf=GetDataFolder(1)
@@ -2305,17 +2305,17 @@ static function NI1_BSLloadbslinfo(SelectedWv)
 		             loadwave/N=header/J/K=1/M/L={0,2,0,0,8}/V={" ","$",0,1}/P=$("Convert2Dto1DDataPath") fileInfo
 				wave header0
 				
-				NVAR waxschannels=$("root:Packages:NI1_BSLFiles:BSLwaxschannels")
-				NVAR waxsframe=$("root:Packages:NI1_BSLFiles:BSLwaxsframes")
-				NVAR saxsframe=$("root:Packages:NI1_BSLFiles:BSLframes")
-				NVAR pixel=$("root:Packages:NI1_BSLFiles:BSLpixels")
-				NVAR pixel1=$("root:Packages:NI1_BSLFiles:BSLpixels1")
-				wave/t headnote=$("root:Packages:NI1_BSLFiles:BSLheadnote")
-				NVAR currentframe=$("root:Packages:NI1_BSLFiles:BSLcurrentframe")
-				NVAR fromframe=$("root:Packages:NI1_BSLFiles:BSLfromframe")
-				NVAR toframe=$("root:Packages:NI1_BSLFiles:BSLtoframe")
-				NVAR sumframes=$("root:Packages:NI1_BSLFiles:BSLsumframes")
-				NVAR Average=$("root:Packages:NI1_BSLFiles:BSLaverage")
+				NVAR waxschannels=$("root:Packages:EGN_BSLFiles:BSLwaxschannels")
+				NVAR waxsframe=$("root:Packages:EGN_BSLFiles:BSLwaxsframes")
+				NVAR saxsframe=$("root:Packages:EGN_BSLFiles:BSLframes")
+				NVAR pixel=$("root:Packages:EGN_BSLFiles:BSLpixels")
+				NVAR pixel1=$("root:Packages:EGN_BSLFiles:BSLpixels1")
+				wave/t headnote=$("root:Packages:EGN_BSLFiles:BSLheadnote")
+				NVAR currentframe=$("root:Packages:EGN_BSLFiles:BSLcurrentframe")
+				NVAR fromframe=$("root:Packages:EGN_BSLFiles:BSLfromframe")
+				NVAR toframe=$("root:Packages:EGN_BSLFiles:BSLtoframe")
+				NVAR sumframes=$("root:Packages:EGN_BSLFiles:BSLsumframes")
+				NVAR Average=$("root:Packages:EGN_BSLFiles:BSLaverage")
 
 				waxschannels=header0[4][1]
 				waxsframe=header0[4][2]
@@ -2337,8 +2337,8 @@ static function NI1_BSLloadbslinfo(SelectedWv)
 				if(cal0[1]<1)
 					GBLoadWave/O/Q/b=1/N=cal/T={2,96}/W=1/P=$("Convert2Dto1DDataPath") filecal
 				endif
-				NVAR I1=$("root:Packages:NI1_BSLFiles:BSLI1")
-				NVAR I2=$("root:Packages:NI1_BSLFiles:BSLI2")
+				NVAR I1=$("root:Packages:EGN_BSLFiles:BSLI1")
+				NVAR I2=$("root:Packages:EGN_BSLFiles:BSLI2")
 				I1=cal0[currentframe-1]
 				I2=cal0[saxsframe+currentframe-1]
 				//JOSH ADD.............
@@ -2366,26 +2366,26 @@ end
 //*******************************************************************************************************************************************
 
 
-Function NI1_LoadBSLFiles(SelectedFileToLoad)
+Function EGN_LoadBSLFiles(SelectedFileToLoad)
 	string SelectedFileToLoad
 
 	string OldDf
 	OldDf=getdatafolder(1)
 	setdatafolder root:Packages:
-	SetDataFolder root:Packages:NI1_BSLFiles
+	SetDataFolder root:Packages:EGN_BSLFiles
 
 	//PathInfo $("Convert2Dto1DDataPath")
 			
 	getfilefolderinfo/P=$("Convert2Dto1DDataPath") SelectedFileToLoad
 			
-	NVAR BSLpixels=$("root:Packages:NI1_BSLFiles:BSLpixels1")
-	NVAR BSLpixels1=$("root:Packages:NI1_BSLFiles:BSLpixels")
-	NVAR BSLframes=$("root:Packages:NI1_BSLFiles:BSLframes")
-	NVAR BSLcurrentframe=$("root:Packages:NI1_BSLFiles:BSLcurrentframe")
-	NVAR BSLAverage = $("root:Packages:NI1_BSLFiles:BSLAverage")
-	NVAR BSLsumframes = $("root:Packages:NI1_BSLFiles:BSLsumframes")
-	NVAR BSLfromframe = $("root:Packages:NI1_BSLFiles:BSLfromframe")
-	NVAR BSLtoframe = $("root:Packages:NI1_BSLFiles:BSLtoframe")
+	NVAR BSLpixels=$("root:Packages:EGN_BSLFiles:BSLpixels1")
+	NVAR BSLpixels1=$("root:Packages:EGN_BSLFiles:BSLpixels")
+	NVAR BSLframes=$("root:Packages:EGN_BSLFiles:BSLframes")
+	NVAR BSLcurrentframe=$("root:Packages:EGN_BSLFiles:BSLcurrentframe")
+	NVAR BSLAverage = $("root:Packages:EGN_BSLFiles:BSLAverage")
+	NVAR BSLsumframes = $("root:Packages:EGN_BSLFiles:BSLsumframes")
+	NVAR BSLfromframe = $("root:Packages:EGN_BSLFiles:BSLfromframe")
+	NVAR BSLtoframe = $("root:Packages:EGN_BSLFiles:BSLtoframe")
 	BSLframes=V_logEOF/4/(BSLpixels*BSLpixels1)
 	variable bsli
 	if(BSLframes>=1)			
@@ -2422,8 +2422,8 @@ Function NI1_LoadBSLFiles(SelectedFileToLoad)
 	endif
 	Duplicate/O saxs_average, temp2DWave
 	//attach wave note: use the wave BSLheadNote, but update it first in case we are processing larger number of files. 
-	NI1_BSLloadbslinfo(SelectedFileToLoad)
-	wave/t headnote=$("root:Packages:NI1_BSLFiles:BSLheadnote")
+	EGN_BSLloadbslinfo(SelectedFileToLoad)
+	wave/t headnote=$("root:Packages:EGN_BSLFiles:BSLheadnote")
 	variable i
 	string tempNote=""
 	For(i=0;i<numpnts(headnote);i+=1)
@@ -2441,7 +2441,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-static Function/S NI1_ReadFujiImgHeader(PathName, filename)
+static Function/S EGN_ReadFujiImgHeader(PathName, filename)
 	string PathName, filename
 	
 	string infFilename=filename[0,strlen(filename)-5]+".inf"
@@ -2515,7 +2515,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1_FujiBASChangeEndiness()
+Function EGN_FujiBASChangeEndiness()
 			NVAR/Z FujiEndinessSetting = root:Packages:Convert2Dto1D:FujiEndinessSetting
 			if(!NVAR_Exists(FujiEndinessSetting))
 				variable/g root:Packages:Convert2Dto1D:FujiEndinessSetting
@@ -2530,7 +2530,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-static Function NI1_ReadFujiImgFile(PathName, filename, FujiFileHeader)
+static Function EGN_ReadFujiImgFile(PathName, filename, FujiFileHeader)
 	string PathName, filename, FujiFileHeader
 
 		//first - there can be 8, 10,  or 16 bits in the file per point and 
@@ -2551,11 +2551,11 @@ static Function NI1_ReadFujiImgFile(PathName, filename, FujiFileHeader)
 			endif
 			if(FujiEndinessSetting)
 				GBLoadWave/T={16,16}/W=1 /P=$(PathName)/N=Loadedwave filename
-				print "Fuji Image file reader read with high-byte first (Motorolla, little endian). If it is incorrect, issue following command from command line:   NI1_FujiBASChangeEndiness()  "
+				print "Fuji Image file reader read with high-byte first (Motorolla, little endian). If it is incorrect, issue following command from command line:   EGN_FujiBASChangeEndiness()  "
 			else
 //			//    low byte first:
 				GBLoadWave/B/T={16,16}/W=1 /P=$(PathName)/N=Loadedwave filename	
-				print "Fuji Image file reader read with low-byte first (Intel, big endian). If it is incorrect, issue following command from command line:   NI1_FujiBASChangeEndiness()  "
+				print "Fuji Image file reader read with low-byte first (Intel, big endian). If it is incorrect, issue following command from command line:   EGN_FujiBASChangeEndiness()  "
 			endif
 		else
 			Abort "Seems like you have 10 bit image. This type of image is not yet supported. Please sedn test files to author"	
@@ -2650,11 +2650,11 @@ end
 
 
 
-Function NI1_ESRFEdfLoaderPanelFnct() : Panel
+Function EGN_ESRFEdfLoaderPanelFnct() : Panel
 	
-	DoWindow  NI1_ESRFEdfLoaderPanel
+	DoWindow  EGN_ESRFEdfLoaderPanel
 	if(V_Flag)
-		DoWindow/F NI1_ESRFEdfLoaderPanel
+		DoWindow/F EGN_ESRFEdfLoaderPanel
 	else
 		NVAR ESRFEdf_ExposureTime=root:Packages:Convert2Dto1D:ESRFEdf_ExposureTime
 		NVAR ESRFEdf_Center_1=root:Packages:Convert2Dto1D:ESRFEdf_Center_1
@@ -2667,7 +2667,7 @@ Function NI1_ESRFEdfLoaderPanelFnct() : Panel
 		NVAR ESRFEdf_Title=root:Packages:Convert2Dto1D:ESRFEdf_Title
 		PauseUpdate; Silent 1		// building window...
 		NewPanel/K=1 /W=(240,98,600,300) as "ESRF EDF loader config panel"
-		DoWindow/C NI1_ESRFEdfLoaderPanel
+		DoWindow/C EGN_ESRFEdfLoaderPanel
 		SetDrawLayer UserBack
 		SetDrawEnv fsize= 18,fstyle= 3,textrgb= (0,0,65280)
 		DrawText 28,36,"Nika ESRF edf Loader Config"

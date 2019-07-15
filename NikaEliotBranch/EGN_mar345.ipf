@@ -500,7 +500,7 @@ End
 Function ReadMAR345UsingFit2D(FileNameToLoad, NewWaveName,FileType,PathName)
 		string FileNameToLoad, NewWaveName, FileType, PathName
 	
-		NI1_GetFit2DLocation()
+		EGN_GetFit2DLocation()
 
 		string command
 		string TempFileName
@@ -511,7 +511,7 @@ Function ReadMAR345UsingFit2D(FileNameToLoad, NewWaveName,FileType,PathName)
       if (stringmatch(IgorInfo(2),"Windows"))       // this section for Mac
 		TempFileName=SpecialDirPath("Temporary", 0, 1, 0 )+"tempjunk:junk.tif"
 		NewPath/C/O TempFilepath, SpecialDirPath("Temporary", 0, 1, 0 )+"tempjunk:"
- 		command=NI1_WriteFit2DBatchFile(FileNameToLoad,FileType)
+ 		command=EGN_WriteFit2DBatchFile(FileNameToLoad,FileType)
 		command = ReplaceString("\\", command,"\\\\")
 		string cmdf="ExecuteScriptText \"\\\""+command+"\\\"\""
 		Execute(cmdf)
@@ -539,7 +539,7 @@ Function ReadMAR345UsingFit2D(FileNameToLoad, NewWaveName,FileType,PathName)
 		//ExecuteScriptText  "\"C:\\Program Files\\WaveMetrics\\Igor Pro Folder\\tempjunk\\RunFit2DBatch.bat\""
 		//OK tiff file is now in temp junk folder...
 		//now lets load it.
-		NI1A_UniversalLoader("TempFilepath",FlnmToLoad,"tiff",NewWaveName)
+		EGNA_UniversalLoader("TempFilepath",FlnmToLoad,"tiff",NewWaveName)
 		//DeleteFile /P=TempFilepath   RemoveEnding(removeEnding(realName,".mar2300"),".mar3450")+".tif"
 		cmdDel="DeleteFile /P=TempFilepath   \""+FlnmToLoad+".tif\""
 		execute/Q/P cmdDel
@@ -548,7 +548,7 @@ Function ReadMAR345UsingFit2D(FileNameToLoad, NewWaveName,FileType,PathName)
 	else		//Mac
 		TempFileName=SpecialDirPath("Temporary", 0, 1, 0 )+"tempjunk/junk.tif"
 		NewPath/C/O TempFilepath, SpecialDirPath("Temporary", 0, 0, 0 )+"tempjunk:"
-  		command=NI1_WriteFit2DBatchFile(FileNameToLoad,FileType)
+  		command=EGN_WriteFit2DBatchFile(FileNameToLoad,FileType)
 	       command = ReplaceString("\"",command,"\\\"")        // change spaces
              String cmd
              sprintf cmd, "do shell script \"%s\"", command
@@ -557,7 +557,7 @@ Function ReadMAR345UsingFit2D(FileNameToLoad, NewWaveName,FileType,PathName)
 		realName=StringFromList(ItemsInList(FileNameToLoad,":")-1,FileNameToLoad,":")
 		FlnmToLoad=realName 
 
-		NI1A_UniversalLoader(PathName,FlnmToLoad,"tiff",NewWaveName)
+		EGNA_UniversalLoader(PathName,FlnmToLoad,"tiff",NewWaveName)
 		//DeleteFile /P=TempFilepath   RemoveEnding(removeEnding(realName,".mar2300"),".mar3450")+".tif"
 		cmdDel="DeleteFile /P="+PathName+"  \""+FlnmToLoad+".tif\""
 		print  cmdDel
@@ -568,7 +568,7 @@ Function ReadMAR345UsingFit2D(FileNameToLoad, NewWaveName,FileType,PathName)
 	endif
 end
 
-Function/T NI1_WriteFit2DBatchFile(FileNameToLoad,FileType)
+Function/T EGN_WriteFit2DBatchFile(FileNameToLoad,FileType)
 	string FileNameToLoad, FileType
 
 	SVAR Fit2Dlocation=root:Packages:Convert2Dto1D:Fit2Dlocation
@@ -597,12 +597,12 @@ Function/T NI1_WriteFit2DBatchFile(FileNameToLoad,FileType)
 		Notebook $nb text=commandStart1+"\r"						//change dir
 		Notebook $nb text=command+"\r"						//run it
 	else //Mac
-		//strTem1=NI1_convertToPOSIXpath(ParseFilePath(1, FileNameToLoad, ":", 1, 0))
-		strTem1=NI1_convertToPOSIXpath(ParseFilePath(1, FileNameToLoad, ":", 1, 0),0)
+		//strTem1=EGN_convertToPOSIXpath(ParseFilePath(1, FileNameToLoad, ":", 1, 0))
+		strTem1=EGN_convertToPOSIXpath(ParseFilePath(1, FileNameToLoad, ":", 1, 0),0)
 		tempCommand=SpecialDirPath("Temporary", 0, 1, 0 )+"tempjunk/"
 		JunkFolderLocation=tempCommand
 		//command="\""+	Fit2Dlocation+"\" "
-		command=	"cd \""+strTem1 +"\" ;"+NI1_convertToPOSIXpath(Fit2Dlocation,1)
+		command=	"cd \""+strTem1 +"\" ;"+EGN_convertToPOSIXpath(Fit2Dlocation,1)
 		command += " -dim8192x8192 -key -nographics -mac\""
 		command += tempCommand+"Fit2DNika.mac\""
 	//	ExecuteCmd = SpecialDirPath("Temporary", 0, 1, 0 )+"tempjunk/"+"RunFit2DBatch.bat"
@@ -732,7 +732,7 @@ print 	ExecuteCmd
 	return ExecuteCmd	
 end
 
-Function NI1_GetFit2DLocation()
+Function EGN_GetFit2DLocation()
 
 	SVAR Fit2Dlocation=root:Packages:Convert2Dto1D:Fit2Dlocation
 	variable refnum
@@ -790,7 +790,7 @@ Function/T NBI1_getPOSIXpath(pathName)
 End
 
 
-Function/T NI1_convertToPOSIXpath(pathNameStr, doubleEscape)
+Function/T EGN_convertToPOSIXpath(pathNameStr, doubleEscape)
        String pathNameStr                                                 // path name that I want the directory of
 	variable doubleEscape							//set to 1 to have spaces repalced by \\
 	
@@ -828,7 +828,7 @@ End
 
 ////      returns the directory of the path in a semi-colon separated list
 ////(works for both Mac & Windows)
-// Function/T NI1_directory(pathName)
+// Function/T EGN_directory(pathName)
 //       String pathName                                                 // path name that I want the directory of
 //       PathInfo $pathName
 //

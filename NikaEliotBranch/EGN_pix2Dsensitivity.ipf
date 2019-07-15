@@ -2,11 +2,11 @@
 
 
 
-Function NI1_Create2DSensitivityFile()
+Function EGN_Create2DSensitivityFile()
 	
-	NI1A_Initialize2Dto1DConversion()
-	NI1A_InitializeCreate2DSensFile()
-	NI1_CreateFloodField()
+	EGNA_Initialize2Dto1DConversion()
+	EGNA_InitializeCreate2DSensFile()
+	EGN_CreateFloodField()
 
 end
 
@@ -18,14 +18,14 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1_CreateFloodField()
+Function EGN_CreateFloodField()
 
 	string oldDf=GetDataFOlder(1)
 	setDataFolder root:Packages:Convert2Dto1D
 
-	DoWindow NI1_CreateFloodFieldPanel
+	DoWindow EGN_CreateFloodFieldPanel
 	if( V_Flag==1 )
-		DoWindow/K NI1_CreateFloodFieldPanel
+		DoWindow/K EGN_CreateFloodFieldPanel
 	endif
 //FloodFileName
 	SVAR FloodFileType=root:Packages:Convert2Dto1D:FloodFileType
@@ -36,7 +36,7 @@ Function NI1_CreateFloodField()
 	
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /K=1 /W=(22,58,450,560) as "Create FLOOD panel"
-	Dowindow/C NI1_CreateFloodFieldPanel
+	Dowindow/C EGN_CreateFloodFieldPanel
 	SetDrawLayer UserBack
 	SetDrawEnv fsize= 19,fstyle= 1,textrgb= (0,0,65280)
 	DrawText 30,30,"Prepare pix 2D sensitivity (flood) file"
@@ -44,21 +44,21 @@ Function NI1_CreateFloodField()
 	DrawText 10,432,"Processing: pix2D = 2DImage / MaximumValue"
 	DrawText 10,449,"or: pix2D = (2DImage + offset) / (MaximumValue + offset)"
 
-	Button SelectPathToData,pos={27,44},size={150,20},proc=NI1_FloodButtonProc,title="Select path to data"
+	Button SelectPathToData,pos={27,44},size={150,20},proc=EGN_FloodButtonProc,title="Select path to data"
 	Button SelectPathToData,help={"Sets path to data where flood image is"}
-	PopupMenu FloodFileType,pos={207,44},size={101,21},proc=NI1M_FloodPopMenuProc,title="File type:"
+	PopupMenu FloodFileType,pos={207,44},size={101,21},proc=EGNM_FloodPopMenuProc,title="File type:"
 	PopupMenu FloodFileType,help={"Select image type of data to be used"}
 	PopupMenu FloodFileType,mode=1,popvalue=FloodFileType,value= #"root:Packages:Convert2Dto1D:ListOfKnownExtensions"
 
-	ListBox CCDDataSelection,pos={17,95},size={300,150}//,proc=NI1M_ListBoxProc
+	ListBox CCDDataSelection,pos={17,95},size={300,150}//,proc=EGNM_ListBoxProc
 	ListBox CCDDataSelection,help={"Select CCD file for which you want to create mask"}
 	ListBox CCDDataSelection,listWave=root:Packages:Convert2Dto1D:ListOfCCDDataInFloodPath
 	ListBox CCDDataSelection,row= 0,mode= 1,selRow= 0
 
-	Button CreateROIWorkImage,pos={187,260},size={200,20},proc=NI1_FloodButtonProc,title="Make Image"
+	Button CreateROIWorkImage,pos={187,260},size={200,20},proc=EGN_FloodButtonProc,title="Make Image"
 //AddFlat;FlatValToAdd;MaximumValueFlood
 	CheckBox AddFlat title="Add value to each pixel?",pos={20,260}
-	CheckBox AddFlat proc=NI1M_FloodCheckProc,variable=AddFlat
+	CheckBox AddFlat proc=EGNM_FloodCheckProc,variable=AddFlat
 	CheckBox AddFlat help={"Add flat offset to all points?"}
 
 	SetVariable FlatValToAdd,pos={22,300},size={300,16},title="Offset to add to each point:            ", disable=!AddFlat
@@ -76,7 +76,7 @@ Function NI1_CreateFloodField()
 	SetVariable ExportFloodFileName,help={"Name for the new flood file. Will be tiff file in the same place where the source data came from."}
 	SetVariable ExportFloodFileName,limits={-Inf,Inf,0},value= root:Packages:Convert2Dto1D:ExportFloodFileName
 
-	Button saveFloodField,pos={150,460},size={220,20},proc=NI1M_saveFloodCopyProc,title="Save 2D pix sens file (flood)"
+	Button saveFloodField,pos={150,460},size={220,20},proc=EGNM_saveFloodCopyProc,title="Save 2D pix sens file (flood)"
 	Button saveFloodField,help={"Saves current ROI as file outside Igor and also sets it as current mask"}
 	setDataFolder OldDf
 end
@@ -86,7 +86,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1M_saveFloodCopyProc(ctrlName) : ButtonControl
+Function EGNM_saveFloodCopyProc(ctrlName) : ButtonControl
 	String ctrlName
 	
 	string OldDf=GetDataFolder(1)
@@ -130,8 +130,8 @@ Function NI1M_saveFloodCopyProc(ctrlName) : ButtonControl
 	ImageSave/P=Convert2Dto1DFloodPath/F/T="TIFF"/O a2DPixSensTemp tempExportFloodFileName
 	KillWaves a2DPixSensTemp
 	
-	NI1_UpdateFloodListBox()
-	NI1A_UpdateMainMaskListBox()
+	EGN_UpdateFloodListBox()
+	EGNA_UpdateMainMaskListBox()
 	SetDataFolder OldDf
 end
 //*******************************************************************************************************************************************
@@ -141,7 +141,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1M_FloodCheckProc(ctrlName,checked) : CheckBoxControl
+Function EGNM_FloodCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 
@@ -150,7 +150,7 @@ Function NI1M_FloodCheckProc(ctrlName,checked) : CheckBoxControl
 
 	if(cmpstr(ctrlName,"AddFlat")==0)
 		NVAR AddFlat=root:Packages:Convert2Dto1D:AddFlat
-		SetVariable FlatValToAdd,win=NI1_CreateFloodFieldPanel, disable=!AddFlat
+		SetVariable FlatValToAdd,win=EGN_CreateFloodFieldPanel, disable=!AddFlat
 	endif
 	setDataFolder OldDf
 End
@@ -160,7 +160,7 @@ End
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1M_FloodPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
+Function EGNM_FloodPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum
 	String popStr
@@ -169,12 +169,12 @@ Function NI1M_FloodPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 		SVAR FloodFileType=root:Packages:Convert2Dto1D:FloodFileType
 		FloodFileType = popStr
 		if(cmpstr(popStr,"GeneralBinary")==0)
-			NI1_GBLoaderPanelFnct()
+			EGN_GBLoaderPanelFnct()
 		endif
 		if(cmpstr(popStr,"Pilatus")==0)
-			NI1_PilatusLoaderPanelFnct()
+			EGN_PilatusLoaderPanelFnct()
 		endif
-		NI1_UpdateFloodListBox()
+		EGN_UpdateFloodListBox()
 	endif
 End
 //*******************************************************************************************************************************************
@@ -185,7 +185,7 @@ End
 //*******************************************************************************************************************************************
 
 
-Function NI1_UpdateFloodListBox()
+Function EGN_UpdateFloodListBox()
 
 	string oldDf=GetDataFOlder(1)
 	setDataFolder root:Packages:Convert2Dto1D
@@ -209,15 +209,15 @@ Function NI1_UpdateFloodListBox()
 		redimension/N=(ItemsInList(ListOfAvailableCompounds)) ListOfCCDDataInFloodPath
 		redimension/N=(ItemsInList(ListOfAvailableCompounds)) SelectionsofCCDDataInFloodDPath
 		variable i
-		ListOfCCDDataInFloodPath=NI1A_CleanListOfFilesForTypes(ListOfCCDDataInFloodPath,FloodFileType,"")
+		ListOfCCDDataInFloodPath=EGNA_CleanListOfFilesForTypes(ListOfCCDDataInFloodPath,FloodFileType,"")
 		For(i=0;i<ItemsInList(ListOfAvailableCompounds);i+=1)
 			ListOfCCDDataInFloodPath[i]=StringFromList(i, ListOfAvailableCompounds)
 		endfor
 		sort ListOfCCDDataInFloodPath, ListOfCCDDataInFloodPath, SelectionsofCCDDataInFloodDPath		//, NumbersOfCompoundsOutsideIgor
 		SelectionsofCCDDataInFloodDPath=0
 
-		ListBox CCDDataSelection win=NI1_CreateFloodFieldPanel,listWave=root:Packages:Convert2Dto1D:ListOfCCDDataInFloodPath
-		ListBox CCDDataSelection win=NI1_CreateFloodFieldPanel ,row= 0,mode= 1,selRow= 0
+		ListBox CCDDataSelection win=EGN_CreateFloodFieldPanel,listWave=root:Packages:Convert2Dto1D:ListOfCCDDataInFloodPath
+		ListBox CCDDataSelection win=EGN_CreateFloodFieldPanel ,row= 0,mode= 1,selRow= 0
 		DoUpdate
 	setDataFolder OldDf
 end	
@@ -229,7 +229,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1_FloodButtonProc(ctrlName) : ButtonControl
+Function EGN_FloodButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	string oldDf=GetDataFOlder(1)
@@ -237,11 +237,11 @@ Function NI1_FloodButtonProc(ctrlName) : ButtonControl
 
 	if( CmpStr(ctrlName,"CreateROIWorkImage") == 0 )
 		//create image for working here...
-		NI1_FloodCreateImage()
+		EGN_FloodCreateImage()
 	endif
 	if( CmpStr(ctrlName,"SelectPathToData") == 0 )
 		NewPath/C/O/M="Select path to your data, FLOOD will be saved there too" Convert2Dto1DFloodPath
-		NI1_UpdateFloodListBox()
+		EGN_UpdateFloodListBox()
 	endif
 	//following function happen only when graph exists...
 //	DoWindow CCDImageForMask
@@ -251,7 +251,7 @@ Function NI1_FloodButtonProc(ctrlName) : ButtonControl
 //	if( CmpStr(ctrlName,"StartROI") == 0 )
 //		ShowTools/W=CCDImageForMask/A rect
 //		SetDrawLayer/W=CCDImageForMask ProgFront
-//		Wave w= $NI1M_GetImageWave("CCDImageForMask")		// the target matrix
+//		Wave w= $EGNM_GetImageWave("CCDImageForMask")		// the target matrix
 //		String iminfo= ImageInfo("CCDImageForMask", NameOfWave(w), 0)
 //		String xax= StringByKey("XAXIS",iminfo)
 //		String yax= StringByKey("YAXIS",iminfo)
@@ -267,12 +267,12 @@ End
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1_FloodCreateImage()
+Function EGN_FloodCreateImage()
 
 	string OldDf=GetDataFOlder(1)
 	setDataFOlder root:Packages:Convert2Dto1D
 	Wave/T  ListOfCCDDataInFloodPath=root:Packages:Convert2Dto1D:ListOfCCDDataInFloodPath
-	controlInfo /W=NI1_CreateFloodFieldPanel CCDDataSelection
+	controlInfo /W=EGN_CreateFloodFieldPanel CCDDataSelection
 	variable selection = V_Value
 	if(selection<0)
 		setDataFolder OldDf
@@ -285,7 +285,7 @@ Function NI1_FloodCreateImage()
 	SVAR FileNameToLoad
 	FileNameToLoad=ListOfCCDDataInFloodPath[selection]
 	SVAR FloodFileType=root:Packages:Convert2Dto1D:FloodFileType
-	NI1A_UniversalLoader("Convert2Dto1DFloodPath",FileNameToLoad,FloodFileType,"FloodFieldImg")
+	EGNA_UniversalLoader("Convert2Dto1DFloodPath",FileNameToLoad,FloodFileType,"FloodFieldImg")
 //	NVAR MaskDisplayLogImage=root:Packages:Convert2Dto1D:MaskDisplayLogImage
 	wave FloodFieldImg
 	//allow user function modification to the image through hook function...
@@ -309,7 +309,7 @@ Function NI1_FloodCreateImage()
 		ModifyGraph height={Plan,1,left,top}
 	endif
 	DoWindow/C CCDImageForFlood
-	AutoPositionWindow/E/M=0/R=NI1_CreateFloodFieldPanel CCDImageForFlood
+	AutoPositionWindow/E/M=0/R=EGN_CreateFloodFieldPanel CCDImageForFlood
 
 	wavestats/Q FloodFieldImg
 	
@@ -326,7 +326,7 @@ Function NI1_FloodCreateImage()
 		AddFlat=0
 		FlatValToAdd=0	
 	endif
-	NI1M_FloodCheckProc("AddFlat",AddFlat)
+	EGNM_FloodCheckProc("AddFlat",AddFlat)
 	SVAR ExportFloodFileName=root:Packages:Convert2Dto1D:ExportFloodFileName
 	ExportFloodFileName = FileNameToLoad
 
@@ -339,7 +339,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1A_InitializeCreate2DSensFile()
+Function EGNA_InitializeCreate2DSensFile()
 
 	string OldDf=GetDataFolder(1)
 	NewDataFolder/O root:Packages

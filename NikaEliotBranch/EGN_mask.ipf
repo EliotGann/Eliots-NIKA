@@ -4,12 +4,12 @@
 
 
 
-Function NI1M_CreateMask()
+Function EGNM_CreateMask()
 	//this function helps user to create mask
 	
-	NI1A_Initialize2Dto1DConversion()
+	EGNA_Initialize2Dto1DConversion()
 	
-	NI1M_CreateImageROIPanel()
+	EGNM_CreateImageROIPanel()
 
 end
 
@@ -21,14 +21,14 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1M_CreateImageROIPanel()
+Function EGNM_CreateImageROIPanel()
 
 	string oldDf=GetDataFOlder(1)
 	setDataFolder root:Packages:Convert2Dto1D
 
-	DoWindow NI1M_ImageROIPanel
+	DoWindow EGNM_ImageROIPanel
 	if( V_Flag==1 )
-		DoWindow/K NI1M_ImageROIPanel
+		DoWindow/K EGNM_ImageROIPanel
 	endif
 
 	SVAR CCDFileExtension=root:Packages:Convert2Dto1D:CCDFileExtension
@@ -41,67 +41,67 @@ Function NI1M_CreateImageROIPanel()
 	
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /K=1 /W=(22,58,450,560) as "Create MASK panel"
-	Dowindow/C NI1M_ImageROIPanel
+	Dowindow/C EGNM_ImageROIPanel
 	SetDrawLayer UserBack
 	SetDrawEnv fsize= 19,fstyle= 1,textrgb= (0,0,65280)
 	DrawText 62,30,"Prepare mask file"
 	DrawText 18,92,"Select data set to use:"
 
-	Button SelectPathToData,pos={27,44},size={150,20},proc=NI1M_RoiDrawButtonProc,title="Select path to data"
+	Button SelectPathToData,pos={27,44},size={150,20},proc=EGNM_RoiDrawButtonProc,title="Select path to data"
 	Button SelectPathToData,help={"Adds drawing tools to top image graph. Use rectangle, circle or polygon."}
-	PopupMenu CCDFileExtension,pos={207,44},size={101,21},proc=NI1M_MaskPopMenuProc,title="File type:"
+	PopupMenu CCDFileExtension,pos={207,44},size={101,21},proc=EGNM_MaskPopMenuProc,title="File type:"
 	PopupMenu CCDFileExtension,help={"Select image type of data to be used"}
 	PopupMenu CCDFileExtension,mode=1,popvalue=CCDFileExtension,value= #"root:Packages:Convert2Dto1D:ListOfKnownExtensions"
 
-	ListBox CCDDataSelection,pos={17,95},size={300,150}//,proc=NI1M_ListBoxProc
+	ListBox CCDDataSelection,pos={17,95},size={300,150}//,proc=EGNM_ListBoxProc
 	ListBox CCDDataSelection,help={"Select CCD file for which you want to create mask"}
 	ListBox CCDDataSelection,listWave=root:Packages:Convert2Dto1D:ListOfCCDDataInCCDPath
 	ListBox CCDDataSelection,row= 0,mode= 1,selRow= 0
 
-	Button CreateROIWorkImage,pos={187,260},size={200,20},proc=NI1M_RoiDrawButtonProc,title="Make Image"
+	Button CreateROIWorkImage,pos={187,260},size={200,20},proc=EGNM_RoiDrawButtonProc,title="Make Image"
 
 	CheckBox MaskDisplayLogImage title="Display log image?",pos={20,260}
-	CheckBox MaskDisplayLogImage proc=NI1M_MaskCheckProc,variable=MaskDisplayLogImage
+	CheckBox MaskDisplayLogImage proc=EGNM_MaskCheckProc,variable=MaskDisplayLogImage
 	CheckBox MaskDisplayLogImage help={"Display data in the image as log intensity?"}
 
-	Slider ImageRangeMin,pos={15,288},size={150,16},proc=NI1M_SliderProc
+	Slider ImageRangeMin,pos={15,288},size={150,16},proc=EGNM_SliderProc
 	Slider ImageRangeMin,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0},variable= root:Packages:Convert2Dto1D:ImageRangeMin,live= 0,side= 3,vert= 0,ticks= 0
-	Slider ImageRangeMax,pos={15,308},size={150,16},proc=NI1M_SliderProc
+	Slider ImageRangeMax,pos={15,308},size={150,16},proc=EGNM_SliderProc
 	Slider ImageRangeMax,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0},variable= root:Packages:Convert2Dto1D:ImageRangeMax,live= 0,side= 3,vert= 0,ticks= 0
-	PopupMenu ColorTablePopup,pos={30,330},size={107,21},proc=NI1M_MaskPopMenuProc,title="Colors"
+	PopupMenu ColorTablePopup,pos={30,330},size={107,21},proc=EGNM_MaskPopMenuProc,title="Colors"
 	PopupMenu ColorTablePopup,mode=1,popvalue=ColorTableName,value= #"\"Grays;Rainbow;YellowHot;BlueHot;BlueRedGreen;RedWhiteBlue;PlanetEarth;Terrain;\""
 
-	Button StartROI,pos={187,300},size={150,20},proc=NI1M_RoiDrawButtonProc,title="Start MASK Draw"
+	Button StartROI,pos={187,300},size={150,20},proc=EGNM_RoiDrawButtonProc,title="Start MASK Draw"
 	Button StartROI,help={"Adds drawing tools to top image graph. Use rectangle, circle or polygon."}
-	Button FinishROI,pos={187,330},size={150,20},proc=NI1M_RoiDrawButtonProc,title="Finish MASK"
+	Button FinishROI,pos={187,330},size={150,20},proc=EGNM_RoiDrawButtonProc,title="Finish MASK"
 	Button FinishROI,help={"Click after you are finished editing the ROI"}
-	Button clearROI,pos={22,470},size={150,20},proc=NI1M_RoiDrawButtonProc,title="Erase MASK"
+	Button clearROI,pos={22,470},size={150,20},proc=EGNM_RoiDrawButtonProc,title="Erase MASK"
 	Button clearROI,help={"Erases previous ROI. Not undoable."}
-	Button saveROICopy,pos={200,470},size={150,20},proc=NI1M_saveRoiCopyProc,title="Save MASK"
+	Button saveROICopy,pos={200,470},size={150,20},proc=EGNM_saveRoiCopyProc,title="Save MASK"
 	Button saveROICopy,help={"Saves current ROI as file outside Igor and also sets it as current mask"}
 	SetVariable ExportMaskFileName,pos={5,445},size={355,16},title="Save as (\"_mask\" will be added) :"
 	SetVariable ExportMaskFileName,help={"Name for the new mask file. Will be tiff file in the same place where the source data came from."}
 	SetVariable ExportMaskFileName,limits={-Inf,Inf,0},value= root:Packages:Convert2Dto1D:ExportMaskFileName
-	SetVariable RemoveFirstNColumns,pos={5,360},size={190,16},proc=NI1M_Mask_SetVarProc,title="Mask first columns :"
+	SetVariable RemoveFirstNColumns,pos={5,360},size={190,16},proc=EGNM_Mask_SetVarProc,title="Mask first columns :"
 	SetVariable RemoveFirstNColumns,help={"Mask first N columns, remove mask manually"}
 	SetVariable RemoveFirstNColumns,value= root:Packages:Convert2Dto1D:RemoveFirstNColumns
-	SetVariable RemoveLastNColumns,pos={5,385},size={190,16},proc=NI1M_Mask_SetVarProc,title="Mask last columns :"
+	SetVariable RemoveLastNColumns,pos={5,385},size={190,16},proc=EGNM_Mask_SetVarProc,title="Mask last columns :"
 	SetVariable RemoveLastNColumns,help={"Mask last N columns, remove mask manually"}
 	SetVariable RemoveLastNColumns,value= root:Packages:Convert2Dto1D:RemoveLastNColumns
-	SetVariable RemoveFirstNRows,pos={206,360},size={190,16},proc=NI1M_Mask_SetVarProc,title="Mask first rows :"
+	SetVariable RemoveFirstNRows,pos={206,360},size={190,16},proc=EGNM_Mask_SetVarProc,title="Mask first rows :"
 	SetVariable RemoveFirstNRows,help={"Mask first N rows, remove mask manually"}
 	SetVariable RemoveFirstNRows,value= root:Packages:Convert2Dto1D:RemoveFirstNRows
-	SetVariable RemoveLastNRows,pos={206,385},size={190,16},proc=NI1M_Mask_SetVarProc,title="Mask last rows :"
+	SetVariable RemoveLastNRows,pos={206,385},size={190,16},proc=EGNM_Mask_SetVarProc,title="Mask last rows :"
 	SetVariable RemoveLastNRows,help={"Mask last N rows, remove mask manually"}
 	SetVariable RemoveLastNRows,value= root:Packages:Convert2Dto1D:RemoveLastNRows
 
 	CheckBox MaskOffLowIntPoints title="Mask low Intensity points?",pos={10,410}
-	CheckBox MaskOffLowIntPoints proc=NI1M_MaskCheckProc,variable=MaskOffLowIntPoints
+	CheckBox MaskOffLowIntPoints proc=EGNM_MaskCheckProc,variable=MaskOffLowIntPoints
 	CheckBox MaskOffLowIntPoints help={"Mask of points with Intensity lower than selected threshold?"}
 	CheckBox AddToOldMask title="Add to Old Mask?",pos={180,410}
-	CheckBox AddToOldMask proc=NI1M_MaskCheckProc,variable=AddToOldMask
+	CheckBox AddToOldMask proc=EGNM_MaskCheckProc,variable=AddToOldMask
 	CheckBox AddToOldMask help={"Add the mask you draw to the Loaded Mask?"}
-	SetVariable LowIntToMaskOff,pos={206,410},size={190,16},proc=NI1M_Mask_SetVarProc,title="Threshold Intensity :"
+	SetVariable LowIntToMaskOff,pos={206,410},size={190,16},proc=EGNM_Mask_SetVarProc,title="Threshold Intensity :"
 	SetVariable LowIntToMaskOff,help={"Intensity <= this thereshold"}, disable=!(MaskOffLowIntPoints)
 	SetVariable LowIntToMaskOff,value= root:Packages:Convert2Dto1D:LowIntToMaskOff
 	
@@ -117,7 +117,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1M_MaskCheckProc(ctrlName,checked) : CheckBoxControl
+Function EGNM_MaskCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 
@@ -141,7 +141,7 @@ Function NI1M_MaskCheckProc(ctrlName,checked) : CheckBoxControl
 		else
 			MaskCCDImage=OriginalCCD
 		endif
-		AutoPositionWindow/E/M=0/R=NI1M_ImageROIPanel CCDImageForMask
+		AutoPositionWindow/E/M=0/R=EGNM_ImageROIPanel CCDImageForMask
 		
 		NVAR ImageRangeMin=root:Packages:Convert2Dto1D:ImageRangeMin
 		NVAR ImageRangeMax=root:Packages:Convert2Dto1D:ImageRangeMax
@@ -154,9 +154,9 @@ Function NI1M_MaskCheckProc(ctrlName,checked) : CheckBoxControl
 		ImageRangeMinLimit = V_min
 		ImageRangeMaxLimit = V_max
 	
-		Slider ImageRangeMin,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}, win=NI1M_ImageROIPanel
-		Slider ImageRangeMax,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}, win=NI1M_ImageROIPanel
-		NI1M_MaskUpdateColors()
+		Slider ImageRangeMin,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}, win=EGNM_ImageROIPanel
+		Slider ImageRangeMax,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}, win=EGNM_ImageROIPanel
+		EGNM_MaskUpdateColors()
 	
 	endif
 
@@ -167,8 +167,8 @@ Function NI1M_MaskCheckProc(ctrlName,checked) : CheckBoxControl
 		else
 			DoWindow/F CCDImageForMask	
 		endif
-		SetVariable LowIntToMaskOff, win=NI1M_ImageROIPanel, disable=!(checked)
-		NI1M_MaskUpdateColors()
+		SetVariable LowIntToMaskOff, win=EGNM_ImageROIPanel, disable=!(checked)
+		EGNM_MaskUpdateColors()
 	endif
 	if(cmpstr(ctrlName,"AddToOldMask")==0)
 		nvar addtooldmask=root:Packages:Convert2Dto1D:AddToOldMask
@@ -189,7 +189,7 @@ End
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1M_saveRoiCopyProc(ctrlName) : ButtonControl
+Function EGNM_saveRoiCopyProc(ctrlName) : ButtonControl
 	String ctrlName
 	
 	string OldDf=GetDataFolder(1)
@@ -243,8 +243,8 @@ Function NI1M_saveRoiCopyProc(ctrlName) : ButtonControl
 	//	ABort "Cannot save anything else than tiff files yet"
 	//endif
 	
-	NI1M_UpdateMaskListBox()
-	NI1A_UpdateMainMaskListBox()
+	EGNM_UpdateMaskListBox()
+	EGNA_UpdateMainMaskListBox()
 	SetDataFolder OldDf
 end
 //*******************************************************************************************************************************************
@@ -261,7 +261,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function/S NI1M_GetImageWave(grfName)
+Function/S EGNM_GetImageWave(grfName)
 	String grfName							// use zero len str to speicfy top graph
 
 	String s= ImageNameList(grfName, ";")
@@ -280,12 +280,12 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1M_MaskCreateImage()
+Function EGNM_MaskCreateImage()
 
 	string OldDf=GetDataFOlder(1)
 	setDataFOlder root:Packages:Convert2Dto1D
 	Wave/T  ListOfCCDDataInCCDPath=root:Packages:Convert2Dto1D:ListOfCCDDataInCCDPath
-	controlInfo /W=NI1M_ImageROIPanel CCDDataSelection
+	controlInfo /W=EGNM_ImageROIPanel CCDDataSelection
 	variable selection = V_Value
 	if(selection<0)
 		setDataFolder OldDf
@@ -303,7 +303,7 @@ Function NI1M_MaskCreateImage()
 //	else
 //		Abort "Can load only tiff images at this time"
 //	endif
-	NI1A_UniversalLoader("Convert2Dto1DMaskPath",FileNameToLoad,CCDFileExtension,"OriginalCCD")
+	EGNA_UniversalLoader("Convert2Dto1DMaskPath",FileNameToLoad,CCDFileExtension,"OriginalCCD")
 	NVAR MaskDisplayLogImage=root:Packages:Convert2Dto1D:MaskDisplayLogImage
 	wave OriginalCCD
 	//allow user function modification to the image through hook function...
@@ -328,7 +328,7 @@ Function NI1M_MaskCreateImage()
 		ModifyGraph height={Plan,1,left,top}
 	endif
 	DoWindow/C CCDImageForMask
-	AutoPositionWindow/E/M=0/R=NI1M_ImageROIPanel CCDImageForMask
+	AutoPositionWindow/E/M=0/R=EGNM_ImageROIPanel CCDImageForMask
 	SVAR ExportMaskFileName=root:Packages:Convert2Dto1D:ExportMaskFileName
 	ExportMaskFileName = FileNameToLoad
 	
@@ -343,9 +343,9 @@ Function NI1M_MaskCreateImage()
 	ImageRangeMinLimit = V_min
 	ImageRangeMaxLimit = V_max
 
-	Slider ImageRangeMin,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}, win=NI1M_ImageROIPanel
-	Slider ImageRangeMax,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}, win=NI1M_ImageROIPanel
-	NI1M_MaskUpdateColors()
+	Slider ImageRangeMin,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}, win=EGNM_ImageROIPanel
+	Slider ImageRangeMax,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}, win=EGNM_ImageROIPanel
+	EGNM_MaskUpdateColors()
 	setDataFolder OldDf
 end
 //*******************************************************************************************************************************************
@@ -356,7 +356,7 @@ end
 //*******************************************************************************************************************************************
 
 
-Function NI1M_UpdateMaskListBox()
+Function EGNM_UpdateMaskListBox()
 
 	string oldDf=GetDataFOlder(1)
 	setDataFolder root:Packages:Convert2Dto1D
@@ -406,17 +406,17 @@ Function NI1M_UpdateMaskListBox()
 		redimension/N=(ItemsInList(ListOfAvailableCompounds)) ListOfCCDDataInCCDPath
 		redimension/N=(ItemsInList(ListOfAvailableCompounds)) SelectionsofCCDDataInCCDPath
 		variable i
-		ListOfCCDDataInCCDPath=NI1A_CleanListOfFilesForTypes(ListOfCCDDataInCCDPath,CCDFileExtension, EmptyDarkNameMatchStr)
+		ListOfCCDDataInCCDPath=EGNA_CleanListOfFilesForTypes(ListOfCCDDataInCCDPath,CCDFileExtension, EmptyDarkNameMatchStr)
 		For(i=0;i<ItemsInList(ListOfAvailableCompounds);i+=1)
 			ListOfCCDDataInCCDPath[i]=StringFromList(i, ListOfAvailableCompounds)
 		endfor
 		sort ListOfCCDDataInCCDPath, ListOfCCDDataInCCDPath, SelectionsofCCDDataInCCDPath		//, NumbersOfCompoundsOutsideIgor
 		SelectionsofCCDDataInCCDPath=0
 		
-		DoWIndow NI1M_ImageROIPanel
+		DoWIndow EGNM_ImageROIPanel
 		if(V_Flag)
-			ListBox CCDDataSelection win=NI1M_ImageROIPanel,listWave=root:Packages:Convert2Dto1D:ListOfCCDDataInCCDPath
-			ListBox CCDDataSelection win=NI1M_ImageROIPanel,row= 0,mode= 1,selRow= 0
+			ListBox CCDDataSelection win=EGNM_ImageROIPanel,listWave=root:Packages:Convert2Dto1D:ListOfCCDDataInCCDPath
+			ListBox CCDDataSelection win=EGNM_ImageROIPanel,row= 0,mode= 1,selRow= 0
 			DoUpdate
 		endif
 	setDataFolder OldDf
@@ -429,7 +429,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1M_MaskPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
+Function EGNM_MaskPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum
 	String popStr
@@ -446,18 +446,18 @@ Function NI1M_MaskPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 //			CCDFileExtension="????"
 //		endif
 		CCDFileExtension = popStr
-		NI1M_UpdateMaskListBox()
+		EGNM_UpdateMaskListBox()
 		if(cmpstr(popStr,"GeneralBinary")==0)
-			NI1_GBLoaderPanelFnct()
+			EGN_GBLoaderPanelFnct()
 		endif
 		if(cmpstr(popStr,"Pilatus")==0)
-			NI1_PilatusLoaderPanelFnct()
+			EGN_PilatusLoaderPanelFnct()
 		endif
 	endif
 	if(cmpstr(ctrlName,"ColorTablePopup")==0)
 		SVAR ColorTableName=root:Packages:Convert2Dto1D:ColorTableName
 		ColorTableName = popStr
-		NI1M_MaskUpdateColors()
+		EGNM_MaskUpdateColors()
 	endif
 End
 
@@ -468,7 +468,7 @@ End
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1M_SliderProc(ctrlName,sliderValue,event) //: SliderControl
+Function EGNM_SliderProc(ctrlName,sliderValue,event) //: SliderControl
 	String ctrlName
 	Variable sliderValue
 	Variable event	// bit field: bit 0: value set, 1: mouse down, 2: mouse up, 3: mouse moved
@@ -477,10 +477,10 @@ Function NI1M_SliderProc(ctrlName,sliderValue,event) //: SliderControl
 
 	endif
 	if(cmpstr(ctrlName,"ImageRangeMin")==0)
-		NI1M_MaskUpdateColors()
+		EGNM_MaskUpdateColors()
 	endif
 	if(cmpstr(ctrlName,"ImageRangeMax")==0)
-		NI1M_MaskUpdateColors()
+		EGNM_MaskUpdateColors()
 	endif
 	return 0
 End
@@ -491,7 +491,7 @@ End
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1M_MaskUpdateColors()
+Function EGNM_MaskUpdateColors()
 	DoWindow CCDImageForMask
 	if(V_Flag)
 		NVAR ImageRangeMin= root:Packages:Convert2Dto1D:ImageRangeMin
@@ -537,7 +537,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1M_Mask_SetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
+Function EGNM_Mask_SetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
 	String varStr
@@ -553,7 +553,7 @@ Function NI1M_Mask_SetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 	
 	if(cmpstr("RemoveFirstNColumns",ctrlName)==0)
 		SetDrawLayer/W=CCDImageForMask ProgFront
-		Wave w= $NI1M_GetImageWave("CCDImageForMask")		// the target matrix
+		Wave w= $EGNM_GetImageWave("CCDImageForMask")		// the target matrix
 		iminfo= ImageInfo("CCDImageForMask", NameOfWave(w), 0)
 		xax= StringByKey("XAXIS",iminfo)
 		yax= StringByKey("YAXIS",iminfo)
@@ -562,7 +562,7 @@ Function NI1M_Mask_SetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 	endif
 	if(cmpstr("RemoveLastNColumns",ctrlName)==0)
 		SetDrawLayer/W=CCDImageForMask ProgFront
-		Wave w= $NI1M_GetImageWave("CCDImageForMask")		// the target matrix
+		Wave w= $EGNM_GetImageWave("CCDImageForMask")		// the target matrix
 		iminfo= ImageInfo("CCDImageForMask", NameOfWave(w), 0)
 		xax= StringByKey("XAXIS",iminfo)
 		yax= StringByKey("YAXIS",iminfo)
@@ -571,7 +571,7 @@ Function NI1M_Mask_SetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 	endif
 	if(cmpstr("RemoveFirstNrows",ctrlName)==0)
 		SetDrawLayer/W=CCDImageForMask ProgFront
-		Wave w= $NI1M_GetImageWave("CCDImageForMask")		// the target matrix
+		Wave w= $EGNM_GetImageWave("CCDImageForMask")		// the target matrix
 		iminfo= ImageInfo("CCDImageForMask", NameOfWave(w), 0)
 		xax= StringByKey("XAXIS",iminfo)
 		yax= StringByKey("YAXIS",iminfo)
@@ -580,7 +580,7 @@ Function NI1M_Mask_SetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 	endif
 	if(cmpstr("RemoveLastNRows",ctrlName)==0)
 		SetDrawLayer/W=CCDImageForMask ProgFront
-		Wave w= $NI1M_GetImageWave("CCDImageForMask")		// the target matrix
+		Wave w= $EGNM_GetImageWave("CCDImageForMask")		// the target matrix
 		iminfo= ImageInfo("CCDImageForMask", NameOfWave(w), 0)
 		xax= StringByKey("XAXIS",iminfo)
 		yax= StringByKey("YAXIS",iminfo)
@@ -589,7 +589,7 @@ Function NI1M_Mask_SetVarProc(ctrlName,varNum,varStr,varName) : SetVariableContr
 	endif
 	
 	if(cmpstr("LowIntToMaskOff",ctrlName)==0)
-		NI1M_MaskUpdateColors()
+		EGNM_MaskUpdateColors()
 	endif
 	setDataFolder OldDf
 End
@@ -602,7 +602,7 @@ End
 //*******************************************************************************************************************************************
 
 
-Function NI1M_RoiDrawButtonProc(ctrlName) : ButtonControl
+Function EGNM_RoiDrawButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 	string oldDf=GetDataFOlder(1)
@@ -612,11 +612,11 @@ Function NI1M_RoiDrawButtonProc(ctrlName) : ButtonControl
 		//create image for working here...
 		nvar AddToOldMask
 		addtooldmask = 0
-		NI1M_MaskCreateImage()
+		EGNM_MaskCreateImage()
 	endif
 	if( CmpStr(ctrlName,"SelectPathToData") == 0 )
 		NewPath/C/O/M="Select path to your data, MASK will be saved there too" Convert2Dto1DMaskPath
-		NI1M_UpdateMaskListBox()
+		EGNM_UpdateMaskListBox()
 	endif
 	//following function happen only when graph exists...
 	DoWindow CCDImageForMask
@@ -626,7 +626,7 @@ Function NI1M_RoiDrawButtonProc(ctrlName) : ButtonControl
 	if( CmpStr(ctrlName,"StartROI") == 0 )
 		ShowTools/W=CCDImageForMask/A poly
 		SetDrawLayer/W=CCDImageForMask ProgFront
-		Wave w= $NI1M_GetImageWave("CCDImageForMask")		// the target matrix
+		Wave w= $EGNM_GetImageWave("CCDImageForMask")		// the target matrix
 		String iminfo= ImageInfo("CCDImageForMask", NameOfWave(w), 0)
 		String xax= StringByKey("XAXIS",iminfo)
 		String yax= StringByKey("YAXIS",iminfo)
@@ -637,13 +637,13 @@ Function NI1M_RoiDrawButtonProc(ctrlName) : ButtonControl
 		GraphNormal/W=CCDImageForMask
 		HideTools/W=CCDImageForMask/A
 		SetDrawLayer/W=CCDImageForMask UserFront
-		DoWindow/F NI1M_ImageROIPanel
+		DoWindow/F EGNM_ImageROIPanel
 	endif
 	if( CmpStr(ctrlName,"clearROI") == 0 )
 		GraphNormal/W=CCDImageForMask
 		SetDrawLayer/W=CCDImageForMask/K ProgFront
 		SetDrawLayer/W=CCDImageForMask UserFront
-		DoWindow/F NI1M_ImageROIPanel
+		DoWindow/F EGNM_ImageROIPanel
 	endif
 	
 	setDataFolder OldDf
