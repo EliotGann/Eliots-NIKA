@@ -3599,6 +3599,7 @@ Function ButtonAddSwitch(ba) : ButtonControl
 				string foldersave = getdatafolder(1)
 				wave/t listwave = root:Packages:SwitchNIKA:listwave
 				wave selwave = root:Packages:SwitchNIKA:selwave
+				wave /t columnnames = root:Packages:SwitchNIKA:columnnames
 				svar name = root:Packages:SwitchNIKA:name
 				
 				SetDataFOlder root:Packages:Convert2Dto1D
@@ -3608,31 +3609,49 @@ Function ButtonAddSwitch(ba) : ButtonControl
 				nvar bcx = root:Packages:Convert2Dto1D:BeamCenterX
 				nvar bcy = root:Packages:Convert2Dto1D:BeamCenterY
 				nvar sdd = root:Packages:Convert2Dto1D:SampleToCCDDistance
-				nvar flatten_line = root:Packages:NIKA1101:flatten_line
-				nvar flatten_width = root:Packages:NIKA1101:flatten_width
+				nvar /z flatten_line = root:Packages:NIKA1101:flatten_line
+				nvar /z flatten_width = root:Packages:NIKA1101:flatten_width
+				svar filetype = root:Packages:Convert2Dto1D:DataFileExtension
 				svar header = root:headerinfo
-				variable CCDy  = str2num(stringbykey("CCDY",header))
-				variable CCDx  = str2num(stringbykey("CCDX",header))
-				variable CCDtheta  = str2num(stringbykey("CCDTHETA",header))
-				variable SampleZ  = str2num(stringbykey("SAMPLEZ",header))
-				variable SampleNumber = str2num(stringbykey("SampleNumber",header))
-				svar /z samplenamelist = root:Packages:Nika1101:samplenamelist
+				
 				
 				variable index = dimsize(listwave,0)
 				redimension /n=(index+1,13) selwave,listwave
 				selwave = p==index ? 3 : 2
-				listwave[index][0] = name
-				listwave[index][1] = num2str(bcx)
-				listwave[index][2] = num2str(bcy)
-				listwave[index][3] = num2str(sdd)
-				listwave[index][4] = CurrentMaskFileName
-				listwave[index][5] = path
-				listwave[index][6] = num2istr(flatten_line)
-				listwave[index][7] = num2str(flatten_width)
-				listwave[index][8] = num2str(CCDx)
-				listwave[index][9] = num2str(CCDy)
-				listwave[index][10] = num2str(CCDtheta)
-				listwave[index][11] = num2str(SampleZ)
+				
+				if(stringmatch(filetype,"BS_Suitcase_Tiff"))
+					variable BSS = numberbykey("Beam Stop SAXS",header)
+					variable BSW = numberbykey("Beam Stop WAXS",header)
+					variable SAXST = numberbykey("Detector SAXS Translation",header)
+					variable WAXST = numberbykey("Detector WAXS Translation",header)
+					listwave[index][8] = num2str(SAXST)
+					listwave[index][9] = num2str(BSS)
+					listwave[index][10] = num2str(WAXST)
+					listwave[index][11] = num2str(BSW)
+					columnnames[8] = "SAXS"
+					columnnames[9] = "SAXS BS"
+					columnnames[10] = "WAXS"
+					columnnames[11] = "WAXS BS"
+					columnnames[12] = "sample id"
+					 
+				elseif(stringmatch(filetype,".fits"))
+					variable CCDy  = str2num(stringbykey("CCDY",header))
+					variable CCDx  = str2num(stringbykey("CCDX",header))
+					variable CCDtheta  = str2num(stringbykey("CCDTHETA",header))
+					variable SampleZ  = str2num(stringbykey("SAMPLEZ",header))
+					listwave[index][8] = num2str(CCDx)
+					listwave[index][9] = num2str(CCDy)
+					listwave[index][10] = num2str(CCDtheta)
+					listwave[index][11] = num2str(SampleZ)
+					
+					columnnames[8] = "CCD X"
+					columnnames[9] = "CCD Y"
+					columnnames[10] = "CCD Theta"
+					columnnames[11] = "Sample Z"
+					columnnames[12] = "Sample Name"
+				endif
+				variable SampleNumber = str2num(stringbykey("SampleNumber",header))
+				svar /z samplenamelist = root:Packages:Nika1101:samplenamelist
 				if(svar_exists(samplenamelist))
 					if(Stringmatch(stringbykey(num2str(SampleNumber),samplenamelist,"=",","),"Sample*") || strlen(stringbykey(num2str(SampleNumber),samplenamelist,"=",","))<1)
 						listwave[index][12]="*"
@@ -3643,6 +3662,18 @@ Function ButtonAddSwitch(ba) : ButtonControl
 				if(stringmatch(listwave[index][12],""))
 					listwave[index][12]="*"
 				endif
+				
+				
+				
+				listwave[index][0] = name
+				listwave[index][1] = num2str(bcx)
+				listwave[index][2] = num2str(bcy)
+				listwave[index][3] = num2str(sdd)
+				listwave[index][4] = CurrentMaskFileName
+				listwave[index][5] = path
+				listwave[index][6] = num2istr(flatten_line)
+				listwave[index][7] = num2str(flatten_width)
+
 				setdatafolder foldersave
 			break
 		case -1: // control being killed
@@ -3695,7 +3726,16 @@ function StartSwitchNika()
 	endif
 	make/n=(rows,13)/o/t listwave
 	make/n=(rows,13)/o selwave = 3
+	svar filetype = root:Packages:Convert2Dto1D:DataFileExtension
+				
 	make /o/t columnnames = {"Name","Xpos","Ypos","S-D","Mask","MaskPath","Flatten Center","Flatten Width","CCD X","CCD Y","CCD Theta","Sample Z","Sample Name"}
+	if(stringmatch(filetype,"BS_Suitcase_Tiff"))
+		columnnames[8] = "SAXS"
+		columnnames[9] = "SAXS BS"
+		columnnames[10] = "WAXS"
+		columnnames[11] = "WAXS BS"
+		columnnames[12] = "sample id"
+	endif
 	string/g name
 	variable /g AutopickQ
 	killwindow /z SwitchNika

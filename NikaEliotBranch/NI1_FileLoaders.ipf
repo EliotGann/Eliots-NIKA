@@ -61,7 +61,7 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		endif
 		variable imnum
 		string st1
-		splitstring /e="([0123456789]*).tif" FileNameToLoad, st1
+		splitstring /e="-([0123456789]*).tif" FileNameToLoad, st1
 		imnum = str2num(st1)
 		if(imnum*0!=0)
 			imnum = 0
@@ -80,6 +80,7 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
 			pxsizey = 0.015 * numberbykey(detectortype+ "cam_bin_x",teststring)
 			
+			
 			nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
 			SampleMeasurementTime = numberbykey(detectortype+ "cam_acquire_time",teststring)
 			
@@ -87,13 +88,21 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
 			xrayenergy = numberbykey("en_energy_setpoint",teststring)/1000
 			nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
-			wavelength = 1.239/xrayenergy
+			wavelength = 12.39/xrayenergy
+			variable BSS, BSW, SAXST, WAXST, SamZ
+			BSS = numberbykey("Beam Stop SAXS",teststring)
+			BSW = numberbykey("Beam Stop WAXS",teststring)
+			SAXST = numberbykey("Detector SAXS Translation",teststring)
+			WAXST = numberbykey("Detector WAXS Translation",teststring)
+			SamZ = numberbykey("RSoXS Sample Downstream-Upstream",teststring)
+			
+			
 			
 			nvar Sampletransmission = root:Packages:Convert2Dto1D:SampleTransmission
 			svar UserFileName=root:Packages:Convert2Dto1D:OutputDataName
 			string imagenum
 			splitstring /e="^([1234567890]*)-([^-]*)" filenametoload, imagenum,  userfilename
-			UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100000)/100)+"eV_"+detectortype[0] + "_" + imagenum + "_" + num2str(imnum)
+			UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100000)/100)+"eV_"+detectortype[0] + "_"+ num2str(imnum)// + imagenum + "_" 
 			NewNote += teststring
 		endif
 		teststring= indexedfile($(PathName),-1,".csv")
@@ -114,7 +123,7 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 				nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
 				xrayenergy = en_monoen_readback[imnum]/1000
 				nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
-				wavelength = 1.239/xrayenergy
+				wavelength = 12.39/xrayenergy
 			endif
 			wave /z RSoXS_Diagnostic_Picoammeter_exposure_time
 			if(waveexists(RSoXS_Diagnostic_Picoammeter_exposure_time))
@@ -140,13 +149,13 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		endif
 		if(jsonfound)
 			metadata = addmetadatafromjson(PathName,"institution",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"project",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"project_name",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"proposal_id",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"sample",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"sample_name",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"sample_desc",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"sampleid",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"sampleset",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"user",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"sample_id",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"sample_set",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"user_name",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"user_id",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"notes",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"uid",metadatafilename,metadata)
@@ -155,7 +164,6 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			metadata = addmetadatafromjson(PathName,"dim3",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"chemical_formula",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"density",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"project",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"project_desc",metadatafilename,metadata)
 		else
 			print "Currently can't load metadata json or jsonl file"
@@ -166,6 +174,37 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		Redimension/N=(-1,-1,0) 	LoadedWvHere			//this is fix for 3 layer tiff files...
 		NewNote+="DataFileName="+FileNameToLoad+";"
 		NewNote+="DataFileType="+".tif"+";.tiff"+";"
+		
+		nvar /z autopickq = root:Packages:SwitchNIKA:AutopickQ
+		if(nvar_exists(autopickq))
+			//AUOPICKQCODE
+			svar /z oldheader = root:headerinfo
+			variable sample_id =  numberbykey("sample_id",metadata)
+			if(!svar_Exists(oldheader))
+				print("No header values to compare to")
+			elseif(numberbykey("Beam Stop SAXS",oldheader)==BSS && numberbykey("Beam Stop WAXS",oldheader)==BSW && numberbykey("Detector SAXS Translation",oldheader)==SAXST && numberbykey("Detector SAXS Translation",oldheader)==WAXST && numberbykey("sample_id",oldheader)==sample_id )
+				print "Q range is unchanged"
+			else
+				print "Changing Q range"
+				wave/t listwave = root:Packages:SwitchNIKA:listwave
+				make /free /n=(dimsize(listwave,0)) BSSs = str2num(listwave[p][9]), BSWs = str2num(listwave[p][11]),SAXSTs = str2num(listwave[p][8]),WAXSTs = str2num(listwave[p][10]),ccdgood
+				make /free /n=(dimsize(listwave,0))/t Sampnames = listwave[p][12]
+				ccdgood = abs(BSSs -BSS) <1 ? 1 : 0
+				ccdgood*=abs(BSWs-BSW) < 1 ? 1 : 0
+				ccdgood*=abs(SAXSTs-SAXST) < 1 ? 1 : 0
+				ccdgood*=abs(WAXSTs-WAXST) < 1 ? 1 : 0
+				svar /z samplenamelist = root:Packages:Nika1101:samplenamelist
+				if(svar_exists(samplenamelist))
+					ccdgood*=stringmatch(stringbykey(num2str(sample_id),samplenamelist,"=",","), Sampnames[p]) ? 1 : 0
+				endif
+				findvalue /v=1 /z ccdgood
+				variable row = v_value
+				if(v_value>=0)
+					setqrange(row)
+				endif
+			endif
+		endif
+		string /g root:headerinfo = newnote
 	
 	elseif(cmpstr(FileType,"AUSW")==0)
 		//check if we need to look into XML file (and if XML file is loaded)
