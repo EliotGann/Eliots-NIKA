@@ -195,12 +195,14 @@ function NR_InitNISTRSoXS()
 	NewPanel /W=(317,66,1673,931) /k=1 /N=NISTRSoXSBrowser as "NIST RSoXS data Browser"
 	SetDrawLayer UserBack
 	String CurrentFolder=GetDataFolder(1)
-	newdatafolder /o/s root:Packages:NikaNISTRSoXS		
+	setdatafolder root:
+	newdatafolder /o/s Packages
+	newdatafolder /o/s NikaNISTRSoXS		
 	string /g pathtodata, colortab
 	if(strlen(colortab)<3)
 		colortab = "Terrain"
 	endif
-	variable /g minval, maxval, logimage
+	variable /g minval = 5000, maxval = 20000, logimage =1, leftmin=0, leftmax=1000, botmin=0, botmax=1000
 	nvar /z scanrow
 	if(!nvar_exists(scanrow))
 		variable /g scanrow = -1
