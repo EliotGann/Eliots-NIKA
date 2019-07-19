@@ -18,7 +18,7 @@ Suggested Installation Method:
     usually this is in the documents/wavemetrics/ folder
     (close Igor after this step)
 
-4.) create a shortcut (windows) or alias (Mac) of EliotMenus.ipf and Boot Nika.ipf files in the "Igor Procedures" directory
+4.) create a shortcut (windows) or alias (Mac) of RSoXSMenus.ipf and Boot Nika.ipf files in the "Igor Procedures" directory
 
 5.) create a shortcut or alias of all of the rest of the files and those in the subdirectory into a NIKA directory (make one if there isn't one already) within the "User Procedures" cirectory
 
