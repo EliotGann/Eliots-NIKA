@@ -8,6 +8,6 @@ Menu "RSoXS"
 	help={"Interactively Create 3D Models and Simulate Scattering"}
 End
 Menu "RSoXS"
-	"NIST RSoXS Browser", /Q, Execute/P "INSERTINCLUDE \"NISTRSoXSBrowser\"";Execute/P "COMPILEPROCEDURES ";Execute/P/Q "NR_InitNISTRSoXS()"
+	"NIST RSoXS Browser", /Q, Execute/P "INSERTINCLUDE \"NISTRSoXSBrowser\"";Execute/P "COMPILEPROCEDURES ";Execute/P/Q "NRB_InitNISTRSoXS()"
 	help={"Interactively browse data taken at the NIST RSoXS beamline"}
 End
