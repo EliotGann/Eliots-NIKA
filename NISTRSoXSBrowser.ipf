@@ -39,7 +39,7 @@ function NRB_Loaddir()
 	setdatafolder currentfolder
 	
 	//listbox scansLB,selrow=-1
-	NRB_loadprimary()
+	
 	
 end
 
@@ -61,7 +61,7 @@ function NRB_loadprimary()
 	string /g basescanname = basename
 	
 	
-	
+	killdatafolder /z channels
 	newdatafolder /o/s channels
 	LoadWave/Q/O/J/D/A/K=0/P=$(pname)/W  basename+"-primary.csv"
 	wave /z datawave = $(stringfromlist(0,S_waveNames))
@@ -78,18 +78,19 @@ function NRB_loadprimary()
 	// pick out the channels to use for the sequence display
 	wave /z en_energy
 	wave /z seq_num
-	
-	if(!waveexists(en_energy))
-		//not an energy scan, need to read something else .. what??
-		print "can't find energy"
-		setdatafolder currentfolder
-	endif
-	
 	wave /t steplist = root:Packages:NikaNISTRSoXS:steplist
 	wave steplistsel = root:Packages:NikaNISTRSoXS:steplistsel
-	redimension /n=(dimsize(en_energy,0)) steplist, steplistsel
-	steplist[] = num2str(seq_num[p]) + " - " + num2str(round(en_energy[p]*100)/100) + "eV"
 	
+	if(whichlistitem("en_energy",s_wavenames)<0)
+		//not an energy scan, need to read something else .. what??
+		print "can't find energy"
+		redimension /n=(dimsize(seq_num,0)) steplist, steplistsel
+		steplist[] = "step " + num2str(seq_num[p])
+	
+	else
+		redimension /n=(dimsize(en_energy,0)) steplist, steplistsel
+		steplist[] = num2str(seq_num[p]) + " - " + num2str(round(en_energy[p]*100)/100) + "eV"
+	endif
 	//populate the baseline and metadata lists
 	
 	wave /t mdlist = root:Packages:NikaNISTRSoXS:mdlist
@@ -291,7 +292,8 @@ Function NRB_Browsebutfunc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			NRB_browse()
-			NRB_loaddir()
+			NRB_Loaddir()
+			NRB_loadprimary()
 			break
 	endswitch
 	return 0
@@ -322,6 +324,9 @@ Function NRB_ScanListBoxProc(lba) : ListBoxControl
 		case 4: // cell selection
 		case 5: // cell selection plus shift key
 			NRB_loadprimary()
+			break
+		case 3:
+			NRB_Loaddir()
 			break
 	endswitch
 	return 0
@@ -388,27 +393,7 @@ function NRB_MakeImagePlots(num)
 	make /o/n=(num) /t imagenames
 	
 	
-	if(num< 3)
-			numy = 1
-	elseif(num < 7)
-			numy = 2
-	elseif(num < 13)
-			numy = 3
-	elseif(num < 21)
-			numy = 4
-	elseif(num < 31)
-			numy = 5
-	elseif(num < 43)
-			numy = 6
-	elseif(num < 57)
-			numy = 7
-	elseif(num < 73)
-			numy = 8
-	elseif(num < 91)
-			numy = 9
-	else
-		numy=10
-	endif
+	numy = floor(.5+sqrt(num-.75))
 	numx = ceil(num/numy)
 	
 	variable sizex, sizey
@@ -452,10 +437,14 @@ Function NRB_ScanStepLBproc(lba) : ListBoxControl
 		case 4: // cell selection
 		case 5: // cell selection plus shift key
 			NRB_updateimageplot()
+			//NRB_updateimageplot(autoscale=1)
 			break
 		case 6: // begin edit
 			break
 		case 7: // finish edit
+			break
+		case 12: // keystroke
+			NRB_Loaddir()
 			break
 		case 13: // checkbox clicked (Igor 6.2 or later)
 			break
@@ -500,14 +489,17 @@ function NRB_loadimages(listofsteps,[autoscale])
 		if(strlen(tifffilename)<4)
 			print "Could not find image to display"
 		else
-			ImageLoad/P=$(pname)/T=tiff/O/N=$("image"+num2str(i)) tifffilename
+			ImageLoad/q/P=$(pname)/T=tiff/O/N=$("image"+num2str(i)) tifffilename
 			wave image = $("image"+num2str(i))
-			appendimage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] image
+			imageinterpolate /dest=$("imagesm"+num2str(i)) /pxsz={floor(sqrt(itemsinlist(listofsteps))),floor(sqrt(itemsinlist(listofsteps)))} pixelate image
+			wave imagesm = $("imagesm"+num2str(i))
+			killwaves /z image
+			appendimage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] imagesm
 			ModifyGraph /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] margin=1,nticks=0,standoff=0
 			ModifyImage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] ''#0 log=1,ctab= {*,*,Terrain,0}
 			TextBox /w=NISTRSoXSBrowser#Graph2D#$imagenames[i]/S=0/F=0 steplist[str2num(stringfromlist(i,listofsteps))]
-			minv = wavemin(image)
-			maxv = wavemax(image)
+			minv = wavemin(imagesm)
+			maxv = wavemax(imagesm)
 			if(minv<totminv)
 				totminv = minv
 			endif
@@ -536,7 +528,7 @@ function NRB_loadimages(listofsteps,[autoscale])
 		endif
 	endif
 	
-	NRB_updateimages()
+	
 	
 	setdatafolder currentfolder
 end
