@@ -7,18 +7,14 @@ function NRB_Loaddir()
 // along with the number of files
 	svar /z pname = root:Packages:NikaNISTRSoXS:pathname
 	if(!svar_Exists(pname))
-		NRB_browse()
-		svar /z pname = root:Packages:NikaNISTRSoXS:pathname
-	endif
-	if(!svar_Exists(pname))
-		print "no directory"
+		//print "no directory"
 		return -1
 	endif
 	string filenames = sortlist(IndexedFile($pname, -1, ".csv"),";",4)
 	string tiffnames = IndexedFile($pname, -1, ".tiff")
 	string matchingtiffs
 	if(strlen(filenames)<1)
-		print "No txt files found in directory"
+		//print "No txt files found in directory"
 		return 0
 	endif
 	filenames = replacestring("-primary.csv",filenames,"")
@@ -32,8 +28,8 @@ function NRB_Loaddir()
 		if(stringmatch(scanlist[i][0],"*baseline*"))
 			deletePoints i,1,scanlist
 		else
-			matchingtiffs = listMatch(tiffnames,scanlist[i][0]+"*")
-			scanlist[i][1] += num2str(itemsinlist(matchingtiffs)/2)
+			matchingtiffs = listMatch(tiffnames,scanlist[i][0]+"*primary*saxs*")
+			scanlist[i][1] += num2str(itemsinlist(matchingtiffs))
 		endif
 	endfor
 	setdatafolder currentfolder
@@ -203,7 +199,7 @@ function NRB_InitNISTRSoXS()
 	if(strlen(colortab)<3)
 		colortab = "Terrain"
 	endif
-	variable /g minval = 5000, maxval = 20000, logimage =1, leftmin=0, leftmax=1000, botmin=0, botmax=1000
+	variable /g minval = -500, maxval = 20000, logimage =0, leftmin=0, leftmax=1000, botmin=0, botmax=1000
 	nvar /z scanrow
 	if(!nvar_exists(scanrow))
 		variable /g scanrow = -1
@@ -271,9 +267,9 @@ function NRB_InitNISTRSoXS()
 	Button NRB_SAXSWAXSbut,labelBack=(65535,65535,65535),fStyle=1,fColor=(0,0,20000)
 	Button NRB_SAXSWAXSbut,valueColor=(65535,65535,65535)
 	SetVariable NRB_Mindisp,pos={634.00,5.00},size={75.00,18.00},bodyWidth=50,proc=NRB_ImageRangeChange,title="Min"
-	SetVariable NRB_Mindisp,limits={0,500000,1},value=minval
+	SetVariable NRB_Mindisp,limits={-5000,500000,1},value=minval
 	SetVariable NRB_Maxdisp,pos={716.00,6.00},size={76.00,18.00},bodyWidth=50,proc=NRB_ImageRangeChange,title="Max"
-	SetVariable NRB_Maxdisp,limits={0,500000,1},value=maxval
+	SetVariable NRB_Maxdisp,limits={-5000,500000,1},value=maxval
 	PopupMenu NRB_Colorpop,pos={802.00,6.00},size={200.00,19.00},proc=NRB_colorpopproc
 	PopupMenu NRB_Colorpop,mode=8,value= #"\"*COLORTABLEPOPNONAMES*\""	
 	CheckBox NRB_logimg,pos={1012.00,6.00},size={33.00,15.00},title="log",value=logimage,proc=NRB_logimagebutproc,variable=logimage
@@ -373,7 +369,6 @@ function NRB_updateimageplot([autoscale])
 		endif
 	endfor
 	NRB_loadimages(listofsteps, autoscale=autoscale)
-
 end
 
 function NRB_MakeImagePlots(num)
@@ -461,11 +456,13 @@ function NRB_loadimages(listofsteps,[autoscale])
 	string currentfolder =getdatafolder(1)
 	setdatafolder root:Packages:NIKANISTRSoXS
 	svar basescanname
+	svar /z colortab
 	nvar saxsorwaxs
 	nvar /z leftmin
 	nvar /z leftmax
 	nvar /z botmin
 	nvar /z botmax
+	nvar /z logimage
 	svar /z pname = root:Packages:NikaNISTRSoXS:pathname
 	wave /t imagenames
 	wave /t steplist
@@ -478,25 +475,27 @@ function NRB_loadimages(listofsteps,[autoscale])
 	nvar /z minval = root:Packages:NikaNISTRSoXS:minval
 	nvar /z maxval = root:Packages:NikaNISTRSoXS:maxval
 	
-	variable minv, maxv, totmaxv = 0, totminv = 5e10
+	variable minv, maxv, totmaxv = -5000, totminv = 5e10
 	variable i
 	for(i=0;i<itemsinlist(listofsteps);i+=1)
 		if(saxsorwaxs)
-			tifffilename = stringfromlist(0,listMatch(matchingtiffs,"*saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			tifffilename = stringfromlist(0,listMatch(matchingtiffs,"*primary*saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
 		else
-			tifffilename = stringfromlist(0,listMatch(matchingtiffs,"*waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			tifffilename = stringfromlist(0,listMatch(matchingtiffs,"*primary*waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
 		endif
 		if(strlen(tifffilename)<4)
 			print "Could not find image to display"
 		else
 			ImageLoad/q/P=$(pname)/T=tiff/O/N=$("image"+num2str(i)) tifffilename
 			wave image = $("image"+num2str(i))
+			redimension /i image
+			histogram /B=3 image
 			imageinterpolate /dest=$("imagesm"+num2str(i)) /pxsz={floor(sqrt(itemsinlist(listofsteps))),floor(sqrt(itemsinlist(listofsteps)))} pixelate image
 			wave imagesm = $("imagesm"+num2str(i))
 			killwaves /z image
 			appendimage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] imagesm
 			ModifyGraph /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] margin=1,nticks=0,standoff=0
-			ModifyImage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] ''#0 log=1,ctab= {*,*,Terrain,0}
+			ModifyImage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] ''#0 log=logimage,ctab= {minval,maxval,$colortab,0}
 			TextBox /w=NISTRSoXSBrowser#Graph2D#$imagenames[i]/S=0/F=0 steplist[str2num(stringfromlist(i,listofsteps))]
 			minv = wavemin(imagesm)
 			maxv = wavemax(imagesm)
@@ -520,13 +519,16 @@ function NRB_loadimages(listofsteps,[autoscale])
 		minval = totminv
 		maxval = totmaxv
 	else
-		if(totminv > minval)
-			minval = totminv
-		endif
-		if(totmaxv < maxval)
-			maxval = totmaxv
-		endif
+	//	if(totminv > minval)
+	//		minval = totminv
+	//	endif
+	//	if(totmaxv < maxval)
+	//		maxval = totmaxv
+	//	endif
 	endif
+	for(i=0;i<itemsinlist(listofsteps);i+=1)
+		ModifyImage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] ''#0 log=logimage,ctab= {minval,maxval,$colortab,0}
+	endfor
 	
 	
 	
