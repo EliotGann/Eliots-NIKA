@@ -12,15 +12,24 @@ function NRB_Loaddir()
 	endif
 	string filenames = sortlist(IndexedFile($pname, -1, ".csv"),";",4)
 	string tiffnames = IndexedFile($pname, -1, ".tiff")
+	String CurrentFolder=GetDataFolder(1)
+	SetDataFolder root:Packages:NikaNISTRSoXS
+	string /g oldnames
+	if(stringmatch(oldnames, tiffnames))
+		make /o/n=(0,2) /t scanlist
+		setdatafolder currentfolder
+		return -2
+	endif
+	oldnames = tiffnames
 	string matchingtiffs
 	if(strlen(filenames)<1)
+		setdatafolder currentfolder
 		//print "No txt files found in directory"
-		return 0
+		return -3
 	endif
 	filenames = replacestring("-primary.csv",filenames,"")
 	variable i
-	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:NikaNISTRSoXS
+	
 	
 	make /o/n=(itemsinlist(filenames),2) /t scanlist
 	scanlist[][0]= stringfromlist(p,filenames)
@@ -33,7 +42,7 @@ function NRB_Loaddir()
 		endif
 	endfor
 	setdatafolder currentfolder
-	
+	return 1
 	//listbox scansLB,selrow=-1
 	
 	
@@ -200,6 +209,15 @@ function NRB_InitNISTRSoXS()
 		colortab = "Terrain"
 	endif
 	variable /g minval = -500, maxval = 20000, logimage =0, leftmin=0, leftmax=1000, botmin=0, botmax=1000
+	
+	
+	
+	variable /g bkgrunning = 1
+	variable /g bkglastRunTicks = ticks
+	variable /g bkgrunNumber = 0
+	
+	
+	
 	nvar /z scanrow
 	if(!nvar_exists(scanrow))
 		variable /g scanrow = -1
@@ -253,7 +271,7 @@ function NRB_InitNISTRSoXS()
 	ListBox baselineLB,listWave=root:Packages:NikaNISTRSoXS:bllist
 	ListBox baselineLB,widths={124,60,60},userColumnResize= 1
 	Button Browsebut,pos={6.00,9.00},size={54.00,37.00},proc=NRB_Browsebutfunc,title="Browse"
-	TitleBox Pathdisp,pos={64.00,11.00},size={400.00,40.00},fSize=10,frame=5
+	TitleBox Pathdisp,pos={64.00,11.00},size={400.00,20.00},fSize=10,frame=5
 	TitleBox Pathdisp,variable= root:Packages:NikaNISTRSoXS:pathtodata,fixedSize=1
 	TabControl datadisp,pos={474.00,4.00},size={875.00,860.00},proc=NRB_datadispProc
 	TabControl datadisp,tabLabel(0)="1D data",tabLabel(1)="Images",value= 1
@@ -274,6 +292,8 @@ function NRB_InitNISTRSoXS()
 	PopupMenu NRB_Colorpop,mode=8,value= #"\"*COLORTABLEPOPNONAMES*\""	
 	CheckBox NRB_logimg,pos={1012.00,6.00},size={33.00,15.00},title="log",value=logimage,proc=NRB_logimagebutproc,variable=logimage
 	Button NRB_Autoscale,pos={1069.00,6.00},size={68.00,15.00},proc=NRB_autoscalebut,title="Autoscale"
+	CheckBox NRB_autocheck,pos={67.00,34.00},size={130.00,15.00},proc=NRB_autocheckproc,title="Refresh automatically"
+	CheckBox NRB_autocheck,value= 0
 	
 	Display/W=(481,28,1344,860)/HOST=# /HIDE=1 
 	RenameWindow #,Graph1D
@@ -281,6 +301,29 @@ function NRB_InitNISTRSoXS()
 	Display/W=(481,28,1344,860)/HOST=# 
 	RenameWindow #,Graph2D
 	SetActiveSubwindow ##
+	
+	
+	
+	
+End
+
+Function NRB_autocheckproc(cba) : CheckBoxControl
+	STRUCT WMCheckboxAction &cba
+
+	switch( cba.eventCode )
+		case 2: // mouse up
+			Variable checked = cba.checked
+			if(checked)
+				CtrlNamedBackground NRB_BG, burst=0, proc=NRB_BGTask, period=240, dialogsOK=0, start
+			else
+				CtrlNamedBackground NRB_BG, stop
+			endif
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
 End
 
 Function NRB_Browsebutfunc(ba) : ButtonControl
@@ -288,8 +331,9 @@ Function NRB_Browsebutfunc(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			NRB_browse()
-			NRB_Loaddir()
-			NRB_loadprimary()
+			if(NRB_Loaddir()>=0)
+				NRB_loadprimary()
+			endif
 			break
 	endswitch
 	return 0
@@ -643,6 +687,11 @@ Function NRB_axishook(s)
 			botmax = v_max
 			NRB_updateimages()
 			hookresult = 1
+			break
+		case 2:
+			NVAR running= root:Packages:NikaNISTRSoXS:bkgrunning
+			running = 0
+			CtrlNamedBackground NRB_BG, stop
 			break
 		default:
 			//print s.eventcode	
@@ -1026,3 +1075,21 @@ function NRB_convertnikafilelistsel(filenamelist)
 	//selection done
 	NI1A_LoadManyDataSetsForConv()
 end
+
+Function NRB_BGTask(s)
+	STRUCT WMBackgroundStruct &s
+	NVAR running= root:Packages:NikaNISTRSoXS:bkgrunning
+	if( running == 0 )
+		return 0 // not running -- wait for user
+	endif
+	NVAR lastRunTicks= root:Packages:NikaNISTRSoXS:bkglastRunTicks
+	if( (lastRunTicks+120) >= ticks )
+		return 0 // not time yet, wait
+	endif
+	NVAR runNumber= root:Packages:NikaNISTRSoXS:bkgrunNumber
+	runNumber += 1
+	NRB_Loaddir()
+	doupdate
+	lastRunTicks= ticks
+	return 0
+End
