@@ -16,13 +16,14 @@ function NRB_Loaddir()
 	SetDataFolder root:Packages:NikaNISTRSoXS
 	string /g oldnames
 	if(stringmatch(oldnames, tiffnames))
-		make /o/n=(0,2) /t scanlist
+
 		setdatafolder currentfolder
 		return -2
 	endif
 	oldnames = tiffnames
 	string matchingtiffs
 	if(strlen(filenames)<1)
+		make /o/n=(0,2) /t scanlist
 		setdatafolder currentfolder
 		//print "No txt files found in directory"
 		return -3
@@ -41,6 +42,7 @@ function NRB_Loaddir()
 			scanlist[i][1] += num2str(itemsinlist(matchingtiffs))
 		endif
 	endfor
+	NRB_loadprimary(update=1)
 	setdatafolder currentfolder
 	return 1
 	//listbox scansLB,selrow=-1
@@ -48,9 +50,11 @@ function NRB_Loaddir()
 	
 end
 
-function NRB_loadprimary()
+function NRB_loadprimary([update])
 // when choosing a primary.csv file, populates a list of promary values, a scrollable list of baseline values
 // and displays a list of datapoints with their primary motors defining the name
+	variable update
+	update = paramisdefault(update)? 0 : update
 	
 	controlInfo scansLB
 	variable /g scanrow = v_value
@@ -96,6 +100,40 @@ function NRB_loadprimary()
 		redimension /n=(dimsize(en_energy,0)) steplist, steplistsel
 		steplist[] = num2str(seq_num[p]) + " - " + num2str(round(en_energy[p]*100)/100) + "eV"
 	endif
+	variable i
+	
+	svar /z pname = root:Packages:NikaNISTRSoXS:pathname
+	string tiffnames = IndexedFile($pname, -1, ".tiff")
+	
+	string matchingtiffs = listMatch(tiffnames,basename+"*")
+	string tifffilename
+	
+	variable stepswimages = 0
+	for(i=0;i<(dimsize(seq_num,0));i+=1)
+		tifffilename = stringfromlist(0,listMatch(matchingtiffs,"*primary*"+num2str(i)+".tiff"))
+		if(strlen(tifffilename)<4)
+			steplist[i] += " (no image)"
+		else
+			stepswimages += 1
+		endif
+	endfor
+	if(stepswimages<1)
+		redimension /n=(1) steplist, steplistsel
+		steplist = "no images"
+		steplistsel = 0x80
+	else
+		if(steplistsel[0] == 0x80)
+			steplistsel = 0
+		endif
+	endif
+	
+	
+	if(update)
+		// we are essentially done now, we don't need to reload the metadata or baseline info, which hasn't really changed
+		setdatafolder currentfolder
+		return 1
+	endif
+	
 	//populate the baseline and metadata lists
 	
 	wave /t mdlist = root:Packages:NikaNISTRSoXS:mdlist
@@ -521,6 +559,7 @@ function NRB_loadimages(listofsteps,[autoscale])
 	
 	variable minv, maxv, totmaxv = -5000, totminv = 5e10
 	variable i
+	make /free /n=(itemsinlist(listofsteps)) success=0
 	for(i=0;i<itemsinlist(listofsteps);i+=1)
 		if(saxsorwaxs)
 			tifffilename = stringfromlist(0,listMatch(matchingtiffs,"*primary*saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
@@ -528,7 +567,9 @@ function NRB_loadimages(listofsteps,[autoscale])
 			tifffilename = stringfromlist(0,listMatch(matchingtiffs,"*primary*waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
 		endif
 		if(strlen(tifffilename)<4)
-			print "Could not find image to display"
+			success[i] = 0 
+			//print "Could not find image to display"
+			
 		else
 			ImageLoad/q/P=$(pname)/T=tiff/O/N=$("image"+num2str(i)) tifffilename
 			wave image = $("image"+num2str(i))
@@ -549,6 +590,7 @@ function NRB_loadimages(listofsteps,[autoscale])
 			if(maxv>totmaxv)
 				totmaxv = maxv
 			endif
+			success[i] = 1
 		endif
 	endfor
 	if(autoscale)
@@ -571,7 +613,9 @@ function NRB_loadimages(listofsteps,[autoscale])
 	//	endif
 	endif
 	for(i=0;i<itemsinlist(listofsteps);i+=1)
-		ModifyImage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] ''#0 log=logimage,ctab= {minval,maxval,$colortab,0}
+		if(success[i])
+			ModifyImage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] ''#0 log=logimage,ctab= {minval,maxval,$colortab,0}
+		endif
 	endfor
 	
 	
