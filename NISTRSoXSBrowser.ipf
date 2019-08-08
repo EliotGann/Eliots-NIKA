@@ -15,11 +15,13 @@ function NRB_Loaddir()
 	String CurrentFolder=GetDataFolder(1)
 	SetDataFolder root:Packages:NikaNISTRSoXS
 	string /g oldnames
-	if(stringmatch(oldnames, tiffnames))
+	string /g oldcsvs
+	if(stringmatch(oldnames, tiffnames) && stringmatch(oldcsvs,filenames))
 
 		setdatafolder currentfolder
 		return -2
 	endif
+	oldcsvs = filenames
 	oldnames = tiffnames
 	string matchingtiffs
 	if(strlen(filenames)<1)
@@ -59,6 +61,11 @@ function NRB_loadprimary([update])
 	controlInfo scansLB
 	variable /g scanrow = v_value
 	wave /t scanlist = root:Packages:NikaNISTRSoXS:scanlist
+	
+	if(scanrow<0 || scanrow >= dimsize(scanlist,0))
+		return -1
+	endif
+	
 	string basename = scanlist[scanrow][0]
 	svar /z pname = root:Packages:NikaNISTRSoXS:pathname
 	if(!svar_Exists(pname))
