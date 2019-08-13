@@ -621,7 +621,8 @@ function NRB_loadimages(listofsteps,[autoscale])
 	endif
 	for(i=0;i<itemsinlist(listofsteps);i+=1)
 		if(success[i])
-			ModifyImage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] ''#0 log=logimage,ctab= {minval,maxval,$colortab,0}
+			variable realminval = logimage? max(1,minval) : minval
+			ModifyImage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] ''#0 log=logimage,ctab= {realminval,maxval,$colortab,0}
 		endif
 	endfor
 	
@@ -730,7 +731,10 @@ Function NRB_axishook(s)
 			GetWindow $s.winName activeSW
 			string subwindow = s_value
 			print subwindow
-			getaxis /w=$(subwindow) left
+			getaxis /w=$(subwindow) left ;variable err = GetRTError(1)
+			if(err)
+				break
+			endif
 			leftmin = v_min
 			leftmax = v_max
 			getaxis /w=$(subwindow) bottom
