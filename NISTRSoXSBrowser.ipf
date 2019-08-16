@@ -150,7 +150,7 @@ function NRB_loadprimary([update])
 	string metadatafilename
 	string metadata=""
 	if(strlen(jsonfiles) < 5)
-		print "Currently can't load metadata json or jsonl file"
+		//print "Currently can't load metadata json or jsonl file"
 		mdlist = {"could not find metadata jsonl"}
 	else
 		jsonfound = 1
@@ -179,11 +179,16 @@ function NRB_loadprimary([update])
 	endif	
 	
 	//baselines
-	LoadWave/Q/O/J/D/n=baseline/K=0/P=$(pname)/m  basename+"-baseline.csv"
-	wave /t baselines = $stringfromlist(0,S_waveNames)
-	matrixtranspose baselines
-	duplicate /o baselines, root:Packages:NikaNISTRSoXS:bllist
-	
+	getfilefolderinfo /z /q /P=$(pname) basename+"-baseline.csv"
+	if(v_flag!=0)
+		wave /z /t bllist = root:Packages:NikaNISTRSoXS:bllist
+		bllist = {"no baselines found",""}
+	else
+		LoadWave/Q/O/J/D/n=baseline/K=0/P=$(pname)/m  basename+"-baseline.csv"
+		wave /t baselines = $stringfromlist(0,S_waveNames)
+		matrixtranspose baselines
+		duplicate /o baselines, root:Packages:NikaNISTRSoXS:bllist
+	endif
 	NRB_updateimageplot()
 	
 	setdatafolder currentfolder
@@ -253,7 +258,7 @@ function NRB_InitNISTRSoXS()
 	if(strlen(colortab)<3)
 		colortab = "Terrain"
 	endif
-	variable /g minval = -500, maxval = 20000, logimage =0, leftmin=0, leftmax=1000, botmin=0, botmax=1000
+	variable /g minval = -500, maxval = 20000, logimage =0, leftmin=0, leftmax=1000, botmin=0, botmax=1000, darkview=0, saxsorwaxs=1
 	
 	
 	
@@ -435,6 +440,7 @@ Function NRB_SWbutproc(ba) : ButtonControl
 				button NRB_SAXSWAXSbut fColor=(1,26214,0),title="WAXS images\r(click to toggle)",valueColor=(0,0,0)
 			endif
 			NRB_updateimageplot()
+			setdatafolder currentdatafolder
 		case -1: // control being killed
 			break
 	endswitch
@@ -546,7 +552,8 @@ function NRB_loadimages(listofsteps,[autoscale])
 	setdatafolder root:Packages:NIKANISTRSoXS
 	svar basescanname
 	svar /z colortab
-	nvar saxsorwaxs
+	nvar /z saxsorwaxs
+	nvar /z darkview
 	nvar /z leftmin
 	nvar /z leftmax
 	nvar /z botmin
@@ -567,11 +574,19 @@ function NRB_loadimages(listofsteps,[autoscale])
 	variable minv, maxv, totmaxv = -5000, totminv = 5e10
 	variable i
 	make /free /n=(itemsinlist(listofsteps)) success=0
+	
+	string primeordark
+	if(darkview)
+		primeordark = "*dark-Synced_"
+	else
+		primeordark = "*primary-Synced_"
+	endif
 	for(i=0;i<itemsinlist(listofsteps);i+=1)
+
 		if(saxsorwaxs)
-			tifffilename = stringfromlist(0,listMatch(matchingtiffs,"*primary*saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			tifffilename = stringfromlist(0,listMatch(matchingtiffs,primeordark + "saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
 		else
-			tifffilename = stringfromlist(0,listMatch(matchingtiffs,"*primary*waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			tifffilename = stringfromlist(0,listMatch(matchingtiffs,primeordark + "waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
 		endif
 		if(strlen(tifffilename)<4)
 			success[i] = 0 
@@ -972,7 +987,7 @@ function /t NRB_getfilenames()
 	endfor
 
 	svar basescanname
-	nvar saxsorwaxs
+	nvar saxsorwaxs, darkview
 	svar /z pname = root:Packages:NikaNISTRSoXS:pathname
 	wave /t steplist
 	killdatafolder /z images
@@ -981,11 +996,18 @@ function /t NRB_getfilenames()
 	string matchingtiffs = listMatch(tiffnames,basescanname+"*")
 	string filenames = ""
 	string tifffilename = ""
+	
+	string primeordark
+	if(darkview)
+		primeordark = "*dark-Synced_"
+	else
+		primeordark = "*primary-Synced_"
+	endif
 	for(i=0;i<itemsinlist(listofsteps);i+=1)
 		if(saxsorwaxs)
-			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname+"*saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark +"saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
 		else
-			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname+"*waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark +"waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
 		endif
 		filenames = addlistitem(tifffilename,filenames)
 	endfor
