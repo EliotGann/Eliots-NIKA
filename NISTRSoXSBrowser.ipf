@@ -334,9 +334,9 @@ function NRB_InitNISTRSoXS()
 	Button NRB_SAXSWAXSbut,pos={235.00,767.00},size={206.00,39.00},proc=NRB_SWbutproc,title="SAXS images\r(click to toggle)"
 	Button NRB_SAXSWAXSbut,labelBack=(65535,65535,65535),fStyle=1,fColor=(0,0,20000)
 	Button NRB_SAXSWAXSbut,valueColor=(65535,65535,65535)
-	SetVariable NRB_Mindisp,pos={634.00,5.00},size={75.00,18.00},bodyWidth=50,proc=NRB_ImageRangeChange,title="Min"
+	SetVariable NRB_Mindisp,pos={620.00,5.00},size={80.00,18.00},bodyWidth=60,proc=NRB_ImageRangeChange,title="Min"
 	SetVariable NRB_Mindisp,limits={-5000,500000,1},value=minval
-	SetVariable NRB_Maxdisp,pos={716.00,6.00},size={76.00,18.00},bodyWidth=50,proc=NRB_ImageRangeChange,title="Max"
+	SetVariable NRB_Maxdisp,pos={720.00,5.00},size={80.00,18.00},bodyWidth=60,proc=NRB_ImageRangeChange,title="Max"
 	SetVariable NRB_Maxdisp,limits={-5000,500000,1},value=maxval
 	PopupMenu NRB_Colorpop,pos={802.00,6.00},size={200.00,19.00},proc=NRB_colorpopproc
 	PopupMenu NRB_Colorpop,mode=8,value= #"\"*COLORTABLEPOPNONAMES*\""	
@@ -344,6 +344,8 @@ function NRB_InitNISTRSoXS()
 	Button NRB_Autoscale,pos={1069.00,6.00},size={68.00,15.00},proc=NRB_autoscalebut,title="Autoscale"
 	CheckBox NRB_autocheck,pos={67.00,34.00},size={130.00,15.00},proc=NRB_autocheckproc,title="Refresh automatically"
 	CheckBox NRB_autocheck,value= 0
+	CheckBox NRB_Darkscheck,pos={292.00,816.00},size={73.00,15.00},proc=NRP_Viewdarks_butproc,title="View Darks"
+	CheckBox NRB_Darkscheck,value= 1
 	
 	Display/W=(481,28,1344,860)/HOST=# /HIDE=1 
 	RenameWindow #,Graph1D
@@ -1168,5 +1170,26 @@ Function NRB_BGTask(s)
 	NRB_Loaddir()
 	doupdate
 	lastRunTicks= ticks
+	return 0
+End
+
+Function NRP_Viewdarks_butproc(cba) : CheckBoxControl
+	STRUCT WMCheckboxAction &cba
+
+	switch( cba.eventCode )
+		case 2: // mouse up
+			Variable checked = cba.checked
+			
+			string currentdatafolder = getdatafolder(1)
+			setdatafolder root:Packages:NIKANISTRSoXS
+			variable /g darkview 
+			darkview = checked
+			NRB_updateimageplot()
+			setdatafolder currentdatafolder
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
 	return 0
 End
