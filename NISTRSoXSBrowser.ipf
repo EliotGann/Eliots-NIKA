@@ -44,7 +44,9 @@ function NRB_Loaddir()
 			scanlist[i][1] += num2str(itemsinlist(matchingtiffs))
 		endif
 	endfor
-	NRB_loadprimary(update=1)
+	ListBox  ScansLB win=NISTRSoXSBrowser, selRow=(dimsize(scanlist,0)-1)
+	//Controlupdate /W=NISTRSoXSBrowser ScansLB 
+	NRB_loadprimary(row = dimsize(scanlist,0)-1)
 	setdatafolder currentfolder
 	return 1
 	//listbox scansLB,selrow=-1
@@ -52,14 +54,18 @@ function NRB_Loaddir()
 	
 end
 
-function NRB_loadprimary([update])
+function NRB_loadprimary([update,row])
 // when choosing a primary.csv file, populates a list of promary values, a scrollable list of baseline values
 // and displays a list of datapoints with their primary motors defining the name
-	variable update
+	variable update, row
 	update = paramisdefault(update)? 0 : update
-	
-	controlInfo scansLB
-	variable /g scanrow = v_value
+	variable /g scanrow
+	if(paramisdefault(row))
+		controlInfo scansLB
+		scanrow = v_value
+	else
+		scanrow = row
+	endif
 	wave /t scanlist = root:Packages:NikaNISTRSoXS:scanlist
 	
 	if(scanrow<0 || scanrow >= dimsize(scanlist,0))
@@ -366,7 +372,7 @@ Function NRB_autocheckproc(cba) : CheckBoxControl
 		case 2: // mouse up
 			Variable checked = cba.checked
 			if(checked)
-				CtrlNamedBackground NRB_BG, burst=0, proc=NRB_BGTask, period=240, dialogsOK=0, start
+				CtrlNamedBackground NRB_BG, burst=0, proc=NRB_BGTask, period=60, dialogsOK=0, start
 			else
 				CtrlNamedBackground NRB_BG, stop
 			endif
@@ -1162,12 +1168,13 @@ Function NRB_BGTask(s)
 		return 0 // not running -- wait for user
 	endif
 	NVAR lastRunTicks= root:Packages:NikaNISTRSoXS:bkglastRunTicks
-	if( (lastRunTicks+120) >= ticks )
+	if( (lastRunTicks+30) >= ticks )
 		return 0 // not time yet, wait
 	endif
 	NVAR runNumber= root:Packages:NikaNISTRSoXS:bkgrunNumber
 	runNumber += 1
 	NRB_Loaddir()
+	
 	doupdate
 	lastRunTicks= ticks
 	return 0

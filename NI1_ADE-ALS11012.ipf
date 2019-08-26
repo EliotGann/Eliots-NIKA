@@ -3775,7 +3775,7 @@ function PolarizationTopGraph([name,normtoFirstEn])
 	// get name for graph and folder
 	tracename = stringfromlist(j,tracelist)
 	if(paramisdefault(name))
-		splitstring /e="^'?(.*)[^_]{3,5}_1?[90]0_(90|180|270|360)_20'?$" tracename,basename
+		splitstring /e="^'?(.*)_(90|180|270|0)_20'?$" tracename,basename
 		if(strlen(basename)<1)
 			basename = windowname
 		endif
@@ -3802,25 +3802,25 @@ function PolarizationTopGraph([name,normtoFirstEn])
 	variable index
 	for(j=0;j<num;j+=1)
 		tracename = stringfromlist(j,tracelist)
-		splitstring /e="^'?(.*)_1?[90]0_(90|180|270|360)_20'?$" tracename,basename
+		splitstring /e="^'?(.*)_(90|180|270|0)_20'?$" tracename,basename
 		if(strlen(basename)<1)
 			print "Tracename: \"" + tracename + "\" could not by parced"
 			continue
 		endif
-		grouplist = greplist(tracelist,"^'?"+basename+"_1?[90]0_(90|180|270|360)_20'?$")
+		grouplist = greplist(tracelist,"^'?"+basename+".*_(90|180|270|0)_20'?$")
 		groupnum = itemsinlist(grouplist)
 		if(groupnum<2)
 			continue
 		endif
 		j+= groupnum -1
-		hd = whichlistitem(removeending(greplist(grouplist,"00_90_20'?$"),";"),tracelist)
-		hl = whichlistitem(removeending(greplist(grouplist,"00_180_20'?$"),";"),tracelist)
-		hu = whichlistitem(removeending(greplist(grouplist,"00_270_20'?$"),";"),tracelist)
-		hr = whichlistitem(removeending(greplist(grouplist,"00_360_20'?$"),";"),tracelist)
-		vd = whichlistitem(removeending(greplist(grouplist,"90_90_20'?$"),";"),tracelist)
-		vl = whichlistitem(removeending(greplist(grouplist,"90_180_20'?$"),";"),tracelist)
-		vu = whichlistitem(removeending(greplist(grouplist,"90_270_20'?$"),";"),tracelist)
-		vr = whichlistitem(removeending(greplist(grouplist,"90_360_20'?$"),";"),tracelist)
+		hd = whichlistitem(removeending(greplist(grouplist,"90_20'?$"),";"),tracelist)
+		hl = whichlistitem(removeending(greplist(grouplist,"180_20'?$"),";"),tracelist)
+		hu = whichlistitem(removeending(greplist(grouplist,"270_20'?$"),";"),tracelist)
+		hr = whichlistitem(removeending(greplist(grouplist,"_0_20'?$"),";"),tracelist)
+		vd = -1//whichlistitem(removeending(greplist(grouplist,"90_90_20'?$"),";"),tracelist)
+		vl = -1//whichlistitem(removeending(greplist(grouplist,"90_180_20'?$"),";"),tracelist)
+		vu = -1//whichlistitem(removeending(greplist(grouplist,"90_270_20'?$"),";"),tracelist)
+		vr = -1//whichlistitem(removeending(greplist(grouplist,"90_360_20'?$"),";"),tracelist)
 		// combine into average parallel and perpindicular r and q waves (largest range possible) for different polarizations
 		if((hd<0 && hu<0) || (hr<0 && hl<0))
 			// horizontal polarization is not complete, so skip it
@@ -4028,7 +4028,9 @@ function PolarizationTopGraph([name,normtoFirstEn])
 		Atot[index] = mean(A)
 		etot[index] = sqrt(Variance(smA))
 		smooth /s=4 51,A
-		En[index] = numberbykey("BeamlineEnergy",wnote,"=",";")
+		string enstring
+		splitstring /e="([^_]*)eV" nameofwave(A), enstring
+		En[index] = str2num(enstring)
 		Awaves[index] = $getwavesdatafolder(A,2)
 		Axwaves[index] = $getwavesdatafolder(Ax,2)
 		killwaves /z asdf

@@ -54,7 +54,7 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		endif
 		ImageLoad/P=$(PathName)/T=tiff/O/N=$(NewWaveName) FileNameToLoad
 		string detectortype = ""
-		if(stringmatch(FileNameToLoad,"*Small and Wide Angle Synced CCD Detectors_saxs*"))
+		if(stringmatch(FileNameToLoad,"*Synced_saxs*"))
 			detectortype= "Small Angle CCD Detector_"
 		else
 			detectortype = "Wide Angle CCD Detector_"
@@ -99,10 +99,6 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			
 			
 			nvar Sampletransmission = root:Packages:Convert2Dto1D:SampleTransmission
-			svar UserFileName=root:Packages:Convert2Dto1D:OutputDataName
-			string imagenum
-			splitstring /e="^([1234567890]*)-([^-]*)" filenametoload, imagenum,  userfilename
-			UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100000)/100)+"eV_"+detectortype[0] + "_"+ num2str(imnum)// + imagenum + "_" 
 			NewNote += teststring
 		endif
 		teststring= indexedfile($(PathName),-1,".csv")
@@ -170,8 +166,15 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		endif	
 		NewNote +=metadata+";"
 			
+			
+		svar UserFileName=root:Packages:Convert2Dto1D:OutputDataName
+		string imagenum
+		splitstring /e="^([1234567890]*)-(.{3,8})-" filenametoload, imagenum,  userfilename
+		UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100000)/100)+"eV_"+detectortype[0] + "_"+ num2str(imnum)// + imagenum + "_" 
+			
+			
 		wave LoadedWvHere=$(NewWaveName)
-		Redimension/N=(-1,-1,0) 	LoadedWvHere			//this is fix for 3 layer tiff files...
+		Redimension/N=(-1,-1,0)/i 	LoadedWvHere			//this is fix for 3 layer tiff files...
 		NewNote+="DataFileName="+FileNameToLoad+";"
 		NewNote+="DataFileType="+".tif"+";.tiff"+";"
 		
