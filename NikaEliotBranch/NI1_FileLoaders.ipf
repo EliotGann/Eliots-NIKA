@@ -111,7 +111,7 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			//redimension /N=(dimsize(testwave,0)/3,3) testwave
 			//matrixop /o colsums = sumcols(testwave)
 			//SampleI0 = colsums[1]
-			wave /z Izero_Mesh_Drain_Current, en_monoen_readback
+			wave /z Izero_Mesh_Drain_Current, en_monoen_readback, Synced_saxs_cam_bin_x, Synced_saxs_cam_bin_y
 			if(waveexists(Izero_Mesh_Drain_Current))
 				SampleI0 = Izero_Mesh_Drain_Current[imnum]
 			endif
@@ -126,6 +126,13 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 				nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
 				samplemeasurementtime = RSoXS_Diagnostic_Picoammeter_exposure_time[imnum]
 			endif
+			if(waveexists(Synced_saxs_cam_bin_x))
+				nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
+				pxsizex = 0.015 * Synced_saxs_cam_bin_x[imnum]
+				nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
+				pxsizey = 0.015 * Synced_saxs_cam_bin_y[imnum]
+			endif
+			
 		endif
 		setdatafolder ::
 		killdatafolder /z importdata
