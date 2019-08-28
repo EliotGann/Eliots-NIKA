@@ -25,7 +25,7 @@ function NRB_Loaddir()
 	oldnames = tiffnames
 	string matchingtiffs
 	if(strlen(filenames)<1)
-		make /o/n=(0,2) /t scanlist
+		make /o/n=(0,3) /t scanlist
 		setdatafolder currentfolder
 		//print "No txt files found in directory"
 		return -3
@@ -98,20 +98,25 @@ function NRB_loadprimary([update,row])
 	channellist[][0] = ""
 	channellistsel[][0] = 32
 	// pick out the channels to use for the sequence display
-	wave /z en_energy
+	wave /z en_energy, RSoXS_Sample_Outboard_Inboard, RSoXS_Sample_Up_Down
 	wave /z seq_num
 	wave /t steplist = root:Packages:NikaNISTRSoXS:steplist
 	wave steplistsel = root:Packages:NikaNISTRSoXS:steplistsel
+	if(whichlistitem("RSoXS_Sample_Outboard_Inboard",s_wavenames)>=0 && whichlistitem("RSoXS_Sample_Up_Down",s_wavenames)>=0)
+		redimension /n=(dimsize(RSoXS_Sample_Up_Down,0)) steplist, steplistsel
+		steplist[] = num2str(seq_num[p]) + " - (" + num2str(round(RSoXS_Sample_Outboard_Inboard[p]*100)/100) + " , " + num2str(round(RSoXS_Sample_Up_Down[p]*100)/100) + ")"
 	
-	if(whichlistitem("en_energy",s_wavenames)<0)
+	elseif(whichlistitem("en_energy",s_wavenames)>=0)
+		
+		redimension /n=(dimsize(en_energy,0)) steplist, steplistsel
+		steplist[] = num2str(seq_num[p]) + " - " + num2str(round(en_energy[p]*100)/100) + "eV"
+	else 
+	
 		//not an energy scan, need to read something else .. what??
+		
 		print "can't find energy"
 		redimension /n=(dimsize(seq_num,0)) steplist, steplistsel
 		steplist[] = "step " + num2str(seq_num[p])
-	
-	else
-		redimension /n=(dimsize(en_energy,0)) steplist, steplistsel
-		steplist[] = num2str(seq_num[p]) + " - " + num2str(round(en_energy[p]*100)/100) + "eV"
 	endif
 	variable i
 	
