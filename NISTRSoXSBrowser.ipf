@@ -102,14 +102,17 @@ function NRB_loadprimary([update,row])
 	wave /z seq_num
 	wave /t steplist = root:Packages:NikaNISTRSoXS:steplist
 	wave steplistsel = root:Packages:NikaNISTRSoXS:steplistsel
+	steplist=""
+	variable foundloc = 0
 	if(whichlistitem("RSoXS_Sample_Outboard_Inboard",s_wavenames)>=0 && whichlistitem("RSoXS_Sample_Up_Down",s_wavenames)>=0)
 		redimension /n=(dimsize(RSoXS_Sample_Up_Down,0)) steplist, steplistsel
 		steplist[] = num2str(seq_num[p]) + " - (" + num2str(round(RSoXS_Sample_Outboard_Inboard[p]*100)/100) + " , " + num2str(round(RSoXS_Sample_Up_Down[p]*100)/100) + ")"
-	
-	elseif(whichlistitem("en_energy",s_wavenames)>=0)
+		foundloc = 1
+	endif
+	if(whichlistitem("en_energy",s_wavenames)>=0)
 		
 		redimension /n=(dimsize(en_energy,0)) steplist, steplistsel
-		steplist[] = num2str(seq_num[p]) + " - " + num2str(round(en_energy[p]*100)/100) + "eV"
+		steplist[] += num2str(seq_num[p]) + " - " + num2str(round(en_energy[p]*100)/100) + "eV"
 	else 
 	
 		//not an energy scan, need to read something else .. what??
@@ -200,6 +203,29 @@ function NRB_loadprimary([update,row])
 		matrixtranspose baselines
 		duplicate /o baselines, root:Packages:NikaNISTRSoXS:bllist
 	endif
+	svar location = root:Packages:NikaNISTRSoXS:location
+	if(foundloc)
+		findvalue /TEXT="en energy" baselines
+		if(v_value>=0)
+			location = baselines[v_value][1]
+		else
+			location = ""
+		endif
+	else
+		findvalue /TEXT="RSoXS Sample Outboard-Inboard" baselines
+		if(v_value>=0)
+			location = "("+num2str(round(str2num(baselines[v_value][1])*100)/100) + ","
+		else
+			location = ""
+		endif
+		findvalue /TEXT="RSoXS Sample Up-Down" baselines
+		if(v_value>=0)
+			location += num2str(round(str2num(baselines[v_value][1])*100)/100) + ")"
+		else
+			location = ""
+		endif
+		
+	endif
 	NRB_updateimageplot()
 	
 	setdatafolder currentfolder
@@ -265,7 +291,7 @@ function NRB_InitNISTRSoXS()
 	setdatafolder root:
 	newdatafolder /o/s Packages
 	newdatafolder /o/s NikaNISTRSoXS		
-	string /g pathtodata, colortab
+	string /g pathtodata, colortab, location
 	if(strlen(colortab)<3)
 		colortab = "Terrain"
 	endif
@@ -357,6 +383,8 @@ function NRB_InitNISTRSoXS()
 	CheckBox NRB_autocheck,value= 0
 	CheckBox NRB_Darkscheck,pos={292.00,816.00},size={73.00,15.00},proc=NRP_Viewdarks_butproc,title="View Darks"
 	CheckBox NRB_Darkscheck,value= 1
+	TitleBox Location,pos={1150.00,1.00},size={254.00,23.00}
+	TitleBox Location,variable= root:Packages:NikaNISTRSoXS:location
 	
 	Display/W=(481,28,1344,860)/HOST=# /HIDE=1 
 	RenameWindow #,Graph1D
