@@ -66,12 +66,17 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		if(imnum*0!=0)
 			imnum = 0
 		endif
+		pathinfo $PathName
+		if(stringmatch(num2str(str2num(parsefilepath(0,S_Path,":",1,0))),parsefilepath(0,S_Path,":",1,0)))
+			NEWPATH /O /Q/Z BS_metadata, parsefilepath(1,S_Path,":",1,0)
+		else
+			NEWPATH /O /Q/Z BS_metadata, S_Path
+		endif
 		
-		
-		string teststring= indexedfile($(PathName),-1,".csv")
+		string teststring= indexedfile(BS_metadata,-1,".csv")
 		string baselinestring = greplist(teststring,"^"+FileNametoLoad[0,8]+".*baseline")
 		newdatafolder /o/s importdata
-		LoadWave/Q/O/J/M/U={0,0,1,0}/D/A=wave/K=0/L={0,1,0,0,0}/P=$(PathName)  stringfromlist(0,baselinestring)
+		LoadWave/Q/O/J/M/U={0,0,1,0}/D/A=wave/K=0/L={0,1,0,0,0}/P=BS_metadata  stringfromlist(0,baselinestring)
 		wave /z datawave = $(stringfromlist(0,S_waveNames))
 		if(waveexists(datawave))
 			teststring = Colwavetostring(datawave)
@@ -101,9 +106,9 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			nvar Sampletransmission = root:Packages:Convert2Dto1D:SampleTransmission
 			NewNote += teststring
 		endif
-		teststring= indexedfile($(PathName),-1,".csv")
+		teststring= indexedfile(BS_metadata,-1,".csv")
 		teststring = greplist(teststring,"^"+FileNametoLoad[0,8]+".*primary")
-		LoadWave/Q/O/J/D/A/K=0/P=$(PathName)/W  stringfromlist(0,teststring)
+		LoadWave/Q/O/J/D/A/K=0/P=BS_metadata/W  stringfromlist(0,teststring)
 		wave /z datawave = $(stringfromlist(0,S_waveNames))
 		if(waveexists(datawave))
 			nvar SampleI0=root:Packages:Convert2Dto1D:samplei0
@@ -137,11 +142,11 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		setdatafolder ::
 		killdatafolder /z importdata
 		string metadata=""
-		teststring= indexedfile($(PathName),-1,".jsonl")
+		teststring= indexedfile(BS_metadata,-1,".jsonl")
 		variable jsonfound=0
 		string metadatafilename
 		if(strlen(teststring) < 5)
-			teststring= indexedfile($(PathName),-1,".json")
+			teststring= indexedfile(BS_metadata,-1,".json")
 			if(strlen(teststring) > 4)
 				jsonfound = 1
 				metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*json"))
@@ -151,23 +156,23 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*jsonl"))
 		endif
 		if(jsonfound)
-			metadata = addmetadatafromjson(PathName,"institution",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"project_name",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"proposal_id",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"sample_name",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"sample_desc",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"sample_id",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"sample_set",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"user_name",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"user_id",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"notes",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"uid",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"dim1",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"dim2",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"dim3",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"chemical_formula",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"density",metadatafilename,metadata)
-			metadata = addmetadatafromjson(PathName,"project_desc",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","institution",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","project_name",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","proposal_id",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","sample_name",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","sample_desc",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","sample_id",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","sample_set",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","user_name",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","user_id",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","notes",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","uid",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","dim1",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","dim2",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","dim3",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","chemical_formula",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","density",metadatafilename,metadata)
+			metadata = addmetadatafromjson("BS_metadata","project_desc",metadatafilename,metadata)
 		else
 			print "Currently can't load metadata json or jsonl file"
 		endif	

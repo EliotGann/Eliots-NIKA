@@ -11,19 +11,15 @@ function NRB_Loaddir()
 		return -1
 	endif
 	string filenames = sortlist(IndexedFile($pname, -1, ".csv"),";",4)
-	string tiffnames = IndexedFile($pname, -1, ".tiff")
 	String CurrentFolder=GetDataFolder(1)
 	SetDataFolder root:Packages:NikaNISTRSoXS
-	string /g oldnames
 	string /g oldcsvs
-	if(stringmatch(oldnames, tiffnames) && stringmatch(oldcsvs,filenames))
-
+	if(stringmatch(oldcsvs,filenames))
 		setdatafolder currentfolder
+		NRB_loadprimary(update=1)
 		return -2
 	endif
 	oldcsvs = filenames
-	oldnames = tiffnames
-	string matchingtiffs
 	if(strlen(filenames)<1)
 		make /o/n=(0,3) /t scanlist
 		setdatafolder currentfolder
@@ -34,18 +30,23 @@ function NRB_Loaddir()
 	variable i
 	
 	
-	make /o/n=(itemsinlist(filenames),2) /t scanlist
-	scanlist[][0]= stringfromlist(p,filenames)
+	
 	for(i=itemsinlist(filenames)-1;i>=0;i-=1)
-		if(stringmatch(scanlist[i][0],"*baseline*"))
-			deletePoints i,1,scanlist
-		else
-			matchingtiffs = listMatch(tiffnames,scanlist[i][0]+"*primary*saxs*")
-			scanlist[i][1] += num2str(itemsinlist(matchingtiffs))
+		if(stringmatch(stringfromlist(i,filenames),"*.csv"))
+			filenames = removelistitem(i,filenames)
 		endif
 	endfor
+	make /o/n=(itemsinlist(filenames),2) /t scanlist
+	scanlist[][0]= stringfromlist(p,filenames)
+	for(i=dimsize(scanlist,0)-1;i>=0;i-=1)
+		LoadWave/Q/O/J/D/A/K=0/P=$(pname)/M /B="N=wave0;"  scanlist[i][0]+"-primary.csv"
+		wave wavein = $stringfromlist(0,s_waveNames)
+		scanlist[i][1] = num2str(dimsize(wavein,0)-1)
+	endfor
 	ListBox  ScansLB win=NISTRSoXSBrowser, selRow=(dimsize(scanlist,0)-1)
-	//Controlupdate /W=NISTRSoXSBrowser ScansLB 
+	//Controlupdate /W=NISTRSoXSBrowser ScansLB
+	wave /z channellistsel
+	channellistsel = 0
 	NRB_loadprimary(row = dimsize(scanlist,0)-1)
 	setdatafolder currentfolder
 	return 1
@@ -73,24 +74,32 @@ function NRB_loadprimary([update,row])
 	endif
 	
 	string basename = scanlist[scanrow][0]
+	string basenum
+	splitstring /e="^([[:digit:]]*)" basename, basenum
 	svar /z pname = root:Packages:NikaNISTRSoXS:pathname
 	if(!svar_Exists(pname))
 		return -1
 	endif
-	
+	svar pathtodata = root:Packages:NikaNISTRSoXS:pathtodata
+		
 	String CurrentFolder=GetDataFolder(1)
 	SetDataFolder root:Packages:NikaNISTRSoXS
 	string /g basescanname = basename
-	
-	
-	killdatafolder /z channels
+	string /g pnameimages = "NistRSoXS_Data"
+	newpath /o/q/z $pnameimages, pathtodata + basenum + ":"
+	if(v_flag!=0)
+		newpath /o/q $pnameimages, pathtodata
+	endif
+	// killdatafolder channels
 	newdatafolder /o/s channels
-	LoadWave/Q/O/J/D/A/K=0/P=$(pname)/W  basename+"-primary.csv"
+	close /A
+	LoadWave/q/O/J/D/A/K=0/P=$(pname)/W  basename+"-primary.csv"
 	wave /z datawave = $(stringfromlist(0,S_waveNames))
 	if(!waveexists(datawave))
 		setdatafolder currentfolder
 		return -1
 	endif
+	scanlist[scanrow][1] = num2str(dimsize(datawave,0))
 	wave /t channellist = root:Packages:NikaNISTRSoXS:channellist
 	wave channellistsel = root:Packages:NikaNISTRSoXS:channellistsel
 	redimension /n=(itemsinlist(s_wavenames),2) channellist, channellistsel
@@ -102,6 +111,7 @@ function NRB_loadprimary([update,row])
 	wave /z seq_num
 	wave /t steplist = root:Packages:NikaNISTRSoXS:steplist
 	wave steplistsel = root:Packages:NikaNISTRSoXS:steplistsel
+	variable oldnum = dimsize(steplist,0)
 	steplist=""
 	variable foundloc = 0
 	if(whichlistitem("RSoXS_Sample_Outboard_Inboard",s_wavenames)>=0 && whichlistitem("RSoXS_Sample_Up_Down",s_wavenames)>=0)
@@ -117,21 +127,22 @@ function NRB_loadprimary([update,row])
 	
 		//not an energy scan, need to read something else .. what??
 		
-		print "can't find energy"
+		//print "can't find energy"
 		redimension /n=(dimsize(seq_num,0)) steplist, steplistsel
 		steplist[] = "step " + num2str(seq_num[p])
 	endif
+
 	variable i
+	if(dimsize(steplist,0)>oldnum && update)
+		steplistsel = p>=oldnum ? 1 : steplistsel[p]
+	endif	
+	string matchingtiffs = IndexedFile($pnameimages, -1, ".tiff")
 	
-	svar /z pname = root:Packages:NikaNISTRSoXS:pathname
-	string tiffnames = IndexedFile($pname, -1, ".tiff")
-	
-	string matchingtiffs = listMatch(tiffnames,basename+"*")
 	string tifffilename
 	
 	variable stepswimages = 0
 	for(i=0;i<(dimsize(seq_num,0));i+=1)
-		tifffilename = stringfromlist(0,listMatch(matchingtiffs,"*primary*"+num2str(i)+".tiff"))
+		tifffilename = stringfromlist(0,listMatch(matchingtiffs,basenum+"*primary*"+num2str(i)+".tiff"))
 		if(strlen(tifffilename)<4)
 			steplist[i] += " (no image)"
 		else
@@ -150,8 +161,9 @@ function NRB_loadprimary([update,row])
 	
 	
 	if(update)
-		// we are essentially done now, we don't need to reload the metadata or baseline info, which hasn't really changed
+		// we are essentially done now, we don't need to reload the metadata or baseline info, which hasn't changed
 		setdatafolder currentfolder
+		NRB_updateimageplot()
 		return 1
 	endif
 	
@@ -405,9 +417,9 @@ Function NRB_autocheckproc(cba) : CheckBoxControl
 		case 2: // mouse up
 			Variable checked = cba.checked
 			if(checked)
-				CtrlNamedBackground NRB_BG, burst=0, proc=NRB_BGTask, period=60, dialogsOK=0, start
+				CtrlNamedBackground NRB_BG, burst=0, proc=NRB_BGTask, period=	10, dialogsOK=1, kill=0, start
 			else
-				CtrlNamedBackground NRB_BG, stop
+				CtrlNamedBackground NRB_BG, stop, kill=1
 			endif
 			break
 		case -1: // control being killed
@@ -434,7 +446,8 @@ function NRB_browse()
 	String CurrentFolder=GetDataFolder(1)
 	SetDataFolder root:Packages:NikaNISTRSoXS
 	svar pathtodata
-	NewPath/O/m="path for txt files" Path_NISTRSoXS			// This will put up a dialog
+	pathinfo Path_NISTRSoXS
+	NewPath/q/z/O/m="path for txt files" Path_NISTRSoXS		// This will put up a dialog
 	if (V_flag == 0)
 		string /g pathname
 		pathname = "Path_NISTRSoXS"
@@ -600,7 +613,7 @@ function NRB_loadimages(listofsteps,[autoscale])
 	nvar /z botmin
 	nvar /z botmax
 	nvar /z logimage
-	svar /z pname = root:Packages:NikaNISTRSoXS:pathname
+	svar /z pname = root:Packages:NikaNISTRSoXS:pnameimages
 	wave /t imagenames
 	wave /t steplist
 	killdatafolder /z images
@@ -659,10 +672,10 @@ function NRB_loadimages(listofsteps,[autoscale])
 	if(autoscale)
 		setaxis /A /w=NISTRSoXSBrowser#Graph2D#$imagenames[0]
 		doupdate
-		getaxis /w=NISTRSoXSBrowser#Graph2D#$imagenames[0] left
+		getaxis /q/w=NISTRSoXSBrowser#Graph2D#$imagenames[0] left
 		leftmin = v_min
 		leftmax = v_max
-		getaxis /w=NISTRSoXSBrowser#Graph2D#$imagenames[0] bottom
+		getaxis /q/w=NISTRSoXSBrowser#Graph2D#$imagenames[0] bottom
 		botmin = v_min
 		botmax = v_max
 		minval = totminv
@@ -967,7 +980,7 @@ end
 
 function NRB_convertpathtonika([main,mask,dark,beamcenter])
 	variable mask,dark,beamcenter,main
-	svar /z pname = root:Packages:NikaNISTRSoXS:pathname
+	svar /z pname = root:Packages:NikaNISTRSoXS:pnameimages
 	PathInfo $pname
 	if(main)
 		NI1A_Convert2Dto1DMainPanel()
@@ -1029,7 +1042,7 @@ function /t NRB_getfilenames()
 
 	svar basescanname
 	nvar saxsorwaxs, darkview
-	svar /z pname = root:Packages:NikaNISTRSoXS:pathname
+	svar /z pname = root:Packages:NikaNISTRSoXS:pnameimages
 	wave /t steplist
 	killdatafolder /z images
 	newdatafolder /o/s images
@@ -1201,7 +1214,7 @@ Function NRB_BGTask(s)
 		return 0 // not running -- wait for user
 	endif
 	NVAR lastRunTicks= root:Packages:NikaNISTRSoXS:bkglastRunTicks
-	if( (lastRunTicks+30) >= ticks )
+	if( (lastRunTicks+900) >= ticks )
 		return 0 // not time yet, wait
 	endif
 	NVAR runNumber= root:Packages:NikaNISTRSoXS:bkgrunNumber
