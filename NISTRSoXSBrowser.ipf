@@ -2,7 +2,9 @@
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
 #include "NI1_Loader"
 
-function NRB_Loaddir()
+function NRB_Loaddir([update])
+	variable update
+	update = paramisdefault(update)? 0 : update
 // this function loads the current directory, looking for all *primary.csv, listing all the * basenames
 // along with the number of files
 	svar /z pname = root:Packages:NikaNISTRSoXS:pathname
@@ -38,11 +40,13 @@ function NRB_Loaddir()
 	endfor
 	make /o/n=(itemsinlist(filenames),2) /t scanlist
 	scanlist[][0]= stringfromlist(p,filenames)
-	for(i=dimsize(scanlist,0)-1;i>=0;i-=1)
-		LoadWave/Q/O/J/D/A/K=0/P=$(pname)/M /B="N=wave0;"  scanlist[i][0]+"-primary.csv"
-		wave wavein = $stringfromlist(0,s_waveNames)
-		scanlist[i][1] = num2str(dimsize(wavein,0)-1)
-	endfor
+	if(update==0)
+		for(i=dimsize(scanlist,0)-1;i>=0;i-=1)
+			LoadWave/Q/O/J/D/A/K=0/P=$(pname)/M /B="N=wave0;"  scanlist[i][0]+"-primary.csv"
+			wave wavein = $stringfromlist(0,s_waveNames)
+			scanlist[i][1] = num2str(dimsize(wavein,0)-1)
+		endfor
+	endif
 	ListBox  ScansLB win=NISTRSoXSBrowser, selRow=(dimsize(scanlist,0)-1)
 	//Controlupdate /W=NISTRSoXSBrowser ScansLB
 	wave /z channellistsel
@@ -90,10 +94,13 @@ function NRB_loadprimary([update,row])
 	if(v_flag!=0)
 		newpath /o/q $pnameimages, pathtodata
 	endif
-	// killdatafolder channels
+	//killdatafolder /z channels
 	newdatafolder /o/s channels
-	close /A
-	LoadWave/q/O/J/D/A/K=0/P=$(pname)/W  basename+"-primary.csv"
+	//close /A
+	newpath /o/q tempfolder, (getenvironmentVariable("TMP"))
+	copyfile /o/p=$(pname) basename+"-primary.csv" as getenvironmentVariable("TMP")+"\RSoXS.csv"
+	LoadWave/q/O/J/D/A/K=0/P=tempfolder/W  "RSoXS.csv"
+	//deletefile /p=tempfolder "RSoXS.csv"
 	wave /z datawave = $(stringfromlist(0,S_waveNames))
 	if(!waveexists(datawave))
 		setdatafolder currentfolder
@@ -1214,7 +1221,7 @@ Function NRB_BGTask(s)
 		return 0 // not running -- wait for user
 	endif
 	NVAR lastRunTicks= root:Packages:NikaNISTRSoXS:bkglastRunTicks
-	if( (lastRunTicks+900) >= ticks )
+	if( (lastRunTicks+60) >= ticks )
 		return 0 // not time yet, wait
 	endif
 	NVAR runNumber= root:Packages:NikaNISTRSoXS:bkgrunNumber
