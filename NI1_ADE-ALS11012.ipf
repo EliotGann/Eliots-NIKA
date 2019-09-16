@@ -2198,7 +2198,7 @@ function groupplot(gn,matchstr,qn,[meshdata,revq,qpwr,plotq,imageq,contq,sm,nums
 				endif
 			endif
 			if(getenfromwave)
-				envaluesw[j] = str2num(stringbykey(envalues,note(rwave),"=",";"))
+				envaluesw[j] = str2num(stringbykey(envalues,note(rwave),":",";"))
 			endif
 			j+=1
 			setdatafolder $workingdir
