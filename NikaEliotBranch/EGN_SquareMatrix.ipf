@@ -1,7 +1,7 @@
 #pragma rtGlobals=1		// Use modern global access method.
 
 
-Function NI1_MakeSectorGraph()
+Function EGN_MakeSectorGraph()
 
 	string OdlDf=GetDataFolder(1)
 	SetDataFolder root:Packages:Convert2Dto1D
@@ -17,9 +17,9 @@ Function NI1_MakeSectorGraph()
 	NVAR SectorsUseRAWData=root:Packages:Convert2Dto1D:SectorsUseRAWData
 	NVAR SectorsUseCorrData=root:Packages:Convert2Dto1D:SectorsUseCorrData
 	if(SectorsUseCorrData)
-		NI1A_CorrectDataPerUserReq("",wavelengths)								//calibrate data
+		EGNA_CorrectDataPerUserReq("",wavelengths)								//calibrate data
 	endif
-	NI1_MakeSqMatrixOfLineouts(SectorsNumSect,SectorsSectWidth,SectorsGraphStartAngle,SectorsGraphEndAngle)		//convert to lineout
+	EGN_MakeSqMatrixOfLineouts(SectorsNumSect,SectorsSectWidth,SectorsGraphStartAngle,SectorsGraphEndAngle)		//convert to lineout
 	
 	wave SquareMap=root:Packages:Convert2Dto1D:SquareMap
 	//duplicate/O SquareMap, SquareMap_dis
@@ -41,14 +41,14 @@ Function NI1_MakeSectorGraph()
 	
 	DoWindow SquareMapIntvsPixels
 	if(!V_Flag)
-		Execute("NI1_SquareGraph()")
+		Execute("EGN_SquareGraph()")
 	else
 		DoWindow/F SquareMapIntvsPixels
 	endif
 
 end
 
-Function NI1_MakeSqMatrixOfLineouts(SectorsNumSect,AngleWidth,SectorsGraphStartAngle,SectorsGraphEndAngle)
+Function EGN_MakeSqMatrixOfLineouts(SectorsNumSect,AngleWidth,SectorsGraphStartAngle,SectorsGraphEndAngle)
 	variable SectorsNumSect,AngleWidth,SectorsGraphStartAngle,SectorsGraphEndAngle
 	//Create matrix of lineouts using the ImageLineProfile function
 	//will have to be finished, for now it is simple method... 
@@ -198,7 +198,7 @@ end
 
 
 
-Function NI1_SquareGraph() : Graph
+Function EGN_SquareGraph() : Graph
 
 	Wave SquareMap_dis=root:Packages:Convert2Dto1D:SquareMap_dis
 	NVAR A2DImageRangeMinLimit=root:Packages:Convert2Dto1D:A2DImageRangeMinLimit
@@ -207,12 +207,12 @@ Function NI1_SquareGraph() : Graph
 	Display /W=(191.25,169.25,705,562.25)/K=1; AppendImage SquareMap_dis
 	DoWindow/C/T SquareMapIntvsPixels,"SquareMap of intensity vs pixel"
 	ControlBar 40
-	CheckBox DisplayLogLineout,pos={10,8},size={90,14},proc=NI1A_SquareCheckProc,title="Log Int?"
+	CheckBox DisplayLogLineout,pos={10,8},size={90,14},proc=EGNA_SquareCheckProc,title="Log Int?"
 	CheckBox DisplayLogLineout,help={"Display 2D map oflineouts in log units?"}
 	CheckBox DisplayLogLineout,variable= root:Packages:Convert2Dto1D:A2DLineoutDisplayLogInt
-	Slider ImageRangeMinSquare,pos={100,4},size={150,16},proc=NI1A_MainSliderProc,variable= root:Packages:Convert2Dto1D:A2DImageRangeMin,live= 0,side= 3,vert= 0,ticks= 0
+	Slider ImageRangeMinSquare,pos={100,4},size={150,16},proc=EGNA_MainSliderProc,variable= root:Packages:Convert2Dto1D:A2DImageRangeMin,live= 0,side= 3,vert= 0,ticks= 0
 	Slider ImageRangeMinSquare,limits={A2DImageRangeMinLimit,A2DImageRangeMaxLimit,0}
-	Slider ImageRangeMaxSquare,pos={100,20},size={150,16},proc=NI1A_MainSliderProc,variable= root:Packages:Convert2Dto1D:A2DImageRangeMax,live= 0,side= 3,vert= 0,ticks= 0
+	Slider ImageRangeMaxSquare,pos={100,20},size={150,16},proc=EGNA_MainSliderProc,variable= root:Packages:Convert2Dto1D:A2DImageRangeMax,live= 0,side= 3,vert= 0,ticks= 0
 	Slider ImageRangeMaxSquare,limits={A2DImageRangeMinLimit,A2DImageRangeMaxLimit,0}
 //
 	ModifyImage SquareMap_dis ctab= {*,*,Terrain,0}
@@ -231,7 +231,7 @@ Function NI1_SquareGraph() : Graph
 	Label left "Azimuthal angle [degrees]"
 EndMacro
 
-Function NI1A_SquareCheckProc(ctrlName,checked) : CheckBoxControl
+Function EGNA_SquareCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 
@@ -257,7 +257,7 @@ Function NI1A_SquareCheckProc(ctrlName,checked) : CheckBoxControl
 		A2DImageRangeMax=V_max
 		DoWindow SquareMapIntvsPixels
 		if(!V_Flag)
-			Execute ("NI1_SquareGraph()")
+			Execute ("EGN_SquareGraph()")
 		else
 			DoWindow/F SquareMapIntvsPixels
 		endif	
@@ -270,30 +270,30 @@ Function NI1A_SquareCheckProc(ctrlName,checked) : CheckBoxControl
 	
 end
 
-Function NI1_SquareButtonProc(ctrlName) : ButtonControl
+Function EGN_SquareButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
 	
 	if(cmpstr(ctrlName,"SaveCurrentLineout")==0)
-		Wave profile=root:Packages:NI1_ImProcess:LineProfile:profile
+		Wave profile=root:Packages:EGN_ImProcess:LineProfile:profile
 		
 		string OldDf=GetDataFolder(1)
 		string NewFldrName
-		//DoAlert 0, "Need to finish NI1_SquareButtonProc procedure in NI1_SquareMatrix.ipf" 
+		//DoAlert 0, "Need to finish EGN_SquareButtonProc procedure in EGN_SquareMatrix.ipf" 
 		//need to convert data into Int vs Q and then save data somewhere...
 		SVAR FileNameToLoad=root:Packages:Convert2Dto1D:FileNameToLoad
-		NVAR DisplayPixles=root:Packages:NI1_ImProcess:LineProfile:DisplayPixles
-		NVAR DisplayQvec=root:Packages:NI1_ImProcess:LineProfile:DisplayQvec
-		NVAR DisplaydSpacing=root:Packages:NI1_ImProcess:LineProfile:DisplaydSpacing
-		NVAR DisplayTwoTheta=root:Packages:NI1_ImProcess:LineProfile:DisplayTwoTheta
+		NVAR DisplayPixles=root:Packages:EGN_ImProcess:LineProfile:DisplayPixles
+		NVAR DisplayQvec=root:Packages:EGN_ImProcess:LineProfile:DisplayQvec
+		NVAR DisplaydSpacing=root:Packages:EGN_ImProcess:LineProfile:DisplaydSpacing
+		NVAR DisplayTwoTheta=root:Packages:EGN_ImProcess:LineProfile:DisplayTwoTheta
 		NVAR A2DLineoutDisplayLogInt=root:Packages:Convert2Dto1D:A2DLineoutDisplayLogInt
-		wave profile=root:Packages:NI1_ImProcess:LineProfile:profile
-		wave qvector=root:Packages:NI1_ImProcess:LineProfile:qvector
-		wave TwoTheta=root:Packages:NI1_ImProcess:LineProfile:TwoTheta
-		wave Dspacing=root:Packages:NI1_ImProcess:LineProfile:Dspacing
-		wave chiangle=root:Packages:NI1_ImProcess:LineProfile:chiangle
-		NVAR width=root:Packages:NI1_ImProcess:LineProfile:width
-		NVAR position=root:Packages:NI1_ImProcess:LineProfile:position
+		wave profile=root:Packages:EGN_ImProcess:LineProfile:profile
+		wave qvector=root:Packages:EGN_ImProcess:LineProfile:qvector
+		wave TwoTheta=root:Packages:EGN_ImProcess:LineProfile:TwoTheta
+		wave Dspacing=root:Packages:EGN_ImProcess:LineProfile:Dspacing
+		wave chiangle=root:Packages:EGN_ImProcess:LineProfile:chiangle
+		NVAR width=root:Packages:EGN_ImProcess:LineProfile:width
+		NVAR position=root:Packages:EGN_ImProcess:LineProfile:position
 		NewFldrName = CleanupName(FileNameToLoad,0)[0,20] +"_"+num2str(floor(position))+"_"+num2str(floor(width))
 		Prompt NewFldrName, "Input folder name for data to be stored to"
 		DoPrompt "User input", NewFldrName
@@ -321,26 +321,26 @@ Function NI1_SquareButtonProc(ctrlName) : ButtonControl
 			Duplicate/O chiangle, $("a_"+NewFldrName)
 			wave avectorN=$("a_"+NewFldrName)
 			//avectorN = p // eliot added this to add an index wave for angular outputs
-			IN2G_RemoveNaNsFrom3Waves(Intensity,Error,avectorN)
+			EG_N2G_RemoveNaNsFrom3Waves(Intensity,Error,avectorN)
 		elseif(DisplayQvec)
 			Duplicate/O qvector, $("q_"+NewFldrName)
 			wave QvectorN=$("q_"+NewFldrName)
-			IN2G_RemoveNaNsFrom3Waves(Intensity,Error,QvectorN)
+			EG_N2G_RemoveNaNsFrom3Waves(Intensity,Error,QvectorN)
 		elseif(DisplaydSpacing)
 			Duplicate/O Dspacing, $("d_"+NewFldrName)
 			wave DspacingN=$("d_"+NewFldrName)
-			IN2G_RemoveNaNsFrom3Waves(Intensity,Error,DspacingN)
+			EG_N2G_RemoveNaNsFrom3Waves(Intensity,Error,DspacingN)
 		elseif(DisplayTwoTheta)
 			Duplicate/O TwoTheta, $("t_"+NewFldrName)
 			wave TwoThetaN=$("t_"+NewFldrName)
-			IN2G_RemoveNaNsFrom3Waves(Intensity,Error,TwoThetaN)
+			EG_N2G_RemoveNaNsFrom3Waves(Intensity,Error,TwoThetaN)
 		endif		
 		setDataFolder OldDf
 		
 	endif
 End
 
-Function NI1A_SQCCDImageUpdateColors(updateRanges)
+Function EGNA_SQCCDImageUpdateColors(updateRanges)
 	variable updateRanges
 	
 	string oldDf=GetDataFOlder(1)

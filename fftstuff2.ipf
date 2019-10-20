@@ -192,8 +192,8 @@ function /s fftandintegrate3D(testwave,[imagename,pwr,polarized,angledelta])
 	wnote += ";acheight1="+num2str(V_PeakVal)
 	output += ";acheight1:"+num2str(V_PeakVal)
 	FindPeak /N /Q /R=(V_PeakLoc+10,) autocwave
-	output += ";acmin2:"+num2str(V_PeakLoc)
-	wnote += ";acmin2="+num2str(V_PeakLoc)
+	output += ";acmEG_N2:"+num2str(V_PeakLoc)
+	wnote += ";acmEG_N2="+num2str(V_PeakLoc)
 	wnote += ";acheight2="+num2str(V_PeakVal)
 	output += ";acheight2:"+num2str(V_PeakVal)
 	FindPeak /N /Q /R=(V_PeakLoc+10,) autocwave
@@ -274,8 +274,8 @@ function /s fftandintegrate(testwave,xscalem,yscalem,[imagename,pwr])
 //	wnote += ";acheight1="+num2str(V_PeakVal)
 //	output += ";acheight1:"+num2str(V_PeakVal)
 //	FindPeak /N /Q /R=(V_PeakLoc+10,) autocwave
-//	output += ";acmin2:"+num2str(V_PeakLoc)
-//	wnote += ";acmin2="+num2str(V_PeakLoc)
+//	output += ";acmEG_N2:"+num2str(V_PeakLoc)
+//	wnote += ";acmEG_N2="+num2str(V_PeakLoc)
 //	wnote += ";acheight2="+num2str(V_PeakVal)
 //	output += ";acheight2:"+num2str(V_PeakVal)
 //	FindPeak /N /Q /R=(V_PeakLoc+10,) autocwave
@@ -539,31 +539,31 @@ function fftsim1([killolddata,name,step,im1name,im2name,im3name,pwr]) //ffts all
 	killolddata = paramisdefault(killolddata) ? 0:killolddata
 	if(killolddata)
 		dowindow /R/K parameteroutputs
-		killwaves/z fftoutputs,wavenames,fftnames,fitnames,acheight1,acheight2,acheight3,aczero,acmin1,acmin2,acmin3
+		killwaves/z fftoutputs,wavenames,fftnames,fitnames,acheight1,acheight2,acheight3,aczero,acmin1,acmEG_N2,acmin3
 	endif
 	variable num=100
 	variable i,starti=0,j
 	variable graphandsave = 1
 	newdatafolder /o/s $name
 	make/t/o/n=(num) fftoutputs,wavenames,fftnames,acnames
-	make/o/d/n=(num) acheight1=0,acheight2=0,acheight3=0,aczero=0,acmin1=0,acmin2=0,acmin3 = 0
+	make/o/d/n=(num) acheight1=0,acheight2=0,acheight3=0,aczero=0,acmin1=0,acmEG_N2=0,acmin3 = 0
 	dowindow /R/K parameteroutputs
-	edit/w=(650,400,1000,600) /n=parameteroutputs /k=1 acheight1,acheight2,acheight3,aczero,acmin1,acmin2,acmin3
+	edit/w=(650,400,1000,600) /n=parameteroutputs /k=1 acheight1,acheight2,acheight3,aczero,acmin1,acmEG_N2,acmin3
 	string output
 	dowindow /r/k $("acfit_"+name)
-	display /w=(0,300,600,500) /k=1 /n=$("acfit_"+name) aczero,acmin1,acmin2,acmin3 as "Autocorrlation Properties for "+name
+	display /w=(0,300,600,500) /k=1 /n=$("acfit_"+name) aczero,acmin1,acmEG_N2,acmin3 as "Autocorrlation Properties for "+name
 	appendtograph /w=$("acfit_"+name) /r  acheight1,acheight2,acheight3
 	ModifyGraph /w=$("acfit_"+name) log(right)=1, log(left)=1
 	ModifyGraph /w=$("acfit_"+name) lsize=2,rgb(aczero)=(0,0,0),rgb(acmin1)=(0,0,65280);DelayUpdate
-	ModifyGraph /w=$("acfit_"+name) rgb(acmin2)=(0,43520,65280),lstyle(acmin3)=3;DelayUpdate
+	ModifyGraph /w=$("acfit_"+name) rgb(acmEG_N2)=(0,43520,65280),lstyle(acmin3)=3;DelayUpdate
 	ModifyGraph /w=$("acfit_"+name) rgb(acmin3)=(0,43520,65280),rgb(acheight1)=(0,26112,13056);DelayUpdate
 	ModifyGraph /w=$("acfit_"+name) rgb(acheight2)=(0,65280,33024),lstyle(acheight3)=2;DelayUpdate
 	ModifyGraph /w=$("acfit_"+name) rgb(acheight3)=(0,65280,33024)
-	ModifyGraph /w=$("acfit_"+name) lstyle(acmin2)=3,rgb(acmin2)=(0,0,65280),lstyle(acmin3)=8;DelayUpdate
+	ModifyGraph /w=$("acfit_"+name) lstyle(acmEG_N2)=3,rgb(acmEG_N2)=(0,0,65280),lstyle(acmin3)=8;DelayUpdate
 	ModifyGraph /w=$("acfit_"+name) rgb(acmin3)=(0,0,65280),rgb(acheight1)=(0,52224,0);DelayUpdate
 	ModifyGraph /w=$("acfit_"+name) lstyle(acheight2)=3,rgb(acheight2)=(0,52224,0),lstyle(acheight3)=8;DelayUpdate
 	ModifyGraph /w=$("acfit_"+name) rgb(acheight3)=(0,52224,0)
-	ModifyGraph /w=$("acfit_"+name)  mode=3,marker(acmin1)=8,marker(acmin2)=5,marker(acmin3)=6;DelayUpdate
+	ModifyGraph /w=$("acfit_"+name)  mode=3,marker(acmin1)=8,marker(acmEG_N2)=5,marker(acmin3)=6;DelayUpdate
 	ModifyGraph /w=$("acfit_"+name)  marker(acheight1)=8,marker(acheight2)=5,marker(acheight3)=6
 	setaxis  /w=$("acfit_"+name) bottom 0,100
 	setaxis  /w=$("acfit_"+name) left 1,500
@@ -611,7 +611,7 @@ function fftsim1([killolddata,name,step,im1name,im2name,im3name,pwr]) //ffts all
 		acheight2[i-starti] = -1*numberbykey("acheight2",output)
 		acheight3[i-starti] = -1*numberbykey("acheight3",output)
 		acmin1[i-starti] = numberbykey("acmin1",output)
-		acmin2[i-starti] = numberbykey("acmin2",output)
+		acmEG_N2[i-starti] = numberbykey("acmEG_N2",output)
 		acmin3[i-starti] = numberbykey("acmin3",output)
 		aczero[i-starti] = numberbykey("aczero",output)
 		doupdate

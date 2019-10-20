@@ -7,7 +7,7 @@
 Function NI1M_CreateMask()
 	//this function helps user to create mask
 	
-	NI1A_Initialize2Dto1DConversion()
+	EGNA_Initialize2Dto1DConversion()
 	
 	NI1M_CreateImageROIPanel()
 
@@ -244,7 +244,7 @@ Function NI1M_saveRoiCopyProc(ctrlName) : ButtonControl
 	//endif
 	
 	NI1M_UpdateMaskListBox()
-	NI1A_UpdateMainMaskListBox()
+	EGNA_UpdateMainMaskListBox()
 	SetDataFolder OldDf
 end
 //*******************************************************************************************************************************************
@@ -303,7 +303,7 @@ Function NI1M_MaskCreateImage()
 //	else
 //		Abort "Can load only tiff images at this time"
 //	endif
-	NI1A_UniversalLoader("Convert2Dto1DMaskPath",FileNameToLoad,CCDFileExtension,"OriginalCCD")
+	EGNA_UniversalLoader("Convert2Dto1DMaskPath",FileNameToLoad,CCDFileExtension,"OriginalCCD")
 	NVAR MaskDisplayLogImage=root:Packages:Convert2Dto1D:MaskDisplayLogImage
 	wave OriginalCCD
 	//allow user function modification to the image through hook function...
@@ -406,7 +406,7 @@ Function NI1M_UpdateMaskListBox()
 		redimension/N=(ItemsInList(ListOfAvailableCompounds)) ListOfCCDDataInCCDPath
 		redimension/N=(ItemsInList(ListOfAvailableCompounds)) SelectionsofCCDDataInCCDPath
 		variable i
-		ListOfCCDDataInCCDPath=NI1A_CleanListOfFilesForTypes(ListOfCCDDataInCCDPath,CCDFileExtension, EmptyDarkNameMatchStr)
+		ListOfCCDDataInCCDPath=EGNA_CleanListOfFilesForTypes(ListOfCCDDataInCCDPath,CCDFileExtension, EmptyDarkNameMatchStr)
 		For(i=0;i<ItemsInList(ListOfAvailableCompounds);i+=1)
 			ListOfCCDDataInCCDPath[i]=StringFromList(i, ListOfAvailableCompounds)
 		endfor
@@ -448,10 +448,10 @@ Function NI1M_MaskPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 		CCDFileExtension = popStr
 		NI1M_UpdateMaskListBox()
 		if(cmpstr(popStr,"GeneralBinary")==0)
-			NI1_GBLoaderPanelFnct()
+			EGN_GBLoaderPanelFnct()
 		endif
 		if(cmpstr(popStr,"Pilatus")==0)
-			NI1_PilatusLoaderPanelFnct()
+			EGN_PilatusLoaderPanelFnct()
 		endif
 	endif
 	if(cmpstr(ctrlName,"ColorTablePopup")==0)

@@ -9,33 +9,33 @@
 
 
 Menu "SAS 2D"
-	"Main panel", NI1A_Convert2Dto1DMainPanel()
+	"Main panel", EGNA_Convert2Dto1DMainPanel()
 	help={"This should call the conversion routines for CCD data"}
-	"Beam center and Geometry cor.", NI1_CreateBmCntrFile()
+	"Beam center and Geometry cor.", EGN_CreateBmCntrFile()
 	help={"Tool to create beam center and geometry corrections."}
 	"Create mask", NI1M_CreateMask()
 	help={"Allows user to create mask based on selected measurement image"}
-	"Create flood field", NI1_Create2DSensitivityFile()
+	"Create flood field", EGN_Create2DSensitivityFile()
 	help={"Allows user to create pixel 2 d sensitivity file based on selected measured image"}
-	"Image line profile", NI1_CreateImageLineProfileGraph()
+	"Image line profile", EGN_CreateImageLineProfileGraph()
 	help={"Calls Image line profile (Wavemetrics provided) function"}
 	"---"
-	"Configure Nika GUI and Uncertainity",NI1_ConfigMain()
+	"Configure Nika GUI and Uncertainity",EGN_ConfigMain()
 	help={"Configure method for uncertainity values for GUI Panels and Graph common items, such as font sizes and font types"}
 	Submenu "Instrument configurations"
-		"DND CAT", NI1_DNDConfigureNika()
+		"DND CAT", EGN_DNDConfigureNika()
 		help={"Support for data from DND CAT (5ID) beamline at APS"}
 	end
-	"HouseKeeping", NI1_Cleanup2Dto1DFolder()
+	"HouseKeeping", EGN_Cleanup2Dto1DFolder()
 	help={"Removes large waves from this experiment, makes file much smaller. Resets junk... "}
-	"Remove stored images", NI1_RemoveSavedImages()
+	"Remove stored images", EGN_RemoveSavedImages()
 	help={"Removes stored images - does not remove USED images, makes file much smaller. "}
 	"---"
-	"Open Nika pdf manual", NI1_OpenNikaManual()
+	"Open Nika pdf manual", EGN_OpenNikaManual()
 	help={"Opens Nika pdf manual in Acrobat or other system associated pdf reader."}
-	"Remove Nika 1 macros", NI1_RemoveNika1Mac()
+	"Remove Nika 1 macros", EGN_RemoveEGNikaMac()
 	help={"Removes the macros from the current experiment. Macros can be loaded when necessary again"}
-	"About", NI1_AboutPanel()
+	"About", EGN_AboutPanel()
 	help={"Get Panel with info about this release of Nika macros"}
 //	"---"
 //	"Test Marquee", NI1B_Fitto2DGaussian1()
@@ -43,8 +43,8 @@ end
 
 
 Menu "GraphMarquee"
-        "Image Expand", NI1_MarExpandContractImage(1)
-        "Image Contract", NI1_MarExpandContractImage(0)
+        "Image Expand", EGN_MarExpandContractImage(1)
+        "Image Contract", EGN_MarExpandContractImage(0)
 End
 
 //*****************************************************************************************************************
@@ -52,14 +52,14 @@ End
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 //*****************************************************************************************************************
-Function NI1_OpenNikaManual()
+Function EGN_OpenNikaManual()
 	//this function writes batch file and starts the manual.
 	//we need to write following batch file: "C:\Program Files\WaveMetrics\Igor Pro Folder\User Procedures\Irena\Irena manual.pdf"
 	//on Mac we just fire up the Finder with Mac type path... 
 	
 	//check where we run...
 		string WhereIsManual
-		string WhereAreProcedures=RemoveEnding(FunctionPath(""),"NI1_Main.ipf")
+		string WhereAreProcedures=RemoveEnding(FunctionPath(""),"EGN_Main.ipf")
 		String manualPath = ParseFilePath(5,"Nika manual.pdf","*",0,0)
        	String cmd 
 	
@@ -73,7 +73,7 @@ Function NI1_OpenNikaManual()
 
 	else 
 		//manualPath = "User Procedures\Irena\Irena manual.pdf"
-		//WhereIsIgor=WhereIsIgor[0,1]+"\\"+IN2G_ChangePartsOfString(WhereIsIgor[2,inf],":","\\")
+		//WhereIsIgor=WhereIsIgor[0,1]+"\\"+EG_N2G_ChangePartsOfString(WhereIsIgor[2,inf],":","\\")
 		WhereAreProcedures=ParseFilePath(5,WhereAreProcedures,"*",0,0)
 		whereIsManual = "\"" + WhereAreProcedures+manualPath+"\""
 		NewNotebook/F=0 /N=NewBatchFile
@@ -96,9 +96,9 @@ end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function NI1_RemoveNika1Mac()
-		Execute/P "DELETEINCLUDE \"NI1_Loader\""
-		SVAR strChagne=root:Packages:Nika12DSASItem1Str
+Function EGN_RemoveEGNikaMac()
+		Execute/P "DELETEINCLUDE \"EGN_Loader\""
+		SVAR strChagne=root:Packages:EGNika2DSASItem1Str
 		strChagne= "Load Nika 1 2D SAS Macros"
 		BuildMenu "Macros"
 		Execute/P "COMPILEPROCEDURES "
@@ -110,7 +110,7 @@ end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function NI1_AboutPanel()
+Function EGN_AboutPanel()
 	DoWindow About_Nika_1_Macros
 	if(V_Flag)
 		DoWindow/K About_Nika_1_Macros
@@ -140,18 +140,18 @@ end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 //*****************************************************************************************************************
-Function NI1_RemoveSavedImages()
+Function EGN_RemoveSavedImages()
 	
 	string OldDf=GetDataFolder(1)
 	setDataFolder root:
 	NewDataFOlder/S/O SavedImages
-	string AllWaves=IN2G_CreateListOfItemsInFolder("root:SavedImages", 2)
+	string AllWaves=EG_N2G_CreateListOfItemsInFolder("root:SavedImages", 2)
 	variable i
 	For(i=0;i<ItemsInList(AllWaves);i+=1)
 		Killwaves/Z $(StringFromList(i,AllWaves))
 	endfor
 	setDataFolder root:
-	if(strlen(IN2G_CreateListOfItemsInFolder("root:SavedImages", 2))<2)
+	if(strlen(EG_N2G_CreateListOfItemsInFolder("root:SavedImages", 2))<2)
 		KillDataFolder root:SavedImages
 	endif
 	setDataFolder OldDf
@@ -161,7 +161,7 @@ end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 //*****************************************************************************************************************
-Function NI1_Cleanup2Dto1DFolder()
+Function EGN_Cleanup2Dto1DFolder()
 
 	string OldDf=getDataFolder(1)
 	if(!DataFolderExists("root:Packages:Convert2Dto1D" ))
@@ -169,7 +169,7 @@ Function NI1_Cleanup2Dto1DFolder()
 	endif
 	setDataFolder root:Packages:Convert2Dto1D
 	
-	string ListOfWaves=IN2G_ConvertDataDirToList(DataFolderDir(2 ))
+	string ListOfWaves=EG_N2G_ConvertDataDirToList(DataFolderDir(2 ))
 	string CurStr
 	variable i, imax=ItemsInList(ListOfWaves)
 	String ListOfWavesToKill
@@ -197,7 +197,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1_MarExpandContractImage(isExpand)
+Function EGN_MarExpandContractImage(isExpand)
         Variable isExpand
         
         String imName= StringFromList(0,ImageNameList("",";"))
@@ -258,15 +258,15 @@ end
 //***********************************************************
 //***********************************************************
 
-Function NI1_ConfigMain()		//call configuration routine
+Function EGN_ConfigMain()		//call configuration routine
 
 	//this is main configuration utility... 
-	NI1_InitConfigMain()
-	DoWindow NI1_MainConfigPanel
+	EGN_InitConfigMain()
+	DoWindow EGN_MainConfigPanel
 	if(!V_Flag)
-		Execute ("NI1_MainConfigPanel()")
+		Execute ("EGN_MainConfigPanel()")
 	else
-		DoWindow/F NI1_MainConfigPanel
+		DoWindow/F EGN_MainConfigPanel
 	endif
 
 end
@@ -296,10 +296,10 @@ endstructure
 //***********************************************************
 //***********************************************************
 
-Function NI1_ReadIrenaGUIPackagePrefs()
+Function EGN_ReadIrenaGUIPackagePrefs()
 
 	struct  NikaPanelDefaults Defs
-	NI1_InitConfigMain()
+	EGN_InitConfigMain()
 	SVAR DefaultFontType=root:Packages:NikaConfigFolder:DefaultFontType
 	NVAR DefaultFontSize=root:Packages:NikaConfigFolder:DefaultFontSize
 //	NVAR LegendSize=root:Packages:IrenaConfigFolder:LegendSize
@@ -332,7 +332,7 @@ Function NI1_ReadIrenaGUIPackagePrefs()
 		else
 			DoAlert 1, "Old version of GUI and Graph Fonts (font size and type preference) found. Do you want to update them now? These are set once on a computer and can be changed in \"Configure default fonts and names\"" 
 			if(V_Flag==1)
-				Execute("NI1_MainConfigPanel() ")
+				Execute("EGN_MainConfigPanel() ")
 			else
 			//	SavePackagePreferences /Kill   "Irena" , "IrenaDefaultPanelControls.bin", 0 , Defs	//does not work below 6.10
 			endif
@@ -340,7 +340,7 @@ Function NI1_ReadIrenaGUIPackagePrefs()
 	else 		//problem loading package defaults
 		DoAlert 1, "GUI and Graph defaults (font size and type preferences) are not set. Do you want to set them now? These are set once on a computer and can be changed in \"Configure default fonts and names\" dialog" 
 		if(V_Flag==1)
-			Execute("NI1_MainConfigPanel() ")
+			Execute("EGN_MainConfigPanel() ")
 		endif	
 	endif
 end
@@ -349,11 +349,11 @@ end
 //***********************************************************
 //***********************************************************
 //***********************************************************
-Function NI1_SaveIrenaGUIPackagePrefs(KillThem)
+Function EGN_SaveIrenaGUIPackagePrefs(KillThem)
 	variable KillThem
 	
 	struct  NikaPanelDefaults Defs
-	NI1_InitConfigMain()
+	EGN_InitConfigMain()
 	SVAR DefaultFontType=root:Packages:NikaConfigFolder:DefaultFontType
 	NVAR DefaultFontSize=root:Packages:NikaConfigFolder:DefaultFontSize
 //	NVAR LegendSize=root:Packages:IrenaConfigFolder:LegendSize
@@ -386,7 +386,7 @@ end
 //***********************************************************
 //***********************************************************
 
-Function NI1_InitConfigMain()
+Function EGN_InitConfigMain()
 
 	//initialize lookup parameters for user selected items.
 	string OldDf=getDataFolder(1)
@@ -402,11 +402,11 @@ Function NI1_InitConfigMain()
 	variable i
 	//and here we create them
 	for(i=0;i<itemsInList(ListOfVariables);i+=1)	
-		IN2G_CreateItem("variable",StringFromList(i,ListOfVariables))
+		EG_N2G_CreateItem("variable",StringFromList(i,ListOfVariables))
 	endfor		
 										
 	for(i=0;i<itemsInList(ListOfStrings);i+=1)	
-		IN2G_CreateItem("string",StringFromList(i,ListOfStrings))
+		EG_N2G_CreateItem("string",StringFromList(i,ListOfStrings))
 	endfor	
 	//Now set default values
 //	String VariablesDefaultValues
@@ -438,7 +438,7 @@ Function NI1_InitConfigMain()
 //	endfor
 	
 	SVAR ListOfKnownFontTypes=ListOfKnownFontTypes
-	ListOfKnownFontTypes=NI1_CreateUsefulFontList()
+	ListOfKnownFontTypes=EGN_CreateUsefulFontList()
 	setDataFolder OldDf
 end
 
@@ -447,7 +447,7 @@ end
 //***********************************************************
 //***********************************************************
 //***********************************************************
-Function NI1_PopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
+Function EGN_PopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	String ctrlName
 	Variable popNum
 	String popStr
@@ -471,28 +471,28 @@ Function NI1_PopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 	if (cmpstr(ctrlName,"DefaultFontType")==0)
 		SVAR DefaultFontType=root:Packages:NikaConfigFolder:DefaultFontType
 		DefaultFontType = popStr
-		NI1_ChangePanelCOntrolsStyle()
+		EGN_ChangePanelCOntrolsStyle()
 	endif
 	if (cmpstr(ctrlName,"DefaultFontSize")==0)
 		NVAR DefaultFontSize=root:Packages:NikaConfigFolder:DefaultFontSize
 		DefaultFontSize = str2num(popStr)
-		NI1_ChangePanelCOntrolsStyle()
+		EGN_ChangePanelCOntrolsStyle()
 	endif
-	NI1_SaveIrenaGUIPackagePrefs(0)
+	EGN_SaveIrenaGUIPackagePrefs(0)
 End
 //***********************************************************
 //***********************************************************
 //***********************************************************
 //***********************************************************
 //***********************************************************
-Function NI1_KillPrefsButtonProc(ba) : ButtonControl
+Function EGN_KillPrefsButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
 			if(stringmatch(ba.ctrlName,"OKBUtton"))
-				DoWIndow/K NI1_MainConfigPanel
+				DoWIndow/K EGN_MainConfigPanel
 			elseif(stringmatch(ba.ctrlName,"DefaultValues"))
 				string defFnt
 				variable defFntSize
@@ -508,10 +508,10 @@ Function NI1_KillPrefsButtonProc(ba) : ButtonControl
 				DefaultFontType = defFnt
 				NVAR DefaultFontSize=root:Packages:NikaConfigFolder:DefaultFontSize
 				DefaultFontSize = defFntSize
-				NI1_ChangePanelCOntrolsStyle()
-				NI1_SaveIrenaGUIPackagePrefs(0)
-				PopupMenu DefaultFontType,win=NI1_MainConfigPanel, mode=(1+WhichListItem(defFnt, ListOfKnownFontTypes))
-				PopupMenu DefaultFontSize,win=NI1_MainConfigPanel, mode=(1+WhichListItem(num2str(defFntSize), "8;9;10;11;12;14;16;18;20;24;26;30;"))
+				EGN_ChangePanelCOntrolsStyle()
+				EGN_SaveIrenaGUIPackagePrefs(0)
+				PopupMenu DefaultFontType,win=EGN_MainConfigPanel, mode=(1+WhichListItem(defFnt, ListOfKnownFontTypes))
+				PopupMenu DefaultFontSize,win=EGN_MainConfigPanel, mode=(1+WhichListItem(num2str(defFntSize), "8;9;10;11;12;14;16;18;20;24;26;30;"))
 			endif
 			break
 	endswitch
@@ -524,7 +524,7 @@ End
 //***********************************************************
 //***********************************************************
 
-Function NI1_ChangePanelControlsStyle()
+Function EGN_ChangePanelControlsStyle()
 
 	SVAR DefaultFontType=root:Packages:NikaConfigFolder:DefaultFontType
 	NVAR DefaultFontSize=root:Packages:NikaConfigFolder:DefaultFontSize
@@ -542,10 +542,10 @@ end
 //***********************************************************
 //***********************************************************
 
-Proc NI1_MainConfigPanel() 
+Proc EGN_MainConfigPanel() 
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /K=1/W=(282,48,707,270) as "Configure Nika controls & Errors"
-	DoWindow /C NI1_MainConfigPanel
+	DoWindow /C EGN_MainConfigPanel
 	SetDrawLayer UserBack
 	SetDrawEnv fsize= 14,fstyle= 1,textrgb= (0,0,52224)
 	DrawText 10,25,"Nika panels default fonts and names"
@@ -555,14 +555,14 @@ Proc NI1_MainConfigPanel()
 //	DrawText 30,150,"Graph text elements"
 //	SVAR ListOfKnownFontTypes=root:Packages:IrenaConfigFolder:ListOfKnownFontTypes
 
-	PopupMenu DefaultFontType,pos={35,65},size={113,21},proc=NI1_PopMenuProc,title="Panel Controls Font"
+	PopupMenu DefaultFontType,pos={35,65},size={113,21},proc=EGN_PopMenuProc,title="Panel Controls Font"
 	PopupMenu DefaultFontType,mode=(1+WhichListItem(root:Packages:NikaConfigFolder:DefaultFontType, root:Packages:NikaConfigFolder:ListOfKnownFontTypes))
-	PopupMenu DefaultFontType, popvalue=root:Packages:NikaConfigFolder:DefaultFontType,value= #"NI1_CreateUsefulFontList()"
-	PopupMenu DefaultFontSize,pos={35,100},size={113,21},proc=NI1_PopMenuProc,title="Panel Controls Font Size"
+	PopupMenu DefaultFontType, popvalue=root:Packages:NikaConfigFolder:DefaultFontType,value= #"EGN_CreateUsefulFontList()"
+	PopupMenu DefaultFontSize,pos={35,100},size={113,21},proc=EGN_PopMenuProc,title="Panel Controls Font Size"
 	PopupMenu DefaultFontSize,mode=(1+WhichListItem(num2str(root:Packages:NikaConfigFolder:DefaultFontSize), "8;9;10;11;12;14;16;18;20;24;26;30;"))
 	PopupMenu DefaultFontSize popvalue=num2str(root:Packages:NikaConfigFolder:DefaultFontSize),value= #"\"8;9;10;11;12;14;16;18;20;24;26;30;\""
 	Button DefaultValues title="Default",pos={290,60},size={120,20}
-	Button DefaultValues proc=NI1_KillPrefsButtonProc
+	Button DefaultValues proc=EGN_KillPrefsButtonProc
 
 //	PopupMenu LegendSize,pos={35,165},size={113,21},proc=IR2C_PopMenuProc,title="Legend Size"
 //	PopupMenu LegendSize,mode=(1+WhichListItem(num2str(root:Packages:IrenaConfigFolder:LegendSize), "8;9;10;11;12;14;16;18;20;24;26;30;"))
@@ -582,13 +582,13 @@ Proc NI1_MainConfigPanel()
 //	PopupMenu FontType,mode=(1+WhichListItem(root:Packages:IrenaConfigFolder:FontType, root:Packages:IrenaConfigFolder:ListOfKnownFontTypes))
 //	PopupMenu FontType,popvalue=root:Packages:IrenaConfigFolder:FontType,value= #"root:Packages:IrenaConfigFolder:ListOfKnownFontTypes"
 	Button OKButton title="OK",pos={290,100},size={120,20}
-	Button OKButton proc=NI1_KillPrefsButtonProc
+	Button OKButton proc=EGN_KillPrefsButtonProc
 
-	CheckBox ErrorCalculationsUseOld,pos={10,140},size={80,16},proc=NI1_ConfigErrorsCheckProc,title="Use Old Uncertainity ?", mode=1
+	CheckBox ErrorCalculationsUseOld,pos={10,140},size={80,16},proc=EGN_ConfigErrorsCheckProc,title="Use Old Uncertainity ?", mode=1
 	CheckBox ErrorCalculationsUseOld,variable= root:Packages:Convert2Dto1D:ErrorCalculationsUseOld, help={"Check to use Error estimates for before version 1.42?"}
-	CheckBox ErrorCalculationsUseStdDev,pos={10,160},size={80,16},proc=NI1_ConfigErrorsCheckProc,title="Use Std Devfor Uncertainity?", mode=1
+	CheckBox ErrorCalculationsUseStdDev,pos={10,160},size={80,16},proc=EGN_ConfigErrorsCheckProc,title="Use Std Devfor Uncertainity?", mode=1
 	CheckBox ErrorCalculationsUseStdDev,variable= root:Packages:Convert2Dto1D:ErrorCalculationsUseStdDev, help={"Check to use Standard deviation for Error estimates "}
-	CheckBox ErrorCalculationsUseSEM,pos={10,180},size={80,16},proc=NI1_ConfigErrorsCheckProc,title="Use SEM for Uncertainity?", mode=1
+	CheckBox ErrorCalculationsUseSEM,pos={10,180},size={80,16},proc=EGN_ConfigErrorsCheckProc,title="Use SEM for Uncertainity?", mode=1
 	CheckBox ErrorCalculationsUseSEM,variable= root:Packages:Convert2Dto1D:ErrorCalculationsUseSEM, help={"Check to use Standard error of mean for Error estimates"}
 
 
@@ -598,7 +598,7 @@ EndMacro
 //***********************************************************
 //***********************************************************
 //***********************************************************
-Function NI1_ConfigErrorsCheckProc(cba) : CheckBoxControl
+Function EGN_ConfigErrorsCheckProc(cba) : CheckBoxControl
 	STRUCT WMCheckboxAction &cba
 
 	NVAR ErrorCalculationsUseOld=root:Packages:Convert2Dto1D:ErrorCalculationsUseOld
@@ -634,7 +634,7 @@ End
 //***********************************************************
 //***********************************************************
 
-Function/S NI1_CreateUsefulFontList()
+Function/S EGN_CreateUsefulFontList()
 
 	string SystemFontList=FontList(";")
 	string PreferredFontList="Times;Arial;Geneva;Palatino;Times New Roman;TImes Roman;Book Antiqua;"

@@ -1,10 +1,10 @@
 #pragma rtGlobals=1		// Use modern global access method.
-#include "NI1_ADE-ALS11012"
-#include "NI1_Loader"
+#include "EGN_ADE-ALS11012"
+#include "EGN_Loader"
 function initialize1101panel()
 	String CurrentFolder=GetDataFolder(1)
 	NewDataFolder/O/S root:Packages
-	NewDataFolder/O/S root:Packages:Nika1101
+	NewDataFolder/O/S root:Packages:EGNika101
 	string /g pathtodata,pathname,ccdpath,loadeddatadir,header,imagekeys,imagevalue,filebasename,imagekeypick,test123123
 	variable /g ckautoshow=1,logimage=1,normI0,indexrow,n2save,showmask,endplotrun,plotrunsp,plotrunst,plotrunend,normalizedata=0,maxslider=4,minslider=0,writedata=0
 	make /t /o /n=5000 basenames,motors,scans,scantypes,times,files, motor1pos,motor2pos,motor3pos,motor4pos,motor5pos,darkpos,I0s, samplenames
@@ -30,7 +30,7 @@ function realfitsloader(filename,path,dataname,datasave)
 	string /g lineread 
 	string header,key,value,comment
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	svar loadeddatadir
 	PathInfo $path
 	if(v_flag==0)
@@ -173,7 +173,7 @@ function realfitsloader(filename,path,dataname,datasave)
 		return 0
 	endif
 	//Write header to a few locations so it is available
-	string /g root:packages:nika1101:headerinfo = header
+	string /g root:packages:EGNika101:headerinfo = header
 	//string /g root:headerinfo = header
 //Read Data
 	Fstatus refnum
@@ -188,33 +188,33 @@ function realfitsloader(filename,path,dataname,datasave)
 	switch (chkwaitfile(filename,imagesize,path)) 	//check if filename is the right size in loop sleep .1 second between reads
 		case -2:
 			print "file could not be opened at all"
-			String/G root:Packages:Nika1101:bkg:message="file could not be opened even to check the size"
+			String/G root:Packages:EGNika101:bkg:message="file could not be opened even to check the size"
 			return -1
 		case -1:
 			print "timed out waiting for file to be written"
-			String/G root:Packages:Nika1101:bkg:message="timed out waiting for file to be written"
+			String/G root:Packages:EGNika101:bkg:message="timed out waiting for file to be written"
 			return -1
 	endswitch
 	if(datasave)
-		newdatafolder /s /o root:Packages:Nika1101:$dataname
+		newdatafolder /s /o root:Packages:EGNika101:$dataname
 		make/o /d /n=(xdim,ydim) $dataname
 		FBinRead /B=2 /F=2 /u refNum, $dataname
 		loadeddatadir = "root:" + dataname + ":" + dataname
 	else
-		make/o /d /n=(xdim,ydim) root:Packages:Nika1101:data
-		FBinRead /B=2 /F=2 /u refNum, root:Packages:Nika1101:data
-		loadeddatadir = "root:Packages:Nika1101:data"
+		make/o /d /n=(xdim,ydim) root:Packages:EGNika101:data
+		FBinRead /B=2 /F=2 /u refNum, root:Packages:EGNika101:data
+		loadeddatadir = "root:Packages:EGNika101:data"
 	endif
 	wave data = $loadeddatadir
 	imagetransform flipCols data
 	//string /g headerinfo = header
-	string /g root:Packages:Nika1101:headerinfo = header
+	string /g root:Packages:EGNika101:headerinfo = header
 	redimension /d data
 //Correct DATA as needed
 	//Correct data from BZERO (an offset because Fits files are only Signed, where as the data is unsigned)
 	data-=bzero
 	//Flatten or at least subtract the background offset from the image
-	nvar chkflatten = root:Packages:Nika1101:chkflatten,flatten_line = root:Packages:Nika1101:flatten_line,flatten_width = root:Packages:Nika1101:flatten_width
+	nvar chkflatten = root:Packages:EGNika101:chkflatten,flatten_line = root:Packages:EGNika101:flatten_line,flatten_width = root:Packages:EGNika101:flatten_width
 	if(chkflatten)
 		//gatherstatsandflatten(data,flatten_line,flatten_width)
 		flattenimage(data,flatten_line,flatten_width)
@@ -229,7 +229,7 @@ function realfitsloader(filename,path,dataname,datasave)
 		data-=v_avg-100
 	endif
 	//Calculate the corrected I0 if necessary (number of incident photons incident)
-//	nvar AI3izero = root:Packages:Nika1101:AI3izero
+//	nvar AI3izero = root:Packages:EGNika101:AI3izero
 //	if(AI3izero)
 //		i0 = correcti0(izero,en,pol,os) // should return photons that this izero corresponds to
 ////.		print "Using Photodiode Beamstop value for I0 correction.  Value = " + num2str(i0)
@@ -238,7 +238,7 @@ function realfitsloader(filename,path,dataname,datasave)
 //	endif
 //	//Divide the image by the exposure time if requested
 //      data/=i0
-//	nvar Exposecorr = root:Packages:Nika1101:Exposecorr
+//	nvar Exposecorr = root:Packages:EGNika101:Exposecorr
 //	if(exposecorr)
 //		data /= Expose
 //		print "Data corrected for " + num2str(Expose) + " second exposure"
@@ -263,7 +263,7 @@ function openfits(filename, path)
 	string filename,path
 	string captionstring
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	svar loadeddatadir
 	variable refnum
 	nvar ckautoshow,logimage,writedata,minslider,maxslider
@@ -276,14 +276,14 @@ function openfits(filename, path)
 	realfitsloader(filename,path,dataname,writedata)
 	wave data = $loadeddatadir
 //	If(ckautoshow)
-		duplicate /o $loadeddatadir root:Packages:Nika1101:data_disp
-		wave data_disp = root:Packages:Nika1101:data_disp
+		duplicate /o $loadeddatadir root:Packages:EGNika101:data_disp
+		wave data_disp = root:Packages:EGNika101:data_disp
 		//if(logimage)
 		//	data_disp = log(data_disp)
 		//endif
 		removeimage /Z /W=datareduction#G0 data_disp
 		appendimage /W=datareduction#G0 data_disp
-		ModifyImage /W=datareduction#G0 data_disp ctab= {minslider,maxslider,terrain256,0},log=1
+		ModifyImage /W=datareduction#G0 data_disp ctab= {minslider,maxslider,terraEG_N256,0},log=1
 		SetAxis/A/R /W=datareduction#G0 left
 //		captionstring = "Max = " + num2str(wavemax($loadeddatadir))
 //		TextBox /W=datareduction#G0/C/N=text1/F=0/S=3/B=3/E=2/X=63.00/Y=63.00 captionstring
@@ -295,7 +295,7 @@ function openpng(filename, path)
 	string filename,path
 	string captionstring
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 
 	svar loadeddatadir
 	variable refnum
@@ -313,8 +313,8 @@ function openpng(filename, path)
 	
 	If(V_flag)
 		wave data = $loadeddatadir
-		duplicate /o data root:Packages:Nika1101:data_disp
-		wave data_disp = root:Packages:Nika1101:data_disp
+		duplicate /o data root:Packages:EGNika101:data_disp
+		wave data_disp = root:Packages:EGNika101:data_disp
 		if(logimage)
 			redimension/d data_disp
 			data_disp = log(data_disp)
@@ -322,7 +322,7 @@ function openpng(filename, path)
 		endif
 		removeimage /Z /W=datareduction#G0 data_disp
 		appendimage /W=datareduction#G0 data_disp
-		ModifyImage /W=datareduction#G0 data_disp ctab= {minslider,maxslider,terrain256,0}
+		ModifyImage /W=datareduction#G0 data_disp ctab= {minslider,maxslider,terraEG_N256,0}
 		SetAxis/A/R /W=datareduction#G0 left
 		captionstring = "Max = " + num2str(wavemax($loadeddatadir))
 		TextBox /W=datareduction#G0/C/N=text1/F=0/S=3/B=3/E=2/X=63.00/Y=63.00 captionstring
@@ -335,7 +335,7 @@ end
 Function LoadAndGenerateStringAll(path)
 	string path
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	svar pathname,ccdpath		// Name of symbolic path or "" to get dialog
 	String fileName
 	String graphName
@@ -391,7 +391,7 @@ Function LoadandStoreData(Filename,path,index)
 	string name,indexnum,basename,lineread,scantype,dummy,motor1,motor2, motor3, motor4, motor5
 
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	Splitstring /E="(.*)_?(\\d{4})-AI.txt$" filename,name,indexnum
 	Splitstring /E="(.*)-AI.txt$" filename,basename
 	wave /t basenames,motors,scans,scantypes,times,motor1pos,motor2pos,motor3pos,motor4pos,motor5pos,darkpos,I0s, samplenames
@@ -555,7 +555,7 @@ end
 function loaddatalist(row)
 	variable row
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	string/g filelist
 	string/g samplenamelist
 	svar ccdpath
@@ -616,7 +616,7 @@ function loaddatalist(row)
 		listbox /Z fitslist selrow=0
 		displayfits(0)
 	endif
-	svar header = root:Packages:Nika1101:headerinfo
+	svar header = root:Packages:EGNika101:headerinfo
 	string /g imagetime
 	variable hour,minute,second, month, day
 	sscanf stringbykey("DATETIME",header),"%d/%d/%*d %d%*[:]%d%*[:]%d",month, day,hour,minute,second
@@ -643,7 +643,7 @@ end
 Function PopMenuProc(pa) : PopupMenuControl
 	STRUCT WMPopupAction &pa
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 
 	switch( pa.eventCode )
 		case 2: // mouse up
@@ -660,7 +660,7 @@ End
 Function displayfits(row)
 	variable row
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	svar ccdpath,loadeddatadir
 	wave/t files
 	openfits(files[row],ccdpath)
@@ -710,7 +710,7 @@ end
 Function displaypng(filelist)
 	string filelist
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	svar ccdpath,loadeddatadir
 	wave/t files
 	openpng(stringfromlist(0,filelist),ccdpath)
@@ -754,7 +754,7 @@ Function ListBoxProc(lba) : ListBoxControl
 			break
 		case 4: // cell selection
 			String CurrentFolder=GetDataFolder(1)
-			SetDataFolder root:Packages:Nika1101
+			SetDataFolder root:Packages:EGNika101
 			LoadDatalist(row)
 			VARIABLE/G indexrow = row
 			setdatafolder currentfolder
@@ -790,72 +790,72 @@ Window DataReduction() : Panel
 	SetDrawEnv fillfgc= (65280,65280,0)
 	DrawRect 113,375,178,422
 	TitleBox title0,pos={59,12},size={187,11},fSize=8,frame=0
-	TitleBox title0,variable= root:Packages:Nika1101:pathtodata
+	TitleBox title0,variable= root:Packages:EGNika101:pathtodata
 	Button Browse,pos={6,9},size={50,20},proc=browse,title="Browse"
 	ListBox list0,pos={13,42},size={354,329},proc=ListBoxProc,frame=2
-	ListBox list0,listWave=root:Packages:Nika1101:scans,mode= 2,selRow= 1
+	ListBox list0,listWave=root:Packages:EGNika101:scans,mode= 2,selRow= 1
 	ListBox list0,editStyle= 1
 	ListBox fitslist,pos={369,42},size={238,328},proc=loadimage,frame=2
-	ListBox fitslist,listWave=root:Packages:Nika1101:filedisc
-	ListBox fitslist,selWave=root:Packages:Nika1101:filesel,mode=10,editStyle= 1
+	ListBox fitslist,listWave=root:Packages:EGNika101:filedisc
+	ListBox fitslist,selWave=root:Packages:EGNika101:filesel,mode=10,editStyle= 1
 	Button saveibws,pos={3,420},size={101,28},proc=ButtonProc,title="Save Series as\r Igor Binaries"
 	Button saveibws,fSize=8
 	CheckBox logimage,pos={530,411},size={74,14},disable=1,proc=logimageck,title="Log Image?"
-	CheckBox logimage,variable= root:Packages:Nika1101:logimage
+	CheckBox logimage,variable= root:Packages:EGNika101:logimage
 	Button button0,pos={2,391},size={105,30},proc=ButtonProc_1,title="Average every N in\r series and save"
 	Button button0,fSize=8
 	SetVariable setvar0,pos={23,375},size={61,15},title="N = "
-	SetVariable setvar0,limits={1,500,1},value= root:Packages:Nika1101:n2save
+	SetVariable setvar0,limits={1,500,1},value= root:Packages:EGNika101:n2save
 	Button button1,pos={9,455},size={74,22},proc=LoadMask_button,title="Load Mask"
 	Button button2,pos={9,499},size={74,22},proc=DrawMask_button,title="Draw Mask"
 	Button button3,pos={9,477},size={74,22},proc=SaveMask_button,title="Save Mask"
 	CheckBox logimage1,pos={124,460},size={71,14},proc=ShowMask_ch,title="Show Mask?"
-	CheckBox logimage1,variable= root:Packages:Nika1101:showmask
+	CheckBox logimage1,variable= root:Packages:EGNika101:showmask
 	Button button4,pos={113,434},size={74,22},proc=FinishMask,title="Finish Mask"
 	CheckBox logimage2,pos={462,428},size={90,14},disable=1,proc=Checknormalizedata,title="Normalize Data"
-	CheckBox logimage2,variable= root:Packages:Nika1101:normalizedata
+	CheckBox logimage2,variable= root:Packages:EGNika101:normalizedata
 	Button button5,pos={444,426},size={167,24},proc=ButtonProc_4,title="Plot avg_mask vs motor"
 	Button button6,pos={443,456},size={170,21},proc=ButtonProc_3,title="Create Movie from Series"
 	CheckBox logimage3,pos={212,460},size={91,14},proc=ShowavgMask_ch,title="Show Avg Mask?"
 	CheckBox logimage3,value= 0
 	Button button7,pos={189,434},size={95,22},proc=FinishavgMask,title="Finish avg Mask"
 	SetVariable setvar2,pos={342,462},size={87,15},title="Start: "
-	SetVariable setvar2,limits={0,1000,1},value= root:Packages:Nika1101:plotrunst
+	SetVariable setvar2,limits={0,1000,1},value= root:Packages:EGNika101:plotrunst
 	SetVariable setvar3,pos={342,479},size={87,15},title="Step: "
-	SetVariable setvar3,limits={1,100,1},value= root:Packages:Nika1101:plotrunsp
+	SetVariable setvar3,limits={1,100,1},value= root:Packages:EGNika101:plotrunsp
 	SetVariable setvar4,pos={345,495},size={84,15},title="End: "
-	SetVariable setvar4,limits={0,1000,1},value= root:Packages:Nika1101:plotrunend
+	SetVariable setvar4,limits={0,1000,1},value= root:Packages:EGNika101:plotrunend
 	Slider MinG0value,pos={103,479},size={212,16},proc=SliderProc
-	Slider MinG0value,limits={0,4,0},variable= root:Packages:Nika1101:minslider,vert= 0,ticks= 0
+	Slider MinG0value,limits={0,4,0},variable= root:Packages:EGNika101:minslider,vert= 0,ticks= 0
 	Slider MinG0value1,pos={103,500},size={212,16},proc=SliderProc
-	Slider MinG0value1,limits={0,4,0},variable= root:Packages:Nika1101:maxslider,vert= 0,ticks= 0
+	Slider MinG0value1,limits={0,4,0},variable= root:Packages:EGNika101:maxslider,vert= 0,ticks= 0
 	TitleBox title1,pos={378,10},size={29,20},title="bad svar"
-	TitleBox title1,variable= root:Packages:Nika1101:imagetime
+	TitleBox title1,variable= root:Packages:EGNika101:imagetime
 	PopupMenu Key,pos={448,10},size={100,20},bodyWidth=100,proc=PopMenuProc
-	PopupMenu Key,mode=1,popvalue="SIMPLE",value= #"root:Packages:Nika1101:imagekeys"
+	PopupMenu Key,mode=1,popvalue="SIMPLE",value= #"root:Packages:EGNika101:imagekeys"
 	TitleBox title2,pos={555,11},size={60,21},labelBack=(65280,43520,32768)
-	TitleBox title2,variable= root:Packages:Nika1101:imagevalue,fixedSize=1
+	TitleBox title2,variable= root:Packages:EGNika101:imagevalue,fixedSize=1
 	SetVariable filenamebox,pos={297,432},size={130,15},bodyWidth=70
-	SetVariable filenamebox,value= root:Packages:Nika1101:filebasename
+	SetVariable filenamebox,value= root:Packages:EGNika101:filebasename
 	CheckBox NormI0data,pos={462,410},size={53,14},disable=1,proc=Checknormalizedata,title="I0 Data"
-	CheckBox NormI0data,variable= root:Packages:Nika1101:normI0
+	CheckBox NormI0data,variable= root:Packages:EGNika101:normI0
 	Button saveibws1,pos={191,378},size={84,39},proc=ButtonProc_nikaseries,title="Convert Series\r in Nika"
 	Button saveibws2,pos={453,381},size={72,33},proc=ButtonProc_nikamask,title="Open for\r Mask"
 	Button saveibws3,pos={526,382},size={89,33},proc=ButtonProc_beamcentering,title="Open for\r beam centering"
 	Button saveibws4,pos={373,381},size={78,33},proc=ButtonProc_darkload,title="Load as Dark\r in Nika"
 	Button saveibws5,pos={278,378},size={93,40},proc=ButtonProc_nikaseriessel,title="Convert Selection\r in Nika"
-	Button button8,pos={117,381},size={56,34},proc=Nika1101BG_button,title="Start Auto\rLoader"
+	Button button8,pos={117,381},size={56,34},proc=EGNika101BG_button,title="Start Auto\rLoader"
 	Button button9,pos={442,482},size={170,21},proc=ButtonProc_6,title="Create Reflectivity Curve"
 	Button Update11012panel,pos={318,9},size={50,20},proc=Update11012List,title="Update"
 	Display/W=(621,0,1103,518)/FG=(,,FR,FB)/HOST=# 
-	AppendImage :Packages:Nika1101:data_mask
+	AppendImage :Packages:EGNika101:data_mask
 	ModifyImage data_mask ctab= {0,10,Grays,0}
 	ModifyImage data_mask maxRGB=NaN
-	AppendImage :Packages:Nika1101:avg_mask
+	AppendImage :Packages:EGNika101:avg_mask
 	ModifyImage avg_mask ctab= {0,10,Grays,0}
 	ModifyImage avg_mask maxRGB=NaN
-	AppendImage :Packages:Nika1101:data_disp
-	ModifyImage data_disp ctab= {*,*,terrain256,0}
+	AppendImage :Packages:EGNika101:data_disp
+	ModifyImage data_disp ctab= {*,*,terraEG_N256,0}
 	ModifyGraph margin(left)=1,margin(bottom)=1,margin(top)=1,margin(right)=1,frameInset=2,height={Plan,1,left,bottom}
 	ModifyGraph mirror=2
 	SetAxis/A/R left
@@ -871,7 +871,7 @@ Function Update11012List(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			loadandgeneratestringall("Path_1101panel")
-			nvar row  = root:Packages:Nika1101:indexrow
+			nvar row  = root:Packages:EGNika101:indexrow
 			loaddatalist(row)
 			break
 		case -1: // control being killed
@@ -884,7 +884,7 @@ End
 function savedatafolder()
 	variable row
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	nvar indexrow
 	svar loadeddatadir,ccdpath,filebasename
 	string nameforoutput,s1,s2
@@ -935,7 +935,7 @@ Function browse(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			String CurrentFolder=GetDataFolder(1)
-			SetDataFolder root:Packages:Nika1101
+			SetDataFolder root:Packages:EGNika101
 			svar pathtodata
 			string/g pathname
 			NewPath/O/m="path for txt files" Path_1101panel			// This will put up a dialog
@@ -977,9 +977,9 @@ Function loadimage(lba) : ListBoxControl
 		case 4: // cell selection
 
 			String CurrentFolder=GetDataFolder(1)
-			SetDataFolder root:Packages:Nika1101
+			SetDataFolder root:Packages:EGNika101
 			displayfits(row)
-			svar header = root:Packages:Nika1101:headerinfo
+			svar header = root:Packages:EGNika101:headerinfo
 			string /g imagetime
 			variable hour,minute,second, month, day
 			sscanf stringbykey("DATETIME",header),"%d/%d/%*d %d%*[:]%d%*[:]%d",month, day,hour,minute,second
@@ -1018,7 +1018,7 @@ Function logimageck(cba) : CheckBoxControl
 	switch( cba.eventCode )
 		case 2: // mouse up
 			String CurrentFolder=GetDataFolder(1)
-			SetDataFolder root:Packages:Nika1101
+			SetDataFolder root:Packages:EGNika101
 			Variable checked = cba.checked
 			wave data_disp,data
 			if(checked)
@@ -1038,7 +1038,7 @@ function averageevery(n)
 	variable i
 	variable row
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	nvar indexrow
 	svar loadeddatadir,ccdpath
 	make /o /d datasum
@@ -1072,7 +1072,7 @@ Function ButtonProc_1(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			String CurrentFolder=GetDataFolder(1)
-			SetDataFolder root:Packages:Nika1101
+			SetDataFolder root:Packages:EGNika101
 			nvar n2save
 			averageevery(n2save)
 			SetDataFolder $currentFolder
@@ -1084,7 +1084,7 @@ End
 function backgroundsubtract(imwav)
 	string imwav
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	wave wave1 = $imwav
 	wave eliot_roi_1
 	imagestats /R=eliot_roi_1 wave1
@@ -1111,7 +1111,7 @@ Function LoadMask_button(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			String CurrentFolder=GetDataFolder(1)
-			SetDataFolder root:Packages:Nika1101
+			SetDataFolder root:Packages:EGNika101
 			ImageLoad/T=tiff/O/N=data_mask
 			SetDataFolder $CurrentFolder
 			break
@@ -1128,7 +1128,7 @@ Function SaveMask_button(ba) : ButtonControl
 		case 2: // mouse up
 			// click code here
 			String CurrentFolder=GetDataFolder(1)
-			SetDataFolder root:Packages:Nika1101
+			SetDataFolder root:Packages:EGNika101
 			imagesave /T="tiff" /U /i data_mask
 			SetDataFolder $CurrentFolder
 			break
@@ -1145,7 +1145,7 @@ Function ShowMask_ch(cba) : CheckBoxControl
 			//Collins altered 3/14/14
 			Wave/Z M_ROIMask=root:Packages:Convert2Dto1D:M_ROIMask
 //			String CurrentFolder=GetDataFolder(1)
-//			SetDataFolder root:Packages:Nika1101
+//			SetDataFolder root:Packages:EGNika101
 			Variable checked = cba.checked
 			if(checked)
 				RemoveImage /z /W=DataReduction#G0 M_ROIMask
@@ -1172,7 +1172,7 @@ Function ShowavgMask_ch(cba) : CheckBoxControl
 	switch( cba.eventCode )
 		case 2: // mouse up
 			String CurrentFolder=GetDataFolder(1)
-			SetDataFolder root:Packages:Nika1101
+			SetDataFolder root:Packages:EGNika101
 			Variable checked = cba.checked
 			if(checked)
 				RemoveImage /z /W=DataReduction#G0 avg_mask
@@ -1195,7 +1195,7 @@ Function ButtonProc_2(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			String CurrentFolder=GetDataFolder(1)
-			SetDataFolder root:Packages:Nika1101
+			SetDataFolder root:Packages:EGNika101
 			ImageGenerateROIMask /W=datareduction#G0 data_disp
 			SetDrawLayer /k /w=datareduction#G0 ProgFront
 			duplicate /o m_roimask data_mask
@@ -1225,7 +1225,7 @@ Function FinishMask_2(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			String CurrentFolder=GetDataFolder(1)
-			SetDataFolder root:Packages:Nika1101
+			SetDataFolder root:Packages:EGNika101
  			ImageGenerateROIMask /W=datareduction#G0 data_disp
 			SetDrawLayer /k /w=datareduction#G0 ProgFront
 			duplicate /o m_roimask data_mask
@@ -1255,7 +1255,7 @@ Function FinishMask(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			String CurrentFolder=GetDataFolder(1)
-			SetDataFolder root:Packages:Nika1101
+			SetDataFolder root:Packages:EGNika101
 			ImageGenerateROIMask /W=datareduction#G0 data_disp
 			SetDrawLayer /k /w=datareduction#G0 ProgFront
 			duplicate /o m_roimask data_mask
@@ -1285,10 +1285,10 @@ Function FinishavgMask(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			String CurrentFolder=GetDataFolder(1)
-			SetDataFolder root:Packages:Nika1101
+			SetDataFolder root:Packages:EGNika101
 			ImageGenerateROIMask /W=datareduction#G0 data_disp
 			SetDrawLayer /k /w=datareduction#G0 ProgFront
-			duplicate /o m_roimask root:Packages:Nika1101:avg_mask
+			duplicate /o m_roimask root:Packages:EGNika101:avg_mask
 			wave avg_mask
 			avg_mask += -1
 			avg_mask *= -1
@@ -1325,7 +1325,7 @@ End
 
 function makemovie()
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	variable row
 	nvar indexrow,plotrunst,plotrunsp,endplotrun,plotrunend
 	svar loadeddatadir,pathname
@@ -1378,7 +1378,7 @@ function makemovie()
 
 	for( row=plotrunst ;row<plotrunend ; row += plotrunsp)
 //		displayfits(row)
-		wave filesel = root:packages:nika1101:filesel
+		wave filesel = root:packages:EGNika101:filesel
 		filesel = p==row ? 1 : 0
 		STRUCT WMListboxAction lba
 		lba.eventCode=4
@@ -1396,8 +1396,8 @@ function makemovie()
 				sprintf nameforoutput, "%s = %.2f  -  %s = %.2f",s1,str2num(stringfromlist(row,motor1pos[indexrow])),s2,str2num(stringfromlist(row,motor2pos[indexrow]))
 			endif
 		endif
-//		NVAR minslider=root:Packages:Nika1101:minslider, maxslider=root:Packages:Nika1101:maxslider
-//		ModifyImage /W=datareduction#G0 data_disp ctab= {minslider,maxslider,terrain256,0}
+//		NVAR minslider=root:Packages:EGNika101:minslider, maxslider=root:Packages:EGNika101:maxslider
+//		ModifyImage /W=datareduction#G0 data_disp ctab= {minslider,maxslider,terraEG_N256,0}
 		print "adding movie frame with title = " + nameforoutput
 		TextBox  /W=datareduction#G0 /C/N=text0/F=0/S=3/B=3/E=2 /X=30.94/Y=11.59  nameforoutput
 		SetAxis /W=datareduction#G0 /A /R left
@@ -1432,7 +1432,7 @@ end
 function plotmask()
 	variable row
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	nvar indexrow,plotrunst,plotrunsp,plotrunend
 	svar loadeddatadir,pathname
 	wave /t filedisc,motors,basenames
@@ -1485,7 +1485,7 @@ end
 function PlotRefl()
 	variable row
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	nvar indexrow,plotrunst,plotrunsp,plotrunend
 	svar loadeddatadir,pathname
 	wave /t filedisc,motors,basenames
@@ -1564,8 +1564,8 @@ function sumrowsx(wavein,avg_mask)
 	wave wavein
 	wave avg_mask
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
-	wave data_mask = root:Packages:Nika1101:data_mask
+	SetDataFolder root:Packages:EGNika101
+	wave data_mask = root:Packages:EGNika101:data_mask
 	make /d /o /n=(dimsize(wavein,0)) datay_temp
 	make /d /o /n=(dimsize(wavein,1)) datax_temp,datax
 	variable i,j=0
@@ -1580,9 +1580,9 @@ end
 	`
 function sumrowsy(wavein,avgmask)
 	wave wavein,avgmask
-	wave data_mask = root:Packages:Nika1101:data_mask
+	wave data_mask = root:Packages:EGNika101:data_mask
 	String CurrentFolder=GetDataFolder(1)
-	SetDataFolder root:Packages:Nika1101
+	SetDataFolder root:Packages:EGNika101
 	imagestats /R=avgmask wavein
 	variable vmean = v_avg
 	make /d /o /n=(dimsize(wavein,0)) datay_temp,datay
@@ -1615,7 +1615,7 @@ Function SliderProc(sa) : SliderControl
 		default:
 			if( sa.eventCode & 1 ) // value set
 				String CurrentFolder=GetDataFolder(1)
-				SetDataFolder root:Packages:Nika1101
+				SetDataFolder root:Packages:EGNika101
 				nvar minslider,maxslider
 				ModifyImage /W=datareduction#G0 data_disp ctab= {minslider,maxslider,terrain,0}
 				SetDataFolder $CurrentFolder
@@ -1633,7 +1633,7 @@ Function DrawMask_button(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			String CurrentFolder=GetDataFolder(1)
-			SetDataFolder root:Packages:Nika1101
+			SetDataFolder root:Packages:EGNika101
 			SetActiveSubwindow datareduction#G0
 			SetDrawLayer /W=datareduction#G0 ProgFront
 			setdrawenv /W=datareduction#G0 xcoord=bottom,ycoord=left
@@ -1650,7 +1650,7 @@ Function ButtonProc_beamcentering(ba) : ButtonControl
 
 	switch( ba.eventCode )
 		case 2: // mouse up			
-			wave filesel = root:Packages:Nika1101:filesel
+			wave filesel = root:Packages:EGNika101:filesel
 			string filelist = getfilename(selwave=filesel)
 			loadforbeamcenteringinNIKA(stringfromlist(0,filelist))
 			break
@@ -1662,7 +1662,7 @@ Function ButtonProc_darkload(ba) : ButtonControl
 
 	switch( ba.eventCode )
 		case 2: // mouse up
-			wave filesel = root:Packages:Nika1101:filesel
+			wave filesel = root:Packages:EGNika101:filesel
 			string filelist = getfilename(selwave=filesel)
 			loadasdarkinNIKA(filelist)
 			break
@@ -1674,7 +1674,7 @@ Function ButtonProc_nikamask(ba) : ButtonControl
 
 	switch( ba.eventCode )
 		case 2: // mouse up
-			wave filesel = root:Packages:Nika1101:filesel
+			wave filesel = root:Packages:EGNika101:filesel
 			string filelist = getfilename(selwave=filesel)
 			loadformaskinnika(stringfromlist(0,filelist))
 			break
@@ -1688,7 +1688,7 @@ Function ButtonProc_nikaseries(ba) : ButtonControl
 
 	switch( ba.eventCode )
 		case 2: // mouse up
-			wave filesel = root:Packages:Nika1101:filesel
+			wave filesel = root:Packages:EGNika101:filesel
 			filesel = 0
 			wave darks = getdarks(filesel)
 			string filelist = getfilename(list=1)
@@ -1703,7 +1703,7 @@ Function ButtonProc_nikaseriessel(ba) : ButtonControl
 
 	switch( ba.eventCode )
 		case 2: // mouse up
-			wave filesel = root:Packages:Nika1101:filesel
+			wave filesel = root:Packages:EGNika101:filesel
 			string filelist = getfilename(selwave=filesel)
 			wave darks = getdarks(filesel)
 			convertnikafilelistsmart(filelist,darks)
@@ -1730,18 +1730,18 @@ End
 function convertpathtonika([main,mask,dark,beamcenter])
 	variable mask,dark,beamcenter,main
 	PathInfo Path_1101panelccd
-	NI1_FitsLoaderPanelFnct()
+	EGN_FitsLoaderPanelFnct()
 	doupdate
 	if(main)
-		NI1A_Convert2Dto1DMainPanel()
+		EGNA_Convert2Dto1DMainPanel()
 		svar SampleNameMatchStr = root:Packages:Convert2Dto1D:SampleNameMatchStr
 		SampleNameMatchStr = ""
-		popupmenu Select2DDataType win=NI1A_Convert2Dto1DPanel, popmatch="*fits"
+		popupmenu Select2DDataType win=EGNA_Convert2Dto1DPanel, popmatch="*fits"
 		newpath /O/Q/Z Convert2Dto1DDataPath S_path
 		SVAR MainPathInfoStr=root:Packages:Convert2Dto1D:MainPathInfoStr
 		MainPathInfoStr=S_path
-		TitleBox PathInfoStrt, win =NI1A_Convert2Dto1DPanel, variable=MainPathInfoStr
-		NI1A_UpdateDataListBox()	
+		TitleBox PathInfoStrt, win =EGNA_Convert2Dto1DPanel, variable=MainPathInfoStr
+		EGNA_UpdateDataListBox()	
 	endif
 	if(mask)
 		NI1M_CreateMask()
@@ -1752,9 +1752,9 @@ function convertpathtonika([main,mask,dark,beamcenter])
 		NI1M_UpdateMaskListBox()
 	endif
 	if(dark)
-		NI1A_Convert2Dto1DMainPanel()
+		EGNA_Convert2Dto1DMainPanel()
 		newpath /O/Q/Z Convert2Dto1DEmptyDarkPath S_path
-		popupmenu SelectBlank2DDataType win=NI1A_Convert2Dto1DPanel, popmatch="*fits"
+		popupmenu SelectBlank2DDataType win=EGNA_Convert2Dto1DPanel, popmatch="*fits"
 		nVAR usedarkfield=root:Packages:Convert2Dto1D:UseDarkField
 		usedarkfield=1
 		SVAR BlankFileExtension=root:Packages:Convert2Dto1D:BlankFileExtension
@@ -1763,12 +1763,12 @@ function convertpathtonika([main,mask,dark,beamcenter])
 		DataFileExtension = ".fits"
 		svar EmptyDarkNameMatchStr = root:Packages:Convert2Dto1D:EmptyDarkNameMatchStr
 		EmptyDarkNameMatchStr = ""
-		NI1A_UpdateEmptyDarkListBox()	
+		EGNA_UpdateEmptyDarkListBox()	
 	endif
 	if(beamcenter)
-		NI1_CreateBmCntrFile()
+		EGN_CreateBmCntrFile()
 		newpath /O/Q/Z Convert2Dto1DBmCntrPath S_path
-		popupmenu BmCntrFileType win=NI1_CreateBmCntrFieldPanel, popmatch="*fits"
+		popupmenu BmCntrFileType win=EGN_CreateBmCntrFieldPanel, popmatch="*fits"
 		SVAR BmCntrFileType=root:Packages:Convert2Dto1D:BmCntrFileType
 		BmCntrFileType = ".fits"
 		SVAR BCPathInfoStr=root:Packages:Convert2Dto1D:BCPathInfoStr
@@ -1794,7 +1794,7 @@ function convertnikafilelist(filenamelist)
 		endif
 	endfor
 	doupdate
-	NI1A_CheckParametersForConv()
+	EGNA_CheckParametersForConv()
 	//set selections for using RAW/Converted data...
 	NVAR LineProfileUseRAW=root:Packages:Convert2Dto1D:LineProfileUseRAW
 	NVAR LineProfileUseCorrData=root:Packages:Convert2Dto1D:LineProfileUseCorrData
@@ -1805,7 +1805,7 @@ function convertnikafilelist(filenamelist)
 	SectorsUseRAWData=0
 	SectorsUseCorrData=1
 	//selection done
-	NI1A_LoadManyDataSetsForConv()
+	EGNA_LoadManyDataSetsForConv()
 end
 
 function convertnikafilelistsmart(filenamelist,dark)
@@ -1823,7 +1823,7 @@ function convertnikafilelistsmart(filenamelist,dark)
 	
 	ListOf2DSampleDataNumbers = 0
 	string filename = stringfromlist(0,filenamelist)
-	NI1A_CheckParametersForConv()
+	EGNA_CheckParametersForConv()
 	//set selections for using RAW/Converted data...
 	NVAR LineProfileUseRAW=root:Packages:Convert2Dto1D:LineProfileUseRAW
 	NVAR LineProfileUseCorrData=root:Packages:Convert2Dto1D:LineProfileUseCorrData
@@ -1839,16 +1839,16 @@ function convertnikafilelistsmart(filenamelist,dark)
 		if(dark[i])
 			FindValue /TEXT=filename /TXOP=6 /Z ListOfdarkfilenames
 			if(v_value>=0)
-				listbox Select2DMaskDarkWave win=NI1A_Convert2Dto1DPanel, selrow=v_value 
+				listbox Select2DMaskDarkWave win=EGNA_Convert2Dto1DPanel, selrow=v_value 
 				doupdate
-				NI1A_LoadEmptyOrDark("Dark")
+				EGNA_LoadEmptyOrDark("Dark")
 			endif
 		else
 			FindValue /TEXT=filename /TXOP=6 /Z ListOf2DSampleData
 			if(v_value>=0)
 				ListOf2DSampleDataNumbers = p==v_value ? 1 : 0
 				doupdate
-				NI1A_LoadManyDataSetsForConv()
+				EGNA_LoadManyDataSetsForConv()
 			endif
 		endif
 	endfor
@@ -1875,7 +1875,7 @@ function convertnikafilelistsel(filenamelist)
 		endif
 	endfor
 	doupdate
-	NI1A_CheckParametersForConv()
+	EGNA_CheckParametersForConv()
 	//set selections for using RAW/Converted data...
 	NVAR LineProfileUseRAW=root:Packages:Convert2Dto1D:LineProfileUseRAW
 	NVAR LineProfileUseCorrData=root:Packages:Convert2Dto1D:LineProfileUseCorrData
@@ -1886,13 +1886,13 @@ function convertnikafilelistsel(filenamelist)
 	SectorsUseRAWData=0
 	SectorsUseCorrData=1
 	//selection done
-	NI1A_LoadManyDataSetsForConv()
+	EGNA_LoadManyDataSetsForConv()
 end
 function loadasdarkinnika(filenamelist)
-//dark image load						NI1A_LoadEmptyOrDark("Dark")
+//dark image load						EGNA_LoadEmptyOrDark("Dark")
 //	Wave/T ListOf2DEmptyData=root:Packages:Convert2Dto1D:ListOf2DEmptyData
 //	string SelectedFileToLoad
-//	controlInfo /W=NI1A_Convert2Dto1DPanel Select2DMaskDarkWave
+//	controlInfo /W=EGNA_Convert2Dto1DPanel Select2DMaskDarkWave
 //	variable selection = V_Value
 //	if(selection<0)
 //		setDataFolder OldDf
@@ -1908,9 +1908,9 @@ function loadasdarkinnika(filenamelist)
 		filename = stringfromlist(i,filenamelist)
 		FindValue /TEXT=filename /TXOP=6 /Z ListOffilenames
 		if(v_value>=0)
-			listbox Select2DMaskDarkWave win=NI1A_Convert2Dto1DPanel, selrow=v_value 
+			listbox Select2DMaskDarkWave win=EGNA_Convert2Dto1DPanel, selrow=v_value 
 			doupdate
-			NI1A_LoadEmptyOrDark("Dark")
+			EGNA_LoadEmptyOrDark("Dark")
 		endif
 	endfor
 end
@@ -1935,7 +1935,7 @@ function loadforbeamcenteringinNIKA(filename)
 //beam center load					
 //	setDataFOlder root:Packages:Convert2Dto1D
 //	Wave/T  ListOfCCDDataInBmCntrPath=root:Packages:Convert2Dto1D:ListOfCCDDataInBmCntrPath
-//	controlInfo /W=NI1_CreateBmCntrFieldPanel CCDDataSelection
+//	controlInfo /W=EGN_CreateBmCntrFieldPanel CCDDataSelection
 //	variable selection = V_Value
 //	if(selection<0)
 //		setDataFolder OldDf
@@ -1951,22 +1951,22 @@ function loadforbeamcenteringinNIKA(filename)
 	Wave/T  ListOffilenames=root:Packages:Convert2Dto1D:ListOfCCDDataInBmCntrPath
 	FindValue /TEXT=filename /TXOP=6 /Z ListOffilenames
 	if(v_value>=0)
-		listbox CCDDataSelection win=NI1_CreateBmCntrFieldPanel, selrow=v_value 
+		listbox CCDDataSelection win=EGN_CreateBmCntrFieldPanel, selrow=v_value 
 		doupdate
 		NI1BC_BmCntrCreateImage()
 		//set slider
 		NVAR BMMaxCircleRadius=root:Packages:Convert2Dto1D:BMMaxCircleRadius
 		Wave BmCntrFieldImg=root:Packages:Convert2Dto1D:BmCntrCCDImg 
 		BMMaxCircleRadius=sqrt(DimSize(BmCntrFieldImg, 0 )^2 + DimSize(BmCntrFieldImg, 1 )^2)
-		Slider BMHelpCircleRadius,limits={1,BMMaxCircleRadius,0}, win=NI1_CreateBmCntrFieldPanel
-		SetVariable BMHelpCircleRadiusV,limits={1,BMMaxCircleRadius,0}, win=NI1_CreateBmCntrFieldPanel
+		Slider BMHelpCircleRadius,limits={1,BMMaxCircleRadius,0}, win=EGN_CreateBmCntrFieldPanel
+		SetVariable BMHelpCircleRadiusV,limits={1,BMMaxCircleRadius,0}, win=EGN_CreateBmCntrFieldPanel
 		NVAR BMImageRangeMinLimit= root:Packages:Convert2Dto1D:BMImageRangeMinLimit
 		NVAR BMImageRangeMaxLimit = root:Packages:Convert2Dto1D:BMImageRangeMaxLimit
-		Slider ImageRangeMin,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=NI1_CreateBmCntrFieldPanel
-		Slider ImageRangeMax,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=NI1_CreateBmCntrFieldPanel
+		Slider ImageRangeMin,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=EGN_CreateBmCntrFieldPanel
+		Slider ImageRangeMax,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=EGN_CreateBmCntrFieldPanel
 		NI1BC_DisplayHelpCircle()
 		NI1BC_DisplayMask()
-		TabControl BmCntrTab, value=0, win=NI1_CreateBmCntrFieldPanel
+		TabControl BmCntrTab, value=0, win=EGN_CreateBmCntrFieldPanel
 		showinfo /w=CCDImageForBmCntr
 	endif
 end
@@ -1974,7 +1974,7 @@ end
 function /t getfilename([list,selwave])
 	variable list
 	wave selwave
-	wave/t files = root:Packages:Nika1101:files
+	wave/t files = root:Packages:EGNika101:files
 	if(waveexists(selwave))
 		string filelistsel=""
 		variable i
@@ -2002,7 +2002,7 @@ function /wave getdarks(selwave)
 	wave selwave
 	
 	
-	wave/t filedisc = root:Packages:Nika1101:filedisc
+	wave/t filedisc = root:Packages:EGNika101:filedisc
 	if(sum(selwave)>0)
 		duplicate /free selwave, tempsel 
 		tempsel = selwave[p]>0 ? 1 :0

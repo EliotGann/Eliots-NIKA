@@ -14,7 +14,7 @@
 //************************************************************************************************************
 
 
-Function NI1_DNDCreateHelpNbk()
+Function EGN_DNDCreateHelpNbk()
 	String nb = "DND_Instructions"
 	DoWindow DND_Instructions
 	if(V_Flag)
@@ -47,12 +47,12 @@ end
 //************************************************************************************************************
 //************************************************************************************************************
 
-Function NI1_DNDConfigureNika()
+Function EGN_DNDConfigureNika()
 
 	//this function will configure Nika for use with DND CAT data
 	string OldDf=getDataFolder(1)
 	if(!DataFolderExists("root:DNDCAtLookupTables"))
-		NI1_DNDCreateHelpNbk()
+		EGN_DNDCreateHelpNbk()
 		Abort "Load some DND data in first to create string with header information"
 	endif
 	string ListOfheaders=""
@@ -70,21 +70,21 @@ Function NI1_DNDConfigureNika()
 
 	//and now configrue items:
 	NVAR Dist=root:Packages:Convert2Dto1D:SampleToCCDDistance
-	Dist=NI1_DNDSampleToDetDistance(Selectedheader)
+	Dist=EGN_DNDSampleToDetDistance(Selectedheader)
 	
 	NVAR wvlng=root:Packages:Convert2Dto1D:Wavelength
-	wvlng=NI1_DNDWavelength(Selectedheader)
+	wvlng=EGN_DNDWavelength(Selectedheader)
 	NVAR PixX=root:Packages:Convert2Dto1D:PixelSizeX
-	pixX=NI1_DNDPixelSize(Selectedheader)
+	pixX=EGN_DNDPixelSize(Selectedheader)
 	NVAR pixY=root:Packages:Convert2Dto1D:PixelSizeY
-	pixY=NI1_DNDPixelSize(Selectedheader)
+	pixY=EGN_DNDPixelSize(Selectedheader)
 	
 	NVAR BmX=root:Packages:Convert2Dto1D:BeamCenterX
 	NVAR BMY=root:Packages:Convert2Dto1D:BeamCenterY
 	Wave Img=root:Packages:Convert2Dto1D:CCDImageToConvert
-	//BmX=DimSize(Img, 0)-  NI1_DNDBeamCenterX(Selectedheader)
-	BmX= NI1_DNDBeamCenterX(Selectedheader)
-	BMY=DimSize(Img, 1) - 1 - NI1_DNDBeamCenterY(Selectedheader)			//fixed -1 JIL 10 14 09 since I again forgot about 0 numbering... 
+	//BmX=DimSize(Img, 0)-  EGN_DNDBeamCenterX(Selectedheader)
+	BmX= EGN_DNDBeamCenterX(Selectedheader)
+	BMY=DimSize(Img, 1) - 1 - EGN_DNDBeamCenterY(Selectedheader)			//fixed -1 JIL 10 14 09 since I again forgot about 0 numbering... 
 	
 	NVAR SaTh=root:Packages:Convert2Dto1D:SampleThickness
 	NVAR UseSaTH=root:Packages:Convert2Dto1D:UseSampleThickness
@@ -92,7 +92,7 @@ Function NI1_DNDConfigureNika()
 	SVAR SaThFnct=root:Packages:Convert2Dto1D:SampleThicknFnct
 	UseSaTh=1
 	UseSaThF =1
-	SaThFnct="NI1_DNDSampleThickness"
+	SaThFnct="EGN_DNDSampleThickness"
 	
 	NVAR CorrectionFactor=root:Packages:Convert2Dto1D:CorrectionFactor
 	NVAR UseCorrectionFactor=root:Packages:Convert2Dto1D:UseCorrectionFactor
@@ -100,7 +100,7 @@ Function NI1_DNDConfigureNika()
 	NVAR UseSampleCorrectFnct = root:Packages:Convert2Dto1D:UseSampleCorrectFnct
 	UseSampleCorrectFnct=1
 	SVAR SampleCorrectFnct = root:Packages:Convert2Dto1D:SampleCorrectFnct
-	SampleCorrectFnct ="NI1_DNDSampleCorrFnct"
+	SampleCorrectFnct ="EGN_DNDSampleCorrFnct"
 	
 //	NVAR UseSampleMeasTime=root:Packages:Convert2Dto1D:UseSampleMeasTime
 //	NVAR UseSampleMeasTimeFnct=root:Packages:Convert2Dto1D:UseSampleMeasTimeFnct
@@ -108,7 +108,7 @@ Function NI1_DNDConfigureNika()
 //	NVAR SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
 //	UseSampleMeasTime=1
 //	UseSampleMeasTimeFnct=1
-//	SampleMeasTimeFnct = "NI1_DNDSampleMeasTime"
+//	SampleMeasTimeFnct = "EGN_DNDSampleMeasTime"
 
 	NVAR UseSampleTransmission=root:Packages:Convert2Dto1D:UseSampleTransmission
 	NVAR SampleTransmission=root:Packages:Convert2Dto1D:SampleTransmission
@@ -124,11 +124,11 @@ Function NI1_DNDConfigureNika()
 	UseMonitorForEF=1
 	UseSampleMonitorFnct=0
 	UseEmptyMonitorFnct=1
-	EmptyMonitorFnct="NI1_DNDEmptyCorrection"
+	EmptyMonitorFnct="EGN_DNDEmptyCorrection"
 
 	UseSampleTransmission=1
 	UseSampleTransmFnct=1
-	SampleTransmFnct="NI1_DNDSampleTransmission"
+	SampleTransmFnct="EGN_DNDSampleTransmission"
 	
 	NVAR DoGeometryCorrection=root:Packages:Convert2Dto1D:DoGeometryCorrection
 	NVAR DoPolarizationCorrection=root:Packages:Convert2Dto1D:DoPolarizationCorrection
@@ -137,7 +137,7 @@ Function NI1_DNDConfigureNika()
 	DoGeometryCorrection=1
 	UseSolidAngle=0
 	
-	NI1A_SetCalibrationFormula()
+	EGNA_SetCalibrationFormula()
 
 	
 	setDataFolder OldDf
@@ -152,7 +152,7 @@ end
 //************************************************************************************************************
 
 
-Function NI1_DNDEmptyCorrection(UselessString)
+Function EGN_DNDEmptyCorrection(UselessString)
 	string UselessString
 
 	NVAR useEmptyField = root:Packages:Convert2Dto1D:useEmptyField
@@ -163,7 +163,7 @@ Function NI1_DNDEmptyCorrection(UselessString)
 		string Fixedname= RemoveEnding(CurrentEmptyName, ".txt") [0,31] 
 		SVAR/Z curKwList=$("root:DNDCAtLookupTables:"+Fixedname)
 		if(!SVAR_Exists(curKwList))
-			Abort "Problem in NI1_DNDSampleTransmission routine, please contact auhtor of the code"
+			Abort "Problem in EGN_DNDSampleTransmission routine, please contact auhtor of the code"
 		endif
 		variable IToverI0 = NumberByKey("Relative transmission it/i0",curKwList,"=",";")
 			variable ctTime = NumberByKey("Exposure time (s)",curKwList,"=",";")
@@ -201,12 +201,12 @@ end
 //************************************************************************************************************
 
 
-Function NI1_DNDSampleTransmission(FileNameStr)
+Function EGN_DNDSampleTransmission(FileNameStr)
 	string FileNameStr
 	string Fixedname= RemoveEnding(FileNameStr, ".txt") [0,31] 
 	SVAR/Z curKwList=$("root:DNDCAtLookupTables:"+Fixedname)
 	if(!SVAR_Exists(curKwList))
-		Abort "Problem in NI1_DNDSampleTransmission routine, please contact auhtor of the code"
+		Abort "Problem in EGN_DNDSampleTransmission routine, please contact auhtor of the code"
 	endif
 	variable target
 	variable IToverI0 = NumberByKey("Relative transmission it/i0",curKwList,"=",";")
@@ -237,14 +237,14 @@ Function NI1_DNDSampleTransmission(FileNameStr)
 		string FixedEMptyname= RemoveEnding(CurrentEmptyName, ".txt") [0,31] 
 		SVAR/Z curEmptyKwList=$("root:DNDCAtLookupTables:"+FixedEMptyname)
 		if(!SVAR_Exists(curEmptyKwList))
-			Abort "Problem in NI1_DNDSampleTransmission routine, please contact auhtor of the code"
+			Abort "Problem in EGN_DNDSampleTransmission routine, please contact auhtor of the code"
 		endif
 		variable IToverI0Empty = NumberByKey("Relative transmission it/i0",curEmptyKwList,"=",";")
 		//To get tranmission...
 		// Take the poorly named "Relative transmission it/io" value from the sample's file and divide it by the same value from the empty's file.
 		variable target2 = IToverI0 / IToverI0Empty
 		if(numtype(target2!=0))
-			DoAlert 1, "Failure in NI1_DNDSampleTransmission routine. This is a bug. Please report"
+			DoAlert 1, "Failure in EGN_DNDSampleTransmission routine. This is a bug. Please report"
 		endif
 		Print "*********     This is only for your information   ****************"
 		Print "Calculated transmission for sample : "+FileNameStr+" using empty measurement : "+CurrentEmptyName
@@ -268,12 +268,12 @@ end
 //************************************************************************************************************
 
 
-Function NI1_DNDSampleMeasTime(FileNameStr)
+Function EGN_DNDSampleMeasTime(FileNameStr)
 	string FileNameStr
 	string Fixedname= RemoveEnding(FileNameStr, ".txt") [0,31] 
 	SVAR/Z curKwList=$("root:DNDCAtLookupTables:"+Fixedname)
 	if(!SVAR_Exists(curKwList))
-		Abort "Problem in NI1_DNDSampleMeasTime routine, please contact auhtor of the code"
+		Abort "Problem in EGN_DNDSampleMeasTime routine, please contact auhtor of the code"
 	endif
 	variable target= NumberByKey("Exposure time (s)",curKwList,"=",";")
 	return target
@@ -288,12 +288,12 @@ end
 //************************************************************************************************************
 
 
-Function NI1_DNDSampleCorrFnct(FileNameStr)
+Function EGN_DNDSampleCorrFnct(FileNameStr)
 	string FileNameStr
 	string Fixedname= RemoveEnding(FileNameStr, ".txt") [0,31] 
 	SVAR/Z curKwList=$("root:DNDCAtLookupTables:"+Fixedname)
 	if(!SVAR_Exists(curKwList))
-		Abort "Problem in NI1_DNDSampleCorrFnct routine, please contact auhtor of the code"
+		Abort "Problem in EGN_DNDSampleCorrFnct routine, please contact auhtor of the code"
 	endif
 	variable Version=NumberByKey("Version of chewlog used",curKwList,"=",";")
 	variable CF
@@ -319,12 +319,12 @@ end
 //************************************************************************************************************
 
 
-Function NI1_DNDSampleThickness(FileNameStr)
+Function EGN_DNDSampleThickness(FileNameStr)
 	string FileNameStr
 	string Fixedname= RemoveEnding(FileNameStr, ".txt") [0,31] 
 	SVAR/Z curKwList=$("root:DNDCAtLookupTables:"+Fixedname)
 	if(!SVAR_Exists(curKwList))
-		Abort "Problem in NI1_DNDSampleThickness routine, please contact auhtor of the code"
+		Abort "Problem in EGN_DNDSampleThickness routine, please contact auhtor of the code"
 	endif
 	variable target= NumberByKey(" samp_thick ",curKwList,"=",";") * 10
 
@@ -342,12 +342,12 @@ end
 //************************************************************************************************************
 
 
-Function NI1_DNDSampleToDetDistance(FileNameStr)
+Function EGN_DNDSampleToDetDistance(FileNameStr)
 	string FileNameStr
 	string Fixedname= RemoveEnding(FileNameStr, ".txt") [0,31] 
 	SVAR/Z curKwList=$("root:DNDCAtLookupTables:"+Fixedname)
 	if(!SVAR_Exists(curKwList))
-		Abort "Problem in NI1_DNDSampleToDetDistance routine, please contact auhtor of the code"
+		Abort "Problem in EGN_DNDSampleToDetDistance routine, please contact auhtor of the code"
 	endif
 	variable target=NumberByKey("Sample to detector distance (mm)",curKwList,"=",";")
 	return target
@@ -361,12 +361,12 @@ end
 //************************************************************************************************************
 
 
-Function NI1_DNDPixelSize(FileNameStr)
+Function EGN_DNDPixelSize(FileNameStr)
 	string FileNameStr
 	string Fixedname= RemoveEnding(FileNameStr, ".txt") [0,31] 
 	SVAR/Z curKwList=$("root:DNDCAtLookupTables:"+Fixedname)
 	if(!SVAR_Exists(curKwList))
-		Abort "Problem in NI1_DNDPixelSize routine, please contact auhtor of the code"
+		Abort "Problem in EGN_DNDPixelSize routine, please contact auhtor of the code"
 	endif
 	variable target=NumberByKey("Pixel size (microns)",curKwList,"=",";")
 	return target/1000			//convert to mm as needede by Nika
@@ -380,12 +380,12 @@ end
 //************************************************************************************************************
 
 
-Function NI1_DNDWavelength(FileNameStr)
+Function EGN_DNDWavelength(FileNameStr)
 	string FileNameStr
 	string Fixedname= RemoveEnding(FileNameStr, ".txt") [0,31] 
 	SVAR/Z curKwList=$("root:DNDCAtLookupTables:"+Fixedname)
 	if(!SVAR_Exists(curKwList))
-		Abort "Problem in NI1_DNDWavelength routine, please contact auhtor of the code"
+		Abort "Problem in EGN_DNDWavelength routine, please contact auhtor of the code"
 	endif
 	variable target=NumberByKey("Wavelength (A)",curKwList,"=",";")
 	return target
@@ -399,12 +399,12 @@ end
 //************************************************************************************************************
 
 
-Function NI1_DNDBeamCenterX(FileNameStr)
+Function EGN_DNDBeamCenterX(FileNameStr)
 	string FileNameStr
 	string Fixedname= RemoveEnding(FileNameStr, ".txt") [0,31] 
 	SVAR/Z curKwList=$("root:DNDCAtLookupTables:"+Fixedname)
 	if(!SVAR_Exists(curKwList))
-		Abort "Problem in NI1_DNDBeamCenterX routine, please contact auhtor of the code"
+		Abort "Problem in EGN_DNDBeamCenterX routine, please contact auhtor of the code"
 	endif
 	variable beamCenterX=NumberByKey("X-coordinate location of direct beam (pix)",curKwList,"=",";")
 	return beamCenterX
@@ -418,12 +418,12 @@ end
 //************************************************************************************************************
 
 
-Function NI1_DNDBeamCenterY(FileNameStr)
+Function EGN_DNDBeamCenterY(FileNameStr)
 	string FileNameStr
 	string Fixedname= RemoveEnding(FileNameStr, ".txt") [0,31] 
 	SVAR/Z curKwList=$("root:DNDCAtLookupTables:"+Fixedname)
 	if(!SVAR_Exists(curKwList))
-		Abort "Problem in NI1_DNDBeamCenterY routine, please contact auhtor of the code"
+		Abort "Problem in EGN_DNDBeamCenterY routine, please contact auhtor of the code"
 	endif
 	variable beamCenterY=NumberByKey("Y-coordinate location of direct beam (pix)",curKwList,"=",";")
 	return beamCenterY
@@ -437,7 +437,7 @@ end
 //************************************************************************************************************
 
 
-Function/T NI1_ReadDNDHeader(RefNum)
+Function/T EGN_ReadDNDHeader(RefNum)
 	variable refNum
 	//this function read line by line from the opened TXT file with DND CAT stuff....
 	//and parses into usable Igor KW list
@@ -463,7 +463,7 @@ end
 //************************************************************************************************************
 
 
-Function NI1_ParseDNDHeader(HeaderStr, FileNameToLoad)
+Function EGN_ParseDNDHeader(HeaderStr, FileNameToLoad)
 	string HeaderStr, FileNameToLoad
 	//whis creates, if necessary, strings in place where we can easier parse them for information...
 	string OldDf=GetDataFolder(1)
@@ -488,7 +488,7 @@ end
 //************************************************************************************************************
 
 
-Function/T NI1_FineDNDTifFile(TXTPathName,TXTFileName,HeaderStr)	
+Function/T EGN_FineDNDTifFile(TXTPathName,TXTFileName,HeaderStr)	
 	string TXTPathName,TXTFileName,HeaderStr
 	pathInfo $(TXTPathName)
 	string CurrentPathString=S_path

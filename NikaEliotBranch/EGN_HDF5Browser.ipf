@@ -49,7 +49,7 @@ Function/S NI2_LoadGeneralHDFFile(CalledFrom, fileName, PathName)
 	if(stringmatch(CalledFrom,"Nika"))
 		NI2_ParseNikaData()
 	else
-		abort "not finished Irena or other loading in NI1_HDF5Browser#NI2_LoadGeneralHDFFile" 
+		abort "not finished Irena or other loading in EGN_HDF5Browser#NI2_LoadGeneralHDFFile" 
 	endif
 	
 	return "LoadedWave"

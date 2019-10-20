@@ -1,6 +1,6 @@
 #pragma TextEncoding = "UTF-8"
 #pragma rtGlobals=3		// Use modern global access method and strict wave access.
-#include "NI1_Loader"
+#include "EGN_Loader"
 
 function NRB_Loaddir([update])
 	variable update
@@ -990,15 +990,15 @@ function NRB_convertpathtonika([main,mask,dark,beamcenter])
 	svar /z pname = root:Packages:NikaNISTRSoXS:pnameimages
 	PathInfo $pname
 	if(main)
-		NI1A_Convert2Dto1DMainPanel()
+		EGNA_Convert2Dto1DMainPanel()
 		svar SampleNameMatchStr = root:Packages:Convert2Dto1D:SampleNameMatchStr
 		SampleNameMatchStr = ""
-		popupmenu Select2DDataType win=NI1A_Convert2Dto1DPanel, popmatch="BS_Suitcase_Tiff"
+		popupmenu Select2DDataType win=EGNA_Convert2Dto1DPanel, popmatch="BS_Suitcase_Tiff"
 		newpath /O/Q/Z Convert2Dto1DDataPath S_path
 		SVAR MainPathInfoStr=root:Packages:Convert2Dto1D:MainPathInfoStr
 		MainPathInfoStr=S_path
-		TitleBox PathInfoStrt, win =NI1A_Convert2Dto1DPanel, variable=MainPathInfoStr
-		NI1A_UpdateDataListBox()	
+		TitleBox PathInfoStrt, win =EGNA_Convert2Dto1DPanel, variable=MainPathInfoStr
+		EGNA_UpdateDataListBox()	
 	endif
 	if(mask)
 		NI1M_CreateMask()
@@ -1009,9 +1009,9 @@ function NRB_convertpathtonika([main,mask,dark,beamcenter])
 		NI1M_UpdateMaskListBox()
 	endif
 	if(dark)
-		NI1A_Convert2Dto1DMainPanel()
+		EGNA_Convert2Dto1DMainPanel()
 		newpath /O/Q/Z Convert2Dto1DEmptyDarkPath S_path
-		popupmenu SelectBlank2DDataType win=NI1A_Convert2Dto1DPanel, popmatch="BS_Suitcase_Tiff"
+		popupmenu SelectBlank2DDataType win=EGNA_Convert2Dto1DPanel, popmatch="BS_Suitcase_Tiff"
 		nVAR usedarkfield=root:Packages:Convert2Dto1D:UseDarkField
 		usedarkfield=1
 		SVAR BlankFileExtension=root:Packages:Convert2Dto1D:BlankFileExtension
@@ -1020,12 +1020,12 @@ function NRB_convertpathtonika([main,mask,dark,beamcenter])
 		DataFileExtension = "BS_Suitcase_Tiff"
 		svar EmptyDarkNameMatchStr = root:Packages:Convert2Dto1D:EmptyDarkNameMatchStr
 		EmptyDarkNameMatchStr = ""
-		NI1A_UpdateEmptyDarkListBox()	
+		EGNA_UpdateEmptyDarkListBox()	
 	endif
 	if(beamcenter)
-		NI1_CreateBmCntrFile()
+		EGN_CreateBmCntrFile()
 		newpath /O/Q/Z Convert2Dto1DBmCntrPath S_path
-		popupmenu BmCntrFileType win=NI1_CreateBmCntrFieldPanel, popmatch="BS_Suitcase_Tiff"
+		popupmenu BmCntrFileType win=EGN_CreateBmCntrFieldPanel, popmatch="BS_Suitcase_Tiff"
 		SVAR BmCntrFileType=root:Packages:Convert2Dto1D:BmCntrFileType
 		BmCntrFileType = "BS_Suitcase_Tiff"
 		SVAR BCPathInfoStr=root:Packages:Convert2Dto1D:BCPathInfoStr
@@ -1136,9 +1136,9 @@ function NRB_loadasdarkinnika(filenamelist)
 		filename = stringfromlist(i,filenamelist)
 		FindValue /TEXT=filename /TXOP=6 /Z ListOffilenames
 		if(v_value>=0)
-			listbox Select2DMaskDarkWave win=NI1A_Convert2Dto1DPanel, selrow=v_value 
+			listbox Select2DMaskDarkWave win=EGNA_Convert2Dto1DPanel, selrow=v_value 
 			doupdate
-			NI1A_LoadEmptyOrDark("Dark")
+			EGNA_LoadEmptyOrDark("Dark")
 		endif
 	endfor
 end
@@ -1164,21 +1164,21 @@ function NRB_loadforbeamcenteringinNIKA(filename)
 	Wave/T  ListOffilenames=root:Packages:Convert2Dto1D:ListOfCCDDataInBmCntrPath
 	FindValue /TEXT=filename /TXOP=6 /Z ListOffilenames
 	if(v_value>=0)
-		listbox CCDDataSelection win=NI1_CreateBmCntrFieldPanel, selrow=v_value 
+		listbox CCDDataSelection win=EGN_CreateBmCntrFieldPanel, selrow=v_value 
 		doupdate
 		NI1BC_BmCntrCreateImage()
 		NVAR BMMaxCircleRadius=root:Packages:Convert2Dto1D:BMMaxCircleRadius
 		Wave BmCntrFieldImg=root:Packages:Convert2Dto1D:BmCntrCCDImg 
 		BMMaxCircleRadius=sqrt(DimSize(BmCntrFieldImg, 0 )^2 + DimSize(BmCntrFieldImg, 1 )^2)
-		Slider BMHelpCircleRadius,limits={1,BMMaxCircleRadius,0}, win=NI1_CreateBmCntrFieldPanel
-		SetVariable BMHelpCircleRadiusV,limits={1,BMMaxCircleRadius,0}, win=NI1_CreateBmCntrFieldPanel
+		Slider BMHelpCircleRadius,limits={1,BMMaxCircleRadius,0}, win=EGN_CreateBmCntrFieldPanel
+		SetVariable BMHelpCircleRadiusV,limits={1,BMMaxCircleRadius,0}, win=EGN_CreateBmCntrFieldPanel
 		NVAR BMImageRangeMinLimit= root:Packages:Convert2Dto1D:BMImageRangeMinLimit
 		NVAR BMImageRangeMaxLimit = root:Packages:Convert2Dto1D:BMImageRangeMaxLimit
-		Slider ImageRangeMin,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=NI1_CreateBmCntrFieldPanel
-		Slider ImageRangeMax,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=NI1_CreateBmCntrFieldPanel
+		Slider ImageRangeMin,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=EGN_CreateBmCntrFieldPanel
+		Slider ImageRangeMax,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=EGN_CreateBmCntrFieldPanel
 		NI1BC_DisplayHelpCircle()
 		NI1BC_DisplayMask()
-		TabControl BmCntrTab, value=0, win=NI1_CreateBmCntrFieldPanel
+		TabControl BmCntrTab, value=0, win=EGN_CreateBmCntrFieldPanel
 		showinfo /w=CCDImageForBmCntr
 	endif
 end
@@ -1200,7 +1200,7 @@ function NRB_convertnikafilelistsel(filenamelist)
 		endif
 	endfor
 	doupdate
-	NI1A_CheckParametersForConv()
+	EGNA_CheckParametersForConv()
 	//set selections for using RAW/Converted data...
 	NVAR LineProfileUseRAW=root:Packages:Convert2Dto1D:LineProfileUseRAW
 	NVAR LineProfileUseCorrData=root:Packages:Convert2Dto1D:LineProfileUseCorrData
@@ -1211,7 +1211,7 @@ function NRB_convertnikafilelistsel(filenamelist)
 	SectorsUseRAWData=0
 	SectorsUseCorrData=1
 	//selection done
-	NI1A_LoadManyDataSetsForConv()
+	EGNA_LoadManyDataSetsForConv()
 end
 
 Function NRB_BGTask(s)

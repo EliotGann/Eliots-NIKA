@@ -2,25 +2,25 @@
 
 //This macro loads the Nika 1 set of Igor Pro macros for evaluation of 2D images in small angle scattering
 
-#include "NI1_BeamCenterUtils",version>=2.00
-#include "NI1_ConvProc", version>=2.05
-#include "NI1_FileLoaders",version>=2.035
-#include "NI1_LineProfile", version>=2.00
-#include "NI1_main", version>=1.44
-#include "NI1_MainPanel", version>=2.14
-#include "NI1_mar345", version>=1.0
-#include "NI1_mask", version>=1.1
-#include "NI1_pix2Dsensitivity",version>=1
-#include "NI1_SaveRecallConfig", version>=1.0
-#include "NI1_SquareMatrix", version>=1.0
-#include "NI1_WinView",version>=1
-#include "NI1_DNDCATsupport",version>=1.1
-#include "NI1_LineProfCalcs",version>=2.01
-#include "NI1_ADE-ALS11012",version>=1.1
+#include "EGN_BeamCenterUtils",version>=2.00
+#include "EGN_ConvProc", version>=2.05
+#include "EGN_FileLoaders",version>=2.035
+#include "EGN_LineProfile", version>=2.00
+#include "EGN_main", version>=1.44
+#include "EGN_MainPanel", version>=2.14
+#include "EGN_mar345", version>=1.0
+#include "EGN_mask", version>=1.1
+#include "EGN_pix2Dsensitivity",version>=1
+#include "EGN_SaveRecallConfig", version>=1.0
+#include "EGN_SquareMatrix", version>=1.0
+#include "EGN_WinView",version>=1
+#include "EGN_DNDCATsupport",version>=1.1
+#include "EGN_LineProfCalcs",version>=2.01
+#include "EGN_ADE-ALS11012",version>=1.1
 
 
 
-#include "IN2_GeneralProcedures", version>=1.41
+#include "EG_N2_GeneralProcedures", version>=1.41
 
 
 //1.43, updated FIle loaders to 2.01
