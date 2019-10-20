@@ -3,7 +3,7 @@
 
 
 Menu "Macros"
-	StrVarOrDefault("root:Packages:EGNika2DSASItem1Str","Load Nika 2D SAS Macros"), LoadEGN2DSAS()
+	StrVarOrDefault("root:Packages:EGNika2DSASItem1Str","Load Eliot Branch of Nika (2D SAS reduction)"), LoadEGN2DSAS()
 end
 
 

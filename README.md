@@ -12,9 +12,10 @@ Suggested Installation Method:
 
 1.) clone this repository to your local machine.
 
-2.) uninstall or temporarily move any existing NIKA installation from the active igor pro folder
+~~2.) uninstall or temporarily move any existing NIKA installation from the active igor pro folder~~
+	(this should be able to coexist with current-version Nika)
 
-3.) open your users files directory (from Igor Pro  select Help-> Igor Pro User Files)
+3.) open your user files directory (from Igor Pro  select Help-> Igor Pro User Files)
     usually this is in the documents/wavemetrics/ folder
     (close Igor after this step)
 
