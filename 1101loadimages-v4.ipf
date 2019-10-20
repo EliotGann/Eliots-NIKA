@@ -855,7 +855,7 @@ Window DataReduction() : Panel
 	ModifyImage avg_mask ctab= {0,10,Grays,0}
 	ModifyImage avg_mask maxRGB=NaN
 	AppendImage :Packages:EGNika101:data_disp
-	ModifyImage data_disp ctab= {*,*,terraEG_N256,0}
+	ModifyImage data_disp ctab= {*,*,terrain256,0}
 	ModifyGraph margin(left)=1,margin(bottom)=1,margin(top)=1,margin(right)=1,frameInset=2,height={Plan,1,left,bottom}
 	ModifyGraph mirror=2
 	SetAxis/A/R left
@@ -1397,7 +1397,7 @@ function makemovie()
 			endif
 		endif
 //		NVAR minslider=root:Packages:EGNika101:minslider, maxslider=root:Packages:EGNika101:maxslider
-//		ModifyImage /W=datareduction#G0 data_disp ctab= {minslider,maxslider,terraEG_N256,0}
+//		ModifyImage /W=datareduction#G0 data_disp ctab= {minslider,maxslider,terrain256,0}
 		print "adding movie frame with title = " + nameforoutput
 		TextBox  /W=datareduction#G0 /C/N=text0/F=0/S=3/B=3/E=2 /X=30.94/Y=11.59  nameforoutput
 		SetAxis /W=datareduction#G0 /A /R left
