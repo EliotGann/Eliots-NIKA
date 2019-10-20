@@ -7,7 +7,7 @@
 #include <Remove Points>
 #include "GIWAXS multipeakfitting and WAv2"
 #include "ccdplotting"
-#include "EGN_Loader"
+#include "NI1_Loader"
 #include "GIWAXSLatticeCalcs"
 //#include "GIWAXSbkgRemoval-v4"
 
@@ -654,11 +654,11 @@ Function setbeamzero()
 //	CCDth0 = (1/pxsizey) *sad*sin(pi*ccdTheta/180)/cos((ccdtheta+verttilt)*pi/180) - beamy
 end
 
-function EGN_FitsLoaderPanelFnct() : Panel
+function NI1_FitsLoaderPanelFnct() : Panel
 	string currentfolder = getdatafolder(1)
-	DoWindow  EGN_FitsLoaderPanel
+	DoWindow  NI1_FitsLoaderPanel
 	if(V_Flag)
-		DoWindow/F EGN_FitsLoaderPanel
+		DoWindow/F NI1_FitsLoaderPanel
 		setdatafolder root:packages:nika1101
 		string /g imagekeys=""
 	else
@@ -716,65 +716,65 @@ function EGN_FitsLoaderPanelFnct() : Panel
 		variable/g FuckedI0s // because beamline 11.0.1.2 recorded series data incorrectly Dec-2013
 
 		PauseUpdate; Silent 1		// building window...
-		NewPanel /K=1 /W=(1077,58,1561,333)/N=EGN_FitsLoaderPanel as "Fits Naming"
-		ModifyPanel/w=EGN_FitsLoaderPanel fixedSize=1
-		SetDrawLayer/w=EGN_FitsLoaderPanel UserBack
-		SetDrawEnv/w=EGN_FitsLoaderPanel fillfgc= (32768,65280,65280)
-		DrawRect/w=EGN_FitsLoaderPanel 197,81,477,123
-		SetDrawEnv/w=EGN_FitsLoaderPanel fillfgc= (32768,65280,32768)
-		DrawRect/w=EGN_FitsLoaderPanel 197,2,477,78
-		SetDrawEnv/w=EGN_FitsLoaderPanel fillfgc= (65280,65280,48896)
-		DrawRect/w=EGN_FitsLoaderPanel 3,126,478,201
-		SetDrawEnv/w=EGN_FitsLoaderPanel fillfgc= (51456,44032,58880)
-		DrawRect/w=EGN_FitsLoaderPanel 3,2,193,123
-		DrawText/w=EGN_FitsLoaderPanel 43,19,"Build Name from:"
-		CheckBox mot1_ch,pos={169,24},size={16,14},title="",win=EGN_FitsLoaderPanel
-		CheckBox mot1_ch,variable= root:Packages:Nika1101:usefitskey1,win=EGN_FitsLoaderPanel
-		CheckBox mot2_ch,pos={169,46},size={16,14},title="",win=EGN_FitsLoaderPanel
-		CheckBox mot2_ch,variable= root:Packages:Nika1101:usefitskey2,win=EGN_FitsLoaderPanel
-		CheckBox mot3_ch,pos={169,68},size={16,14},title="",win=EGN_FitsLoaderPanel
-		CheckBox mot3_ch,variable= root:Packages:Nika1101:usefitskey3,win=EGN_FitsLoaderPanel
-		CheckBox mot4_ch,pos={169,90},size={16,14},title="",win=EGN_FitsLoaderPanel
-		CheckBox mot4_ch,variable= root:Packages:Nika1101:usefitskey4,win=EGN_FitsLoaderPanel
-		CheckBox Ai3izero_ch,pos={204,207},size={105,14},title="Use Ai3Izero for I0",win=EGN_FitsLoaderPanel
-		CheckBox Ai3izero_ch,variable= root:Packages:Nika1101:Ai3izero,win=EGN_FitsLoaderPanel
-		PopupMenu motor1_pop,pos={15,19},size={145,21},bodyWidth=100,proc=PopMenuProc_1,title="Motor 1: ",win=EGN_FitsLoaderPanel
-		PopupMenu motor1_pop,mode=1,popvalue="none",value= #"root:packages:nika1101:imagekeys",win=EGN_FitsLoaderPanel
-		PopupMenu motor2_pop,pos={15,41},size={145,21},bodyWidth=100,proc=PopMenuProc_2,title="Motor 2: ",win=EGN_FitsLoaderPanel
-		PopupMenu motor2_pop,mode=1,popvalue="none",value= #"root:packages:nika1101:imagekeys",win=EGN_FitsLoaderPanel
-		PopupMenu motor3_pop,pos={15,63},size={145,21},bodyWidth=100,proc=PopMenuProc_3,title="Motor 3: ",win=EGN_FitsLoaderPanel
-		PopupMenu motor3_pop,mode=1,popvalue="none",value= #"root:packages:nika1101:imagekeys",win=EGN_FitsLoaderPanel
-		PopupMenu motor4_pop,pos={15,85},size={145,21},bodyWidth=100,proc=PopMenuProc_4,title="Motor 4: ",win=EGN_FitsLoaderPanel
-		PopupMenu motor4_pop,mode=1,popvalue="none",value= #"root:packages:nika1101:imagekeys",win=EGN_FitsLoaderPanel
-		CheckBox automot_ch1,pos={211,17},size={226,14},title="Adjust Beam center based on CCD Location",win=EGN_FitsLoaderPanel
-		CheckBox automot_ch1,variable= root:Packages:Nika1101:ADJBeam,win=EGN_FitsLoaderPanel
-		SetVariable CCDX_zero,pos={234,38},size={174,16},title="CCDX - calibrated zero",win=EGN_FitsLoaderPanel
-		SetVariable CCDX_zero,limits={-100,100,0.1},value= root:Packages:Nika1101:CCDXZero,win=EGN_FitsLoaderPanel
-		SetVariable CCDTheta_zero1,pos={219,58},size={190,16},title="CCDTheta calibrated zero",win=EGN_FitsLoaderPanel
-		SetVariable CCDTheta_zero1,limits={-100,100,0.1},value= root:Packages:Nika1101:CCDThZero,win=EGN_FitsLoaderPanel
-		CheckBox flattenimageck,pos={215,87},size={203,14},title="Flatten image with screened out pixels?",win=EGN_FitsLoaderPanel
-		CheckBox flattenimageck,variable= root:Packages:Nika1101:chkflatten,win=EGN_FitsLoaderPanel
-		SetVariable Calibrationlinebox,pos={203,105},size={161,16},title="Flatten Center Line",win=EGN_FitsLoaderPanel
-		SetVariable Calibrationlinebox,limits={0,inf,1},value= root:Packages:Nika1101:flatten_line,win=EGN_FitsLoaderPanel
-		SetVariable Calibrationlinebox1,pos={370,104},size={93,16},title="Width",win=EGN_FitsLoaderPanel,format="%08d"
+		NewPanel /K=1 /W=(1077,58,1561,333)/N=NI1_FitsLoaderPanel as "Fits Naming"
+		ModifyPanel/w=NI1_FitsLoaderPanel fixedSize=1
+		SetDrawLayer/w=NI1_FitsLoaderPanel UserBack
+		SetDrawEnv/w=NI1_FitsLoaderPanel fillfgc= (32768,65280,65280)
+		DrawRect/w=NI1_FitsLoaderPanel 197,81,477,123
+		SetDrawEnv/w=NI1_FitsLoaderPanel fillfgc= (32768,65280,32768)
+		DrawRect/w=NI1_FitsLoaderPanel 197,2,477,78
+		SetDrawEnv/w=NI1_FitsLoaderPanel fillfgc= (65280,65280,48896)
+		DrawRect/w=NI1_FitsLoaderPanel 3,126,478,201
+		SetDrawEnv/w=NI1_FitsLoaderPanel fillfgc= (51456,44032,58880)
+		DrawRect/w=NI1_FitsLoaderPanel 3,2,193,123
+		DrawText/w=NI1_FitsLoaderPanel 43,19,"Build Name from:"
+		CheckBox mot1_ch,pos={169,24},size={16,14},title="",win=NI1_FitsLoaderPanel
+		CheckBox mot1_ch,variable= root:Packages:Nika1101:usefitskey1,win=NI1_FitsLoaderPanel
+		CheckBox mot2_ch,pos={169,46},size={16,14},title="",win=NI1_FitsLoaderPanel
+		CheckBox mot2_ch,variable= root:Packages:Nika1101:usefitskey2,win=NI1_FitsLoaderPanel
+		CheckBox mot3_ch,pos={169,68},size={16,14},title="",win=NI1_FitsLoaderPanel
+		CheckBox mot3_ch,variable= root:Packages:Nika1101:usefitskey3,win=NI1_FitsLoaderPanel
+		CheckBox mot4_ch,pos={169,90},size={16,14},title="",win=NI1_FitsLoaderPanel
+		CheckBox mot4_ch,variable= root:Packages:Nika1101:usefitskey4,win=NI1_FitsLoaderPanel
+		CheckBox Ai3izero_ch,pos={204,207},size={105,14},title="Use Ai3Izero for I0",win=NI1_FitsLoaderPanel
+		CheckBox Ai3izero_ch,variable= root:Packages:Nika1101:Ai3izero,win=NI1_FitsLoaderPanel
+		PopupMenu motor1_pop,pos={15,19},size={145,21},bodyWidth=100,proc=PopMenuProc_1,title="Motor 1: ",win=NI1_FitsLoaderPanel
+		PopupMenu motor1_pop,mode=1,popvalue="none",value= #"root:packages:nika1101:imagekeys",win=NI1_FitsLoaderPanel
+		PopupMenu motor2_pop,pos={15,41},size={145,21},bodyWidth=100,proc=PopMenuProc_2,title="Motor 2: ",win=NI1_FitsLoaderPanel
+		PopupMenu motor2_pop,mode=1,popvalue="none",value= #"root:packages:nika1101:imagekeys",win=NI1_FitsLoaderPanel
+		PopupMenu motor3_pop,pos={15,63},size={145,21},bodyWidth=100,proc=PopMenuProc_3,title="Motor 3: ",win=NI1_FitsLoaderPanel
+		PopupMenu motor3_pop,mode=1,popvalue="none",value= #"root:packages:nika1101:imagekeys",win=NI1_FitsLoaderPanel
+		PopupMenu motor4_pop,pos={15,85},size={145,21},bodyWidth=100,proc=PopMenuProc_4,title="Motor 4: ",win=NI1_FitsLoaderPanel
+		PopupMenu motor4_pop,mode=1,popvalue="none",value= #"root:packages:nika1101:imagekeys",win=NI1_FitsLoaderPanel
+		CheckBox automot_ch1,pos={211,17},size={226,14},title="Adjust Beam center based on CCD Location",win=NI1_FitsLoaderPanel
+		CheckBox automot_ch1,variable= root:Packages:Nika1101:ADJBeam,win=NI1_FitsLoaderPanel
+		SetVariable CCDX_zero,pos={234,38},size={174,16},title="CCDX - calibrated zero",win=NI1_FitsLoaderPanel
+		SetVariable CCDX_zero,limits={-100,100,0.1},value= root:Packages:Nika1101:CCDXZero,win=NI1_FitsLoaderPanel
+		SetVariable CCDTheta_zero1,pos={219,58},size={190,16},title="CCDTheta calibrated zero",win=NI1_FitsLoaderPanel
+		SetVariable CCDTheta_zero1,limits={-100,100,0.1},value= root:Packages:Nika1101:CCDThZero,win=NI1_FitsLoaderPanel
+		CheckBox flattenimageck,pos={215,87},size={203,14},title="Flatten image with screened out pixels?",win=NI1_FitsLoaderPanel
+		CheckBox flattenimageck,variable= root:Packages:Nika1101:chkflatten,win=NI1_FitsLoaderPanel
+		SetVariable Calibrationlinebox,pos={203,105},size={161,16},title="Flatten Center Line",win=NI1_FitsLoaderPanel
+		SetVariable Calibrationlinebox,limits={0,inf,1},value= root:Packages:Nika1101:flatten_line,win=NI1_FitsLoaderPanel
+		SetVariable Calibrationlinebox1,pos={370,104},size={93,16},title="Width",win=NI1_FitsLoaderPanel,format="%08d"
 		SetVariable Calibrationlinebox1,limits={0,2000,1},value= root:Packages:Nika1101:flatten_width
-		SetVariable setvar0,pos={9,132},size={466,16},title="Regular Expression for Naming (Advanced) :",win=EGN_FitsLoaderPanel
-		SetVariable setvar0,value= root:Packages:Nika1101:loaderregexp,win=EGN_FitsLoaderPanel
-		SetVariable setvar1,pos={9,149},size={466,16},title="Naming String Construction (Advanced) :",win=EGN_FitsLoaderPanel
-		SetVariable setvar1,value= root:Packages:Nika1101:namecreation,win=EGN_FitsLoaderPanel
-		Button button0,pos={300,169},size={141,21},proc=dfe_buttoncctl,title="Set to Naming Defaults",win=EGN_FitsLoaderPanel
-		CheckBox Exposurecorr_ch1,pos={15,206},size={166,14},title="Correct Data for Exposure Time",win=EGN_FitsLoaderPanel
-		CheckBox Exposurecorr_ch1,variable= root:Packages:Nika1101:Exposecorr,win=EGN_FitsLoaderPanel
-		CheckBox DIspHeader_ch,pos={36,108},size={134,14},title="Display Header On Load",win=EGN_FitsLoaderPanel
-		CheckBox DIspHeader_ch,variable= root:Packages:Nika1101:dispheader,win=EGN_FitsLoaderPanel
-		Button SetBeamzero,pos={415,34},size={58,41},proc=Setbeamzero_ButtonProc,title="Set Now",win=EGN_FitsLoaderPanel
-		Button LoadI0,pos={13,228},size={70,40},proc=ButtonProc_5,title="Load I0\rScan",win=EGN_FitsLoaderPanel
-		ListBox list0,pos={92,229},size={381,42},win=EGN_FitsLoaderPanel
-		ListBox list0,listWave=root:Packages:Nika1101:loadedizeros,row= 1,win=EGN_FitsLoaderPanel
-		CheckBox Sup_Extra_ch,pos={19,171},size={174,26},title="Suppress Extra Name Characters\r (eg C, glp etc)",win=EGN_FitsLoaderPanel
-		CheckBox Sup_Extra_ch,variable= root:Packages:Nika1101:SupExChar,win=EGN_FitsLoaderPanel
-		CheckBox Ai3izero_ch1,pos={342,205},size={86,14},title="Messed up I0s",win=EGN_FitsLoaderPanel
-		CheckBox Ai3izero_ch1,variable= root:Packages:Nika1101:FuckedI0s,win=EGN_FitsLoaderPanel
+		SetVariable setvar0,pos={9,132},size={466,16},title="Regular Expression for Naming (Advanced) :",win=NI1_FitsLoaderPanel
+		SetVariable setvar0,value= root:Packages:Nika1101:loaderregexp,win=NI1_FitsLoaderPanel
+		SetVariable setvar1,pos={9,149},size={466,16},title="Naming String Construction (Advanced) :",win=NI1_FitsLoaderPanel
+		SetVariable setvar1,value= root:Packages:Nika1101:namecreation,win=NI1_FitsLoaderPanel
+		Button button0,pos={300,169},size={141,21},proc=dfe_buttoncctl,title="Set to Naming Defaults",win=NI1_FitsLoaderPanel
+		CheckBox Exposurecorr_ch1,pos={15,206},size={166,14},title="Correct Data for Exposure Time",win=NI1_FitsLoaderPanel
+		CheckBox Exposurecorr_ch1,variable= root:Packages:Nika1101:Exposecorr,win=NI1_FitsLoaderPanel
+		CheckBox DIspHeader_ch,pos={36,108},size={134,14},title="Display Header On Load",win=NI1_FitsLoaderPanel
+		CheckBox DIspHeader_ch,variable= root:Packages:Nika1101:dispheader,win=NI1_FitsLoaderPanel
+		Button SetBeamzero,pos={415,34},size={58,41},proc=Setbeamzero_ButtonProc,title="Set Now",win=NI1_FitsLoaderPanel
+		Button LoadI0,pos={13,228},size={70,40},proc=ButtonProc_5,title="Load I0\rScan",win=NI1_FitsLoaderPanel
+		ListBox list0,pos={92,229},size={381,42},win=NI1_FitsLoaderPanel
+		ListBox list0,listWave=root:Packages:Nika1101:loadedizeros,row= 1,win=NI1_FitsLoaderPanel
+		CheckBox Sup_Extra_ch,pos={19,171},size={174,26},title="Suppress Extra Name Characters\r (eg C, glp etc)",win=NI1_FitsLoaderPanel
+		CheckBox Sup_Extra_ch,variable= root:Packages:Nika1101:SupExChar,win=NI1_FitsLoaderPanel
+		CheckBox Ai3izero_ch1,pos={342,205},size={86,14},title="Messed up I0s",win=NI1_FitsLoaderPanel
+		CheckBox Ai3izero_ch1,variable= root:Packages:Nika1101:FuckedI0s,win=NI1_FitsLoaderPanel
 	endif
 
 		
@@ -808,30 +808,30 @@ function EGN_FitsLoaderPanelFnct() : Panel
 	string imagekeystring = imagekeys
 	if(strlen(stringbykey(fitskeyname1,header))>0)
 		fitskeypick1 =whichlistitem(fitskeyname1,imagekeys)+1
-		PopupMenu motor1_pop,mode=fitskeypick1,win=EGN_FitsLoaderPanel
+		PopupMenu motor1_pop,mode=fitskeypick1,win=NI1_FitsLoaderPanel
 	else
-		PopupMenu motor1_pop,mode=fitskeypick1,win=EGN_FitsLoaderPanel
+		PopupMenu motor1_pop,mode=fitskeypick1,win=NI1_FitsLoaderPanel
 		fitskeyname1 = stringfromlist(fitskeypick1-1,imagekeys)
 	endif
 	if(strlen(stringbykey(fitskeyname2,header))>0)
 		fitskeypick2 =whichlistitem(fitskeyname2,imagekeys)+1
-		PopupMenu motor2_pop,mode=fitskeypick2,win=EGN_FitsLoaderPanel
+		PopupMenu motor2_pop,mode=fitskeypick2,win=NI1_FitsLoaderPanel
 	else
-		PopupMenu motor2_pop,mode=fitskeypick2,win=EGN_FitsLoaderPanel
+		PopupMenu motor2_pop,mode=fitskeypick2,win=NI1_FitsLoaderPanel
 		fitskeyname2 = stringfromlist(fitskeypick2-1,imagekeys)
 	endif
 	if(strlen(stringbykey(fitskeyname3,header))>0)
 		fitskeypick3 =whichlistitem(fitskeyname3,imagekeys)+1
-		PopupMenu motor3_pop,mode=fitskeypick3,win=EGN_FitsLoaderPanel
+		PopupMenu motor3_pop,mode=fitskeypick3,win=NI1_FitsLoaderPanel
 	else
-		PopupMenu motor3_pop,mode=fitskeypick3,win=EGN_FitsLoaderPanel
+		PopupMenu motor3_pop,mode=fitskeypick3,win=NI1_FitsLoaderPanel
 		fitskeyname3 = stringfromlist(fitskeypick3-1,imagekeys)
 	endif
 	if(strlen(stringbykey(fitskeyname4,header))>0)
 		fitskeypick4 =whichlistitem(fitskeyname4,imagekeys)+1
-		PopupMenu motor4_pop,mode=fitskeypick4,win=EGN_FitsLoaderPanel
+		PopupMenu motor4_pop,mode=fitskeypick4,win=NI1_FitsLoaderPanel
 	else
-		PopupMenu motor4_pop,mode=fitskeypick4,win=EGN_FitsLoaderPanel
+		PopupMenu motor4_pop,mode=fitskeypick4,win=NI1_FitsLoaderPanel
 		fitskeyname4 = stringfromlist(fitskeypick1-1,imagekeys)
 	endif
 
@@ -893,30 +893,30 @@ function updatefitsloaderpaneloptions()
 	endfor
 	if(strlen(stringbykey(fitskeyname1,header))>0)
 		fitskeypick1 =whichlistitem(fitskeyname1,imagekeys)+1
-		PopupMenu motor1_pop,mode=fitskeypick1, win=EGN_FitsLoaderPanel
+		PopupMenu motor1_pop,mode=fitskeypick1, win=NI1_FitsLoaderPanel
 	else
-		PopupMenu motor1_pop,mode=fitskeypick1,win=EGN_FitsLoaderPanel
+		PopupMenu motor1_pop,mode=fitskeypick1,win=NI1_FitsLoaderPanel
 		fitskeyname1 = stringfromlist(fitskeypick1-1,imagekeys)
 	endif
 	if(strlen(stringbykey(fitskeyname2,header))>0)
 		fitskeypick2 =whichlistitem(fitskeyname2,imagekeys)+1
-		PopupMenu motor2_pop,mode=fitskeypick2, win=EGN_FitsLoaderPanel
+		PopupMenu motor2_pop,mode=fitskeypick2, win=NI1_FitsLoaderPanel
 	else
-		PopupMenu motor2_pop,mode=fitskeypick2,win=EGN_FitsLoaderPanel
+		PopupMenu motor2_pop,mode=fitskeypick2,win=NI1_FitsLoaderPanel
 		fitskeyname2 = stringfromlist(fitskeypick2-1,imagekeys)
 	endif
 	if(strlen(stringbykey(fitskeyname3,header))>0)
 		fitskeypick3 =whichlistitem(fitskeyname3,imagekeys)+1
-		PopupMenu motor3_pop,mode=fitskeypick3, win=EGN_FitsLoaderPanel
+		PopupMenu motor3_pop,mode=fitskeypick3, win=NI1_FitsLoaderPanel
 	else
-		PopupMenu motor3_pop,mode=fitskeypick3,win=EGN_FitsLoaderPanel
+		PopupMenu motor3_pop,mode=fitskeypick3,win=NI1_FitsLoaderPanel
 		fitskeyname3 = stringfromlist(fitskeypick3-1,imagekeys)
 	endif
 	if(strlen(stringbykey(fitskeyname4,header))>0)
 		fitskeypick4 =whichlistitem(fitskeyname4,imagekeys)+1
-		PopupMenu motor4_pop,mode=fitskeypick4, win=EGN_FitsLoaderPanel
+		PopupMenu motor4_pop,mode=fitskeypick4, win=NI1_FitsLoaderPanel
 	else
-		PopupMenu motor4_pop,mode=fitskeypick4,win=EGN_FitsLoaderPanel
+		PopupMenu motor4_pop,mode=fitskeypick4,win=NI1_FitsLoaderPanel
 		fitskeyname4 = stringfromlist(fitskeypick1-1,imagekeys)
 	endif
 
@@ -1640,7 +1640,7 @@ function BGCheckdir()
 //				return 0
 //			endswitch
 //			String/G root:Packages:Nika1101:bkg:message="Found New File - Asking Nika to Convert the new file"
-			EGNA_UpdateDataListBox()
+			NI1A_UpdateDataListBox()
 			doupdate
 			Wave/T  ListOf2DSampleData=root:Packages:Convert2Dto1D:ListOf2DSampleData
 			Wave ListOf2DSampleDataNumbers=root:Packages:Convert2Dto1D:ListOf2DSampleDataNumbers
@@ -1649,7 +1649,7 @@ function BGCheckdir()
 				ListOf2DSampleDataNumbers = 0
 				ListOf2DSampleDataNumbers[v_value] = 1
 				
-				EGNA_CheckParametersForConv()
+				NI1A_CheckParametersForConv()
 				//set selections for using RAW/Converted data...
 				NVAR LineProfileUseRAW=root:Packages:Convert2Dto1D:LineProfileUseRAW
 				NVAR LineProfileUseCorrData=root:Packages:Convert2Dto1D:LineProfileUseCorrData
@@ -1668,7 +1668,7 @@ function BGCheckdir()
 				SectorsUseRAWData=0
 				SectorsUseCorrData=1
 				//selection done
-				EGNA_LoadManyDataSetsForConv()	
+				NI1A_LoadManyDataSetsForConv()	
 				string commandstring = replacestring("*name*",commandstr,username)
 				if(!cmpstr(commandstr,"")||!cmpstr(username,"") )
 					commandstring=""
@@ -2564,7 +2564,7 @@ function LoadI0panel() : Panel
 	setdatafolder root:packages:nika1101
 	DoWindow  LoadIzeroPanel
 	if(V_Flag)
-		DoWindow/F EGN_FitsLoaderPanel
+		DoWindow/F NI1_FitsLoaderPanel
 		setdatafolder root:packages:nika1101
 	else
 		if(!exists("i0photodiode"))
@@ -2700,7 +2700,7 @@ function GI_ReHistImage()
 	//	variable diff6=cmpstr(oldSampleToCCDDistance,num2str(SampleToCCDDistance))!=0 || cmpstr(oldBeamCenterX,num2str(BeamCenterX))!=0 || cmpstr(oldBeamCenterY,num2str(BeamCenterY))!=0
 	//	variable diff7 = cmpstr(oldPixelSizeX,num2str(PixelSizeX))!=0 || cmpstr(oldPixelSizeY,num2str(PixelSizeY))!=0  || cmpstr(oldHorizontalTilt,num2str(HorizontalTilt))!=0  || cmpstr(oldVerticalTilt,num2str(VerticalTilt))!=0
 	//	if(diff6 || diff7)
-			EGNA_Create2DQWave(data) // need qz and qxy 2d waves which are created here
+			NI1A_Create2DQWave(data) // need qz and qxy 2d waves which are created here
 		//endif
 		
 	wave qxywave
@@ -3566,8 +3566,8 @@ function setqrange(row)
 	
 	SetDataFOlder root:Packages:Convert2Dto1D
 	NewPath/q/O/M="Select path to your data" Convert2Dto1DMaskPath,listwave[row][5]
-	EGNA_UpdateMainMaskListBox()	
-	EGNM_UpdateMaskListBox()
+	NI1A_UpdateMainMaskListBox()	
+	NI1M_UpdateMaskListBox()
 	
 	SVAR CurrentMaskFileName=root:Packages:Convert2Dto1D:CurrentMaskFileName
 	nvar bcx = root:Packages:Convert2Dto1D:BeamCenterX
@@ -3580,7 +3580,7 @@ function setqrange(row)
 	bcy = str2num(listwave[row][2])
 	sdd = str2num(listwave[row][3])
 	
-	EGNA_UniversalLoader("Convert2Dto1DMaskPath",listwave[row][4],"tiff","M_ROIMask")
+	NI1A_UniversalLoader("Convert2Dto1DMaskPath",listwave[row][4],"tiff","M_ROIMask")
 	CurrentMaskFileName = listwave[row][4]
 	wave M_ROIMask
 	Redimension/B/U M_ROIMask

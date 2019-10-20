@@ -1,5 +1,5 @@
 #pragma rtGlobals=1		// Use modern global access method and strict wave access.
-#include "EGN_Loader"
+#include "NI1_Loader"
 
 function CCDPlotSquare() : Graph
 	PauseUpdate; Silent 1		// building window...
