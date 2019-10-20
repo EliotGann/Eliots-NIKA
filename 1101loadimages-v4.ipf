@@ -283,7 +283,7 @@ function openfits(filename, path)
 		//endif
 		removeimage /Z /W=datareduction#G0 data_disp
 		appendimage /W=datareduction#G0 data_disp
-		ModifyImage /W=datareduction#G0 data_disp ctab= {minslider,maxslider,terraEG_N256,0},log=1
+		ModifyImage /W=datareduction#G0 data_disp ctab= {minslider,maxslider,terrain256,0},log=1
 		SetAxis/A/R /W=datareduction#G0 left
 //		captionstring = "Max = " + num2str(wavemax($loadeddatadir))
 //		TextBox /W=datareduction#G0/C/N=text1/F=0/S=3/B=3/E=2/X=63.00/Y=63.00 captionstring
@@ -322,7 +322,7 @@ function openpng(filename, path)
 		endif
 		removeimage /Z /W=datareduction#G0 data_disp
 		appendimage /W=datareduction#G0 data_disp
-		ModifyImage /W=datareduction#G0 data_disp ctab= {minslider,maxslider,terraEG_N256,0}
+		ModifyImage /W=datareduction#G0 data_disp ctab= {minslider,maxslider,terrain256,0}
 		SetAxis/A/R /W=datareduction#G0 left
 		captionstring = "Max = " + num2str(wavemax($loadeddatadir))
 		TextBox /W=datareduction#G0/C/N=text1/F=0/S=3/B=3/E=2/X=63.00/Y=63.00 captionstring
