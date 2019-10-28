@@ -94,13 +94,13 @@ function NRB_loadprimary([update,row])
 	if(v_flag!=0)
 		newpath /o/q $pnameimages, pathtodata
 	endif
-	//killdatafolder /z channels
+	killdatafolder /z channels
 	newdatafolder /o/s channels
 	//close /A
 	newpath /o/q tempfolder, (getenvironmentVariable("TMP"))
 	copyfile /o/p=$(pname) basename+"-primary.csv" as getenvironmentVariable("TMP")+"\RSoXS.csv"
 	LoadWave/q/O/J/D/A/K=0/P=tempfolder/W  "RSoXS.csv"
-	//deletefile /p=tempfolder "RSoXS.csv"
+	deletefile /p=tempfolder "RSoXS.csv"
 	wave /z datawave = $(stringfromlist(0,S_waveNames))
 	if(!waveexists(datawave))
 		setdatafolder currentfolder
