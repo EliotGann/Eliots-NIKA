@@ -178,12 +178,11 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		endif	
 		NewNote +=metadata+";"
 			
-			
 		svar UserFileName=root:Packages:Convert2Dto1D:OutputDataName
 		string imagenum
 		splitstring /e="^([1234567890]*)-(.{3,8})-" filenametoload, imagenum,  userfilename
+		userfilename = stringbykey("sample_name",metadata)
 		UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100000)/100)+"eV_"+detectortype[0] + "_"+ num2str(imnum)// + imagenum + "_" 
-			
 			
 		wave LoadedWvHere=$(NewWaveName)
 		Redimension/N=(-1,-1,0)/i 	LoadedWvHere			//this is fix for 3 layer tiff files...
