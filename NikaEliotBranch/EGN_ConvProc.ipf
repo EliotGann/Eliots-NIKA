@@ -1140,6 +1140,7 @@ Function EGNA_Create2DQWave(DataWave)
 	MatrixOp/O/NTHR=1 kouttempmag=DataWave
 	
 	MatrixOp/O/NTHR=1 Xiwave=DataWave
+	MatrixOp/O/NTHR=1 Thwave=DataWave
 
 	matrixop/O/NTHR=1 qxypure=datawave // these are the values which we will eventually reorganize, setting up the axis on which we will plot
 	matrixop/O/NTHR=1 qzpure=datawave
@@ -1225,6 +1226,7 @@ Function EGNA_Create2DQWave(DataWave)
 	Multithread Q2DWave = sqrt(qxwave^2 + qywave^2 + qzwave^2) 
 	Multithread Theta2DWave = 2*asin(Q2DWave*wavelength/(4* pi))
 	multithread xiwave = ( 180/pi ) * atan(abs(qxywave) / abs(qzwave))
+	multithread Thwave = ( 180/pi ) * atan2((p - BeamCenterX) , (q - beamcentery))
 	
 	Theta2DWave[beamCenterX][effBCY] = NaN
 	
@@ -1248,6 +1250,7 @@ Function EGNA_Create2DQWave(DataWave)
 	note qxywave, NoteStr
 	
 	note Xiwave, NoteStr
+	note Thwave, NoteStr
 	note Q2DWave, NoteStr
 	setDataFolder OldDf
 end

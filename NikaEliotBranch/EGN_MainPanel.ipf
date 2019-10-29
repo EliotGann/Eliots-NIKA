@@ -939,6 +939,7 @@ Function EGNA_SaveDataPerUserReq(CurOrient,wavelengths)
 		Wave/Z LineProfileQxy=root:Packages:Convert2Dto1D:LineProfileQxy
 		Wave/Z LineProfileQxz=root:Packages:Convert2Dto1D:LineProfileQxz
 		Wave/Z LineProfileXi=root:Packages:Convert2Dto1D:LineProfileXi
+		Wave/Z LineProfileTh=root:Packages:Convert2Dto1D:LineProfileTh
 		//Wave/Z LineProfileYValsPix=root:Packages:Convert2Dto1D:LineProfileYValsPix
 		Wave/Z LineProfileQz=root:Packages:Convert2Dto1D:LineProfileQz
 		//Wave/Z LineProfileZValsPix=root:Packages:Convert2Dto1D:LineProfileZValsPix
@@ -969,6 +970,8 @@ Function EGNA_SaveDataPerUserReq(CurOrient,wavelengths)
 	NVAR UseQvector=root:Packages:Convert2Dto1D:UseQvector
 	NVAR UseTheta=root:Packages:Convert2Dto1D:UseTheta
 	NVAR UseDspacing=root:Packages:Convert2Dto1D:UseDspacing
+	NVAR UseGrazingIncidence=root:Packages:Convert2Dto1D:UseGrazingIncidence
+
 	
 	variable ItemsInLst, i
 	string OldNote
@@ -1041,8 +1044,8 @@ Function EGNA_SaveDataPerUserReq(CurOrient,wavelengths)
 		// replaced antiquated function with following for loop  (Eliot)
 		variable j, imax = numpnts(LineProfileIntensity)
 		for(j=imax-1;j>=0;j-=1)
-			if(LineProfileIntensity[j]*LineProfileError[j]*LineProfileQ[j]*LineProfileQx[j]*LineProfileQy[j]*LineProfileQz[j]*LineProfileQxy[j]*LineProfileXi[j]*0 != 0) //*LineProfileZValsPix[j]*LineProfileYValsPix[j]*tempWv1234[j]
-				Deletepoints j, 1, LineProfileIntensity,LineProfileError,LineProfileQ,LineProfileQx,LineProfileQy,LineProfileQz,LineProfileQxy,LineProfileXi //,LineProfileZValsPix,LineProfileYValsPix,tempWv1234
+			if(LineProfileIntensity[j]*LineProfileError[j]*LineProfileQ[j]*LineProfileQx[j]*LineProfileQy[j]*LineProfileQz[j]*LineProfileQxy[j]*LineProfileXi[j]*LineProfileTh[j]*0 != 0) //*LineProfileZValsPix[j]*LineProfileYValsPix[j]*tempWv1234[j]
+ 				Deletepoints j, 1, LineProfileIntensity,LineProfileError,LineProfileQ,LineProfileQx,LineProfileQy,LineProfileQz,LineProfileQxy,LineProfileXi,LineProfileTh //,LineProfileZValsPix,LineProfileYValsPix,tempWv1234
 			endif
 		endfor
 		
@@ -1067,6 +1070,7 @@ Function EGNA_SaveDataPerUserReq(CurOrient,wavelengths)
 				Duplicate/O LineProfileQx, $cleanupname("qx_"+UseName,1)
 				Duplicate/O LineProfileQxy, $cleanupname("xy_"+UseName,1)
 				Duplicate/O LineProfileXi, $cleanupname("Xi_"+UseName,1)
+				Duplicate/O LineProfileTh, $cleanupname("Th_"+UseName,1)
 				if(stringmatch(LineProf_CurveType, "El*"))
 					duplicate /o lineProfileQ, $cleanupname("Ph_"+UseName,0)
 					wave anglewave = $cleanupname("Ph_"+UseName,0)
@@ -1092,21 +1096,22 @@ Function EGNA_SaveDataPerUserReq(CurOrient,wavelengths)
 			Duplicate/O LineProfileQxy, LineProfQxy
 			Duplicate/O LineProfileQxz, LineProfQxz
 			Duplicate/O LineProfileXi, LineProfXi
+			Duplicate/O LineProfileTh, LineProfTh
 //			if(stringmatch(LineProf_CurveType, "GI*"))
 //				Duplicate/O LineProfileQx, LineProfQx
 //				redimension/S LineProfQx
 //			endif
 			Duplicate/O LineProfileIntensity,LineProfIntensity
 			Duplicate/O LineProfileError,LineProfError
-			Redimension/S LineProfQ, LineProfQx,LineProfQy, LineProfQz, LineProfQxy,LineProfQxz,LineProfXi, LineProfIntensity, LineProfError
+			Redimension/S LineProfQ, LineProfQx,LineProfQy, LineProfQz, LineProfQxy,LineProfQxz,LineProfXi,LineProfTh, LineProfIntensity, LineProfError
 						
 			Save/G/O/M="\r\n"/P=Convert2Dto1DOutputPath TextWv as (UseName+".dat")
 //			if(stringmatch(LineProf_CurveType, "GI*"))
-			Save/A/W/J/M="\r\n"/P=Convert2Dto1DOutputPath LineProfQ, LineProfQx, LineProfQy, LineProfQz, LineProfQxy, LineProfQxz, LineProfXi, LineProfIntensity, LineProfError as (UseName+".dat")			
+			Save/A/W/J/M="\r\n"/P=Convert2Dto1DOutputPath LineProfQ, LineProfQx, LineProfQy, LineProfQz, LineProfQxy, LineProfQxz, LineProfXi, LineProfTh, LineProfIntensity, LineProfError as (UseName+".dat")			
 //			else
 //				Save/A/W/J/M="\r\n"/P=Convert2Dto1DOutputPath LineProfQ, LineProfQy, LineProfQz, LineProfIntensity, LineProfError as (UseName+".dat")			
 //			endif		
-			KillWaves/Z TextWv, LineProfQ, LineProfQy,LineProfQx, LineProfQz,LineProfQxy ,LineProfQxz ,LineProfXi, LineProfIntensity, LineProfError
+			KillWaves/Z TextWv, LineProfQ, LineProfQy,LineProfQx, LineProfQz,LineProfQxy ,LineProfQxz ,LineProfXi, LineProfTh, LineProfIntensity, LineProfError
 		endif
 
 		if(DisplayDataAfterProcessing)
@@ -1129,7 +1134,11 @@ Function EGNA_SaveDataPerUserReq(CurOrient,wavelengths)
 				EGNA_DisplayLineoutAfterProc(int,Qvec,Err,1,1)
 			elseif(stringmatch(LineProf_CurveType,"Ellipse"))
 				Wave Int=$cleanupname("r_"+UseName,1)
-				Wave Avec=$cleanupname("Xi_"+UseName,1)
+				if(UseGrazingIncidence)
+ 					Wave Avec=$cleanupname("Xi_"+UseName,1)
+ 				else
+ 					Wave Avec=$cleanupname("Th_"+UseName,1)
+ 				endif
 				Wave err=$cleanupname("s_"+UseName,1)
 				EGNA_DisplayLineoutAfterProc(int,Avec,Err,1,4)
 			else
@@ -1256,6 +1265,9 @@ Function EGNA_DisplayLineoutAfterProc(int,Qvec,Err,NumOfWavesToKeep,typeGraph)
 	variable NumOfWavesToKeep
 	variable typeGraph	//1 for q, 2 for d, and 3 for twoTheta
 
+NVAR UseGrazingIncidence=root:Packages:Convert2Dto1D:UseGrazingIncidence
+
+
 	if(typeGraph==1)
 		DoWindow LineuotDisplayPlot_Q
 		if(V_Flag)
@@ -1305,7 +1317,11 @@ Function EGNA_DisplayLineoutAfterProc(int,Qvec,Err,NumOfWavesToKeep,typeGraph)
 			DoWIndow/C LineuotDisplayPlot_X
 			ModifyGraph log=0
 			Label left "Intensity"
-			Label bottom "Chi (pole figure) [degrees]"
+			if(Usegrazingincidence)
+ 				Label bottom "Chi (pole figure) [degrees]"
+ 			else
+ 				Label bottom "Phi (azimuthal angle) [degrees]"
+ 			endif
 			Doupdate
 		endif		
 	else

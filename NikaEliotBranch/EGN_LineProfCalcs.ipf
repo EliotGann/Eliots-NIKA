@@ -96,6 +96,7 @@ Function EGNA_LineProf_CreateLP()
 		wave qzwave = root:Packages:Convert2Dto1D:qzwave
 		wave qxzwave = root:Packages:Convert2Dto1D:qxzwave
 		wave xiwave = root:Packages:Convert2Dto1D:Xiwave
+		wave thwave = root:Packages:Convert2Dto1D:Thwave
 		
 		
 		
@@ -213,6 +214,9 @@ Function EGNA_LineProf_CreateLP()
 		ImageLineProfile/S xWave=ywave, yWave=xwave, srcwave=xiwave , width= LineProf_Width
 		Duplicate/O W_ImageLineProfile, LineProfileXi
 		LineprofileXi *=sign(lineprofileqxy)
+		ImageLineProfile/S xWave=ywave, yWave=xwave, srcwave=thwave , width= LineProf_Width
+ 		Duplicate/O W_ImageLineProfile, LineProfileTh
+ 		//LineprofileTh *=sign(lineprofileqxy)
 		
 		//add notes...
 		note LineProfileIntensity,  OldNote
@@ -224,6 +228,7 @@ Function EGNA_LineProf_CreateLP()
 		note  LineProfileQxy , OldNote
 //		note  LineProfileQxz , OldNote
 		note  LineProfileXi , OldNote
+		note  LineProfileTh, OldNote
 		
 		//and now add the mirror lines, if needed...
 		if(LineProf_UseBothHalfs)
@@ -320,6 +325,7 @@ Function EGNA_LineProf_CreateLP()
 		note  LineProfileQxy , Newnote
 //		note  LineProfileQxz , Newnote
 		note  LineProfileXi , Newnote
+		note  LineProfileTh , Newnote
 
 	setDataFolder OldDf
 	return 1
