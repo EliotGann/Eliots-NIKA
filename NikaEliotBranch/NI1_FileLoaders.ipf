@@ -191,30 +191,32 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		
 		nvar /z autopickq = root:Packages:SwitchNIKA:AutopickQ
 		if(nvar_exists(autopickq))
-			//AUOPICKQCODE
-			svar /z oldheader = root:headerinfo
-			variable sample_id =  numberbykey("sample_id",metadata)
-			if(!svar_Exists(oldheader))
-				print("No header values to compare to")
-			elseif(numberbykey("Beam Stop SAXS",oldheader)==BSS && numberbykey("Beam Stop WAXS",oldheader)==BSW && numberbykey("Detector SAXS Translation",oldheader)==SAXST && numberbykey("Detector SAXS Translation",oldheader)==WAXST && numberbykey("sample_id",oldheader)==sample_id )
-				print "Q range is unchanged"
-			else
-				print "Changing Q range"
-				wave/t listwave = root:Packages:SwitchNIKA:listwave
-				make /free /n=(dimsize(listwave,0)) BSSs = str2num(listwave[p][9]), BSWs = str2num(listwave[p][11]),SAXSTs = str2num(listwave[p][8]),WAXSTs = str2num(listwave[p][10]),ccdgood
-				make /free /n=(dimsize(listwave,0))/t Sampnames = listwave[p][12]
-				ccdgood = abs(BSSs -BSS) <1 ? 1 : 0
-				ccdgood*=abs(BSWs-BSW) < 1 ? 1 : 0
-				ccdgood*=abs(SAXSTs-SAXST) < 1 ? 1 : 0
-				ccdgood*=abs(WAXSTs-WAXST) < 1 ? 1 : 0
-				svar /z samplenamelist = root:Packages:Nika1101:samplenamelist
-				if(svar_exists(samplenamelist))
-					ccdgood*=stringmatch(stringbykey(num2str(sample_id),samplenamelist,"=",","), Sampnames[p]) ? 1 : 0
-				endif
-				findvalue /v=1 /z ccdgood
-				variable row = v_value
-				if(v_value>=0)
-					setqrange(row)
+			if(autopickq)
+				//AUOPICKQCODE
+				svar /z oldheader = root:headerinfo
+				variable sample_id =  numberbykey("sample_id",metadata)
+				if(!svar_Exists(oldheader))
+					print("No header values to compare to")
+				elseif(numberbykey("Beam Stop SAXS",oldheader)==BSS && numberbykey("Beam Stop WAXS",oldheader)==BSW && numberbykey("Detector SAXS Translation",oldheader)==SAXST && numberbykey("Detector SAXS Translation",oldheader)==WAXST && numberbykey("sample_id",oldheader)==sample_id )
+					print "Q range is unchanged"
+				else
+					print "Changing Q range"
+					wave/t listwave = root:Packages:SwitchNIKA:listwave
+					make /free /n=(dimsize(listwave,0)) BSSs = str2num(listwave[p][9]), BSWs = str2num(listwave[p][11]),SAXSTs = str2num(listwave[p][8]),WAXSTs = str2num(listwave[p][10]),ccdgood
+					make /free /n=(dimsize(listwave,0))/t Sampnames = listwave[p][12]
+					ccdgood = abs(BSSs -BSS) <1 ? 1 : 0
+					ccdgood*=abs(BSWs-BSW) < 1 ? 1 : 0
+					ccdgood*=abs(SAXSTs-SAXST) < 1 ? 1 : 0
+					ccdgood*=abs(WAXSTs-WAXST) < 1 ? 1 : 0
+					svar /z samplenamelist = root:Packages:Nika1101:samplenamelist
+					if(svar_exists(samplenamelist))
+						ccdgood*=stringmatch(stringbykey(num2str(sample_id),samplenamelist,"=",","), Sampnames[p]) ? 1 : 0
+					endif
+					findvalue /v=1 /z ccdgood
+					variable row = v_value
+					if(v_value>=0)
+						setqrange(row)
+					endif
 				endif
 			endif
 		endif
