@@ -74,7 +74,7 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		endif
 		
 		string teststring= indexedfile($PathName,-1,".csv")
-		string baselinestring = greplist(teststring,"^"+FileNametoLoad[0,8]+".*baseline")
+		string baselinestring = greplist(teststring,"^"+FileNametoLoad[0,6]+".*baseline")
 		newdatafolder /o/s importdata
 		LoadWave/Q/O/J/M/U={0,0,1,0}/D/A=wave/K=0/L={0,1,0,0,0}/P=$PathName  stringfromlist(0,baselinestring)
 		wave /z datawave = $(stringfromlist(0,S_waveNames))
@@ -107,7 +107,7 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			NewNote += teststring
 		endif
 		teststring= indexedfile(BS_metadata,-1,".csv")
-		teststring = greplist(teststring,"^"+FileNametoLoad[0,8]+".*primary")
+		teststring = greplist(teststring,"^"+FileNametoLoad[0,6]+".*primary")
 		LoadWave/Q/O/J/D/A/K=0/P=BS_metadata/W  stringfromlist(0,teststring)
 		wave /z datawave = $(stringfromlist(0,S_waveNames))
 		if(waveexists(datawave))
@@ -149,11 +149,11 @@ Function NI1A_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			teststring= indexedfile($PathName,-1,".json")
 			if(strlen(teststring) > 4)
 				jsonfound = 1
-				metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*json"))
+				metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,6]+".*json"))
 			endif
 		else
 			jsonfound = 1
-			metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*jsonl"))
+			metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,6]+".*jsonl"))
 		endif
 		if(jsonfound)
 			metadata = addmetadatafromjson(PathName,"institution",metadatafilename,metadata)

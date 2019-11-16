@@ -1324,21 +1324,23 @@ function /wave NRB_splitsignal(wavein,times, rises, falls, goodpulse)
 	make /free temprises, tempfalls
 	waveout = mean(datain,pntlower[p],pntupper[p])
 	stdwave = sqrt(variance(datain,pntlower[p],pntupper[p]))
-	variable i, meanvalue
+	variable i, meanvalue, alreadygood
 	for(i=0;i<dimsize(times,0);i+=1)
-		if(goodpulse[i]) // have we already found the rising and falling times?
-			waveout[i] = mean(datain,binarysearch(timesin,rises[i])+1,binarysearch(timesin,falls[i]))
-			stdwave[i] = sqrt(variance(datain,binarysearch(timesin,rises[i])+1,binarysearch(timesin,falls[i])))
+		//meanvalue = mean(datain,pntlower[i],pntupper[i])
+		meanvalue = (9/10) *(wavemin(datain,pntlower[i],pntupper[i]) + wavemax(datain,pntlower[i],pntupper[i]))
+		findlevels /B=3/EDGE=1 /Q /P /D=temprises /R=[max(0,pntlower[i]),min(numpnts(datain)-1,pntupper[i])] datain, meanvalue // look for rising and falling edges
+		findlevels /B=3/EDGE=2 /Q /P /D=tempfalls /R=[max(0,pntlower[i]),min(numpnts(datain)-1,pntupper[i])] datain, meanvalue
+		if(dimsize(temprises,0) == 1 && dimsize(tempfalls,0)== 1 ) // did we find a single pulse?
+			alreadygood = goodpulse[i]
+			rises[i] = timesin(temprises[0]) // if so, change them to times (so they work for all channels)
+			falls[i] = timesin(tempfalls[0])
+			waveout[i] = mean(datain,binarysearchinterp(timesin,rises[i])+1,binarysearchinterp(timesin,falls[i])-1)
+			stdwave[i] = sqrt(variance(datain,binarysearchinterp(timesin,rises[i])+1,binarysearchinterp(timesin,falls[i])-1))
+			goodpulse[i]=1
 		else
-			meanvalue = mean(datain,pntlower[i],pntupper[i])
-			findlevels /EDGE=1 /Q /P /D=temprises /R=[pntlower[i],pntupper[i]] datain, meanvalue // look for rising and falling edges
-			findlevels /Edge=2 /Q /P /D=tempfalls /R=[pntlower[i],pntupper[i]] datain, meanvalue
-			if(dimsize(temprises,0) == 1 && dimsize(tempfalls,0)== 1 ) // did we find a single pulse?
-				goodpulse[i]=1
-				rises[i] = timesin(temprises[0]) // if so, change them to times (so they work for all channels)
-				falls[i] = timesin(tempfalls[0])
-				waveout[i] = mean(datain,binarysearch(timesin,rises[i])+1,binarysearch(timesin,falls[i]))
-				stdwave[i] = sqrt(variance(datain,binarysearch(timesin,rises[i])+1,binarysearch(timesin,falls[i])))
+			if(alreadygood) // have we already found the rising and falling times?
+				waveout[i] = mean(datain,binarysearch(timesin,rises[i])+0,binarysearch(timesin,falls[i]))
+				stdwave[i] = sqrt(variance(datain,binarysearch(timesin,rises[i])+0,binarysearch(timesin,falls[i])))
 			else
 				goodpulse[0]=0
 			endif
