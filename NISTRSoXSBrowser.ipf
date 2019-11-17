@@ -109,10 +109,20 @@ function NRB_loadprimary([update,row])
 	killdatafolder /z channels
 	newdatafolder /o/s channels
 	//close /A
+
 	newpath /o/q tempfolder, (getenvironmentVariable("TMP"))
-	copyfile /o/p=$(pname) basename+"-primary.csv" as getenvironmentVariable("TMP")+"\RSoXS.csv"
-	LoadWave/q/O/J/D/A/K=0/P=tempfolder/W  "RSoXS.csv"
-	deletefile /p=tempfolder "RSoXS.csv"
+	string tempfilename = "RSoXS"+num2str(round(abs(enoise(100000))))+".csv"
+	getfilefolderinfo /q/z /p=tempfolder tempfilename
+	copyfile /o/p=$(pname) basename+"-primary.csv" as getenvironmentVariable("TMP")+"\\"+ tempfilename
+	LoadWave/q/O/J/D/A/K=0/P=tempfolder/W tempfilename
+	deletefile /p=tempfolder tempfilename
+
+
+
+
+
+
+
 	wave /z datawave = $(stringfromlist(0,S_waveNames))
 	if(!waveexists(datawave))
 		setdatafolder currentfolder
@@ -182,6 +192,37 @@ function NRB_loadprimary([update,row])
 			steplistsel = 0
 		endif
 	endif
+	
+	
+	
+	//monitors
+	string mdfiles= indexedfile($(pnamemd),-1,".csv")
+	string metadatafilenames = greplist(mdfiles,"^"+basename+".*_monitor[.]csv$")
+
+	string mdfilename
+	string monitorname
+	duplicate /free times, goodpulse, rises, falls
+	goodpulse = 0
+	for(i=0;i<itemsinlist(metadatafilenames);i+=1)
+		mdfilename = stringfromlist(i,metadatafilenames)
+		Splitstring /e="^"+basename+"-(.*)_monitor[.]csv$" mdfilename, monitorname
+		//print monitorname
+		newpath /o/q tempfolder, (getenvironmentVariable("TMP"))
+		tempfilename = "RSoXSmd"+num2str(round(abs(enoise(100000))))+".csv"
+		getfilefolderinfo /q/z /p=tempfolder tempfilename
+		copyfile /o/p=$(pnamemd) mdfilename as getenvironmentVariable("TMP")+"\\"+ tempfilename
+		LoadWave/L={0,1,0,0,2}/Q/O/J/D/n=$cleanupname(monitorname,0)/K=0/P=tempfolder/m tempfilename
+		deletefile /p=tempfolder tempfilename
+	
+		
+		
+		wave mdwave = $stringfromlist(0,s_wavenames)
+		wave newchannelwave = NRB_splitsignal(mdwave,times, rises, falls, goodpulse)
+		insertpoints /M=0 0,1, channellist, channellistsel
+		channellist[0][1] = nameofwave(newchannelwave)
+		channellist[0][0] = ""
+		channellistsel[0][0] = 32
+	endfor
 	
 	
 	if(update)
@@ -265,26 +306,6 @@ function NRB_loadprimary([update,row])
 		endif
 	endif
 	
-	//monitors
-	string mdfiles= indexedfile($(pnamemd),-1,".csv")
-	string metadatafilenames = greplist(mdfiles,"^"+basename+".*_monitor[.]csv$")
-
-	string mdfilename
-	string monitorname
-	duplicate /free times, goodpulse, rises, falls
-	goodpulse = 0
-	for(i=0;i<itemsinlist(metadatafilenames);i+=1)
-		mdfilename = stringfromlist(i,metadatafilenames)
-		Splitstring /e="^"+basename+"-(.*)_monitor[.]csv$" mdfilename, monitorname
-		//print monitorname
-		LoadWave/L={0,1,0,0,2}/Q/O/J/D/n=$cleanupname(monitorname,0)/K=0/P=$(pnamemd)/m mdfilename
-		wave mdwave = $stringfromlist(0,s_wavenames)
-		wave newchannelwave = NRB_splitsignal(mdwave,times, rises, falls, goodpulse)
-		insertpoints /M=0 0,1, channellist, channellistsel
-		channellist[0][1] = nameofwave(newchannelwave)
-		channellist[0][0] = ""
-		channellistsel[0][0] = 32
-	endfor
 	
 	
 	
@@ -1319,17 +1340,26 @@ function /wave NRB_splitsignal(wavein,times, rises, falls, goodpulse)
 	make /n=(dimsize(times,0)) /free pntlower, pntupper
 	pntupper = binarysearch(timesin,times[p])
 	pntupper = pntupper[p]==-2 ? numpnts(timesin)-1 : pntupper[p]
-	duplicate /o /free pntupper, pntlower
+	duplicate /o /free pntupper, pntlower, pntlower1
+	pntlower1 = binarysearch(timesin,times[p]-1.5)
+	
 	insertpoints /v=0 0,1,pntlower
 	make /free temprises, tempfalls
-	waveout = mean(datain,pntlower[p],pntupper[p])
-	stdwave = sqrt(variance(datain,pntlower[p],pntupper[p]))
-	variable i, meanvalue, alreadygood
+	waveout = mean(datain,pntlower1[p]+2,pntupper[p]-0)
+	stdwave = sqrt(variance(datain,pntlower1[p]+2,pntupper[p]-0))
+	variable i, meanvalue, alreadygood, err
 	for(i=0;i<dimsize(times,0);i+=1)
 		//meanvalue = mean(datain,pntlower[i],pntupper[i])
 		meanvalue = (9/10) *(wavemin(datain,pntlower[i],pntupper[i]) + wavemax(datain,pntlower[i],pntupper[i]))
-		findlevels /B=3/EDGE=1 /Q /P /D=temprises /R=[max(0,pntlower[i]),min(numpnts(datain)-1,pntupper[i])] datain, meanvalue // look for rising and falling edges
-		findlevels /B=3/EDGE=2 /Q /P /D=tempfalls /R=[max(0,pntlower[i]),min(numpnts(datain)-1,pntupper[i])] datain, meanvalue
+		try
+			findlevels /B=3/EDGE=1 /Q /P /D=temprises /R=[max(0,pntlower[i]),min(numpnts(datain)-1,pntupper[i])] datain, meanvalue;AbortonRTE // look for rising and falling edges
+			findlevels /B=3/EDGE=2 /Q /P /D=tempfalls /R=[max(0,pntlower[i]),min(numpnts(datain)-1,pntupper[i])] datain, meanvalue;AbortonRTE
+		catch
+			err = getRTError(1)
+			//print getErrMessage(err)
+			goodpulse[i]=0
+			break
+		endtry
 		if(dimsize(temprises,0) == 1 && dimsize(tempfalls,0)== 1 ) // did we find a single pulse?
 			alreadygood = goodpulse[i]
 			rises[i] = timesin(temprises[0]) // if so, change them to times (so they work for all channels)
@@ -1342,7 +1372,7 @@ function /wave NRB_splitsignal(wavein,times, rises, falls, goodpulse)
 				waveout[i] = mean(datain,binarysearch(timesin,rises[i])+0,binarysearch(timesin,falls[i]))
 				stdwave[i] = sqrt(variance(datain,binarysearch(timesin,rises[i])+0,binarysearch(timesin,falls[i])))
 			else
-				goodpulse[0]=0
+				goodpulse[i]=0
 			endif
 		endif
 	endfor
