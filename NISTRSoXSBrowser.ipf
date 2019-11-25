@@ -117,12 +117,6 @@ function NRB_loadprimary([update,row])
 	deletefile /p=tempfolder tempfilename
 
 
-
-
-
-
-
->>>>>>> da81b5dc7c6a9f6ce96f8a45cb27ac967a806a0b
 	wave /z datawave = $(stringfromlist(0,S_waveNames))
 	if(!waveexists(datawave))
 		setdatafolder currentfolder

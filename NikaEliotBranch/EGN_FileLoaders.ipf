@@ -67,12 +67,13 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			imnum = 0
 		endif
 		pathinfo $PathName
-		if(stringmatch(num2str(str2num(parsefilepath(0,S_Path,":",1,0))),parsefilepath(0,S_Path,":",1,0)))
+		//if(stringmatch(num2str(str2num(parsefilepath(0,S_Path,":",1,0))),parsefilepath(0,S_Path,":",1,0)))
+		if(grepstring(parsefilepath(0,S_Path,":",1,0),"^[0-9]*$"))
 			NEWPATH /O /Q/Z BS_metadata, parsefilepath(1,S_Path,":",1,0)
 		else
 			NEWPATH /O /Q/Z BS_metadata, S_Path
 		endif
-		
+
 		string teststring= indexedfile($PathName,-1,".csv")
 		string baselinestring = greplist(teststring,"^"+FileNametoLoad[0,6]+".*baseline")
 		newdatafolder /o/s importdata
@@ -108,6 +109,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		endif
 		teststring= indexedfile(BS_metadata,-1,".csv")
 		teststring = greplist(teststring,"^"+FileNametoLoad[0,6]+".*primary")
+
 		LoadWave/Q/O/J/D/A/K=0/P=BS_metadata/W  stringfromlist(0,teststring)
 		wave /z datawave = $(stringfromlist(0,S_waveNames))
 		if(waveexists(datawave))
