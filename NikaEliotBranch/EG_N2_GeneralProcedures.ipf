@@ -610,7 +610,7 @@ Function EG_N2G_FindCorrectLogScaleStart(StartValue,EndValue,NumPoints,MinStep)
 //	print LastMinStep
 	return V_minloc
 end
-Function myFindStartValueFunc(w,x1)
+Function EGN_myFindStartValueFunc(w,x1)
 	Wave w		//this is {totalRange, NumSteps,MinStep}
 	Variable x1	//this is startValue where we need to start with log stepping...
 	variable LastMinStep = 10^(log(X1) + (log(X1+w[0])-log(X1))/w[1]) - 10^(log(X1))
@@ -696,7 +696,7 @@ End
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 //FUNCTIONS AND PROCEDURES FOR USE IN ALL INDRA 2 MACROS	
-Function ING2_AddScrollControl()
+Function EGN_ING2_AddScrollControl()
 	//string WindowName
 	getWindow kwTopWin, wsizeDC
 	//CheckBox ScrollWidown title="\\W614",proc=EG_N2G_ScrollWindowCheckProc, pos={V_right-75,2}
@@ -1589,7 +1589,7 @@ EndMacro
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function IR1G_UpdateSetVarStep(MyControlName,NewStepFraction)
+Function EGN_IR1G_UpdateSetVarStep(MyControlName,NewStepFraction)
 	string MyControlName
 	variable NewStepFraction
 	//updates setVar step. Needs setVarName, and fraction of current value to be new step
@@ -3111,7 +3111,7 @@ Function/T EG_N2G_ZapControlCodes(str)
 	return str
 End
 
-Function/T ZapNonLetterNumStart(strIN)
+Function/T EGN_ZapNonLetterNumStart(strIN)
 	string strIN
 	
 	Variable i = 0
