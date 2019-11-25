@@ -73,10 +73,10 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			NEWPATH /O /Q/Z BS_metadata, S_Path
 		endif
 		
-		string teststring= indexedfile(BS_metadata,-1,".csv")
-		string baselinestring = greplist(teststring,"^"+FileNametoLoad[0,8]+".*baseline")
+		string teststring= indexedfile($PathName,-1,".csv")
+		string baselinestring = greplist(teststring,"^"+FileNametoLoad[0,6]+".*baseline")
 		newdatafolder /o/s importdata
-		LoadWave/Q/O/J/M/U={0,0,1,0}/D/A=wave/K=0/L={0,1,0,0,0}/P=BS_metadata  stringfromlist(0,baselinestring)
+		LoadWave/Q/O/J/M/U={0,0,1,0}/D/A=wave/K=0/L={0,1,0,0,0}/P=$PathName  stringfromlist(0,baselinestring)
 		wave /z datawave = $(stringfromlist(0,S_waveNames))
 		if(waveexists(datawave))
 			teststring = Colwavetostring(datawave)
@@ -107,7 +107,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			NewNote += teststring
 		endif
 		teststring= indexedfile(BS_metadata,-1,".csv")
-		teststring = greplist(teststring,"^"+FileNametoLoad[0,8]+".*primary")
+		teststring = greplist(teststring,"^"+FileNametoLoad[0,6]+".*primary")
 		LoadWave/Q/O/J/D/A/K=0/P=BS_metadata/W  stringfromlist(0,teststring)
 		wave /z datawave = $(stringfromlist(0,S_waveNames))
 		if(waveexists(datawave))
@@ -142,49 +142,47 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		setdatafolder ::
 		killdatafolder /z importdata
 		string metadata=""
-		teststring= indexedfile(BS_metadata,-1,".jsonl")
+		teststring= indexedfile($PathName,-1,".jsonl")
 		variable jsonfound=0
 		string metadatafilename
 		if(strlen(teststring) < 5)
-			teststring= indexedfile(BS_metadata,-1,".json")
+			teststring= indexedfile($PathName,-1,".json")
 			if(strlen(teststring) > 4)
 				jsonfound = 1
-				metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*json"))
+				metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,6]+".*json"))
 			endif
 		else
 			jsonfound = 1
-			metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,8]+".*jsonl"))
+			metadatafilename = stringfromlist(0,greplist(teststring,"^"+FileNametoLoad[0,6]+".*jsonl"))
 		endif
 		if(jsonfound)
-			metadata = addmetadatafromjson("BS_metadata","institution",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","project_name",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","proposal_id",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","sample_name",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","sample_desc",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","sample_id",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","sample_set",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","user_name",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","user_id",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","notes",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","uid",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","dim1",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","dim2",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","dim3",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","chemical_formula",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","density",metadatafilename,metadata)
-			metadata = addmetadatafromjson("BS_metadata","project_desc",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"institution",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"project_name",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"proposal_id",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"sample_name",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"sample_desc",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"sample_id",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"sample_set",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"user_name",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"user_id",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"notes",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"uid",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"dim1",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"dim2",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"dim3",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"chemical_formula",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"density",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"project_desc",metadatafilename,metadata)
 		else
 			print "Currently can't load metadata json or jsonl file"
 		endif	
 		NewNote +=metadata+";"
-			
 			
 		svar UserFileName=root:Packages:Convert2Dto1D:OutputDataName
 		string imagenum
 		splitstring /e="^([1234567890]*)-(.{3,8})-" filenametoload, imagenum,  userfilename
 		userfilename = stringbykey("sample_name",metadata)
 		UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100000)/100)+"eV_"+detectortype[0] + "_"+ num2str(imnum)// + imagenum + "_" 
-			
 			
 		wave LoadedWvHere=$(NewWaveName)
 		Redimension/N=(-1,-1,0)/i 	LoadedWvHere			//this is fix for 3 layer tiff files...
@@ -193,30 +191,32 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		
 		nvar /z autopickq = root:Packages:SwitchNIKA:AutopickQ
 		if(nvar_exists(autopickq))
-			//AUOPICKQCODE
-			svar /z oldheader = root:headerinfo
-			variable sample_id =  numberbykey("sample_id",metadata)
-			if(!svar_Exists(oldheader))
-				print("No header values to compare to")
-			elseif(numberbykey("Beam Stop SAXS",oldheader)==BSS && numberbykey("Beam Stop WAXS",oldheader)==BSW && numberbykey("Detector SAXS Translation",oldheader)==SAXST && numberbykey("Detector SAXS Translation",oldheader)==WAXST && numberbykey("sample_id",oldheader)==sample_id )
-				print "Q range is unchanged"
-			else
-				print "Changing Q range"
-				wave/t listwave = root:Packages:SwitchNIKA:listwave
-				make /free /n=(dimsize(listwave,0)) BSSs = str2num(listwave[p][9]), BSWs = str2num(listwave[p][11]),SAXSTs = str2num(listwave[p][8]),WAXSTs = str2num(listwave[p][10]),ccdgood
-				make /free /n=(dimsize(listwave,0))/t Sampnames = listwave[p][12]
-				ccdgood = abs(BSSs -BSS) <1 ? 1 : 0
-				ccdgood*=abs(BSWs-BSW) < 1 ? 1 : 0
-				ccdgood*=abs(SAXSTs-SAXST) < 1 ? 1 : 0
-				ccdgood*=abs(WAXSTs-WAXST) < 1 ? 1 : 0
-				svar /z samplenamelist = root:Packages:EGNika101:samplenamelist
-				if(svar_exists(samplenamelist))
-					ccdgood*=stringmatch(stringbykey(num2str(sample_id),samplenamelist,"=",","), Sampnames[p]) ? 1 : 0
-				endif
-				findvalue /v=1 /z ccdgood
-				variable row = v_value
-				if(v_value>=0)
-					setqrange(row)
+			if(autopickq)
+				//AUOPICKQCODE
+				svar /z oldheader = root:headerinfo
+				variable sample_id =  numberbykey("sample_id",metadata)
+				if(!svar_Exists(oldheader))
+					print("No header values to compare to")
+				elseif(numberbykey("Beam Stop SAXS",oldheader)==BSS && numberbykey("Beam Stop WAXS",oldheader)==BSW && numberbykey("Detector SAXS Translation",oldheader)==SAXST && numberbykey("Detector SAXS Translation",oldheader)==WAXST && numberbykey("sample_id",oldheader)==sample_id )
+					print "Q range is unchanged"
+				else
+					print "Changing Q range"
+					wave/t listwave = root:Packages:SwitchNIKA:listwave
+					make /free /n=(dimsize(listwave,0)) BSSs = str2num(listwave[p][9]), BSWs = str2num(listwave[p][11]),SAXSTs = str2num(listwave[p][8]),WAXSTs = str2num(listwave[p][10]),ccdgood
+					make /free /n=(dimsize(listwave,0))/t Sampnames = listwave[p][12]
+					ccdgood = abs(BSSs -BSS) <1 ? 1 : 0
+					ccdgood*=abs(BSWs-BSW) < 1 ? 1 : 0
+					ccdgood*=abs(SAXSTs-SAXST) < 1 ? 1 : 0
+					ccdgood*=abs(WAXSTs-WAXST) < 1 ? 1 : 0
+					svar /z samplenamelist = root:Packages:Nika1101:samplenamelist
+					if(svar_exists(samplenamelist))
+						ccdgood*=stringmatch(stringbykey(num2str(sample_id),samplenamelist,"=",","), Sampnames[p]) ? 1 : 0
+					endif
+					findvalue /v=1 /z ccdgood
+					variable row = v_value
+					if(v_value>=0)
+						setqrange(row)
+					endif
 				endif
 			endif
 		endif

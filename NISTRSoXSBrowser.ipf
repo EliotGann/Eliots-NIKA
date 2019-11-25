@@ -90,17 +90,39 @@ function NRB_loadprimary([update,row])
 	SetDataFolder root:Packages:NikaNISTRSoXS
 	string /g basescanname = basename
 	string /g pnameimages = "NistRSoXS_Data"
+	string /g pnamemd = "NistRSoXS_Metadata"
 	newpath /o/q/z $pnameimages, pathtodata + basenum + ":"
 	if(v_flag!=0)
 		newpath /o/q $pnameimages, pathtodata
+		pnamemd = pname
+	else
+		string listofjsonl = IndexedFile($pnameimages, -1, ".jsonl")
+		if(strlen(listofjsonl)>0)
+			pnamemd = pnameimages
+		else
+			pnamemd = pname
+		endif
 	endif
+
 	killdatafolder /z channels
 	newdatafolder /o/s channels
 	//close /A
+
 	newpath /o/q tempfolder, (getenvironmentVariable("TMP"))
-	copyfile /o/p=$(pname) basename+"-primary.csv" as getenvironmentVariable("TMP")+"\RSoXS.csv"
-	LoadWave/q/O/J/D/A/K=0/P=tempfolder/W  "RSoXS.csv"
-	deletefile /p=tempfolder "RSoXS.csv"
+
+	string tempfilename = "RSoXS"+num2str(round(abs(enoise(100000))))+".csv"
+	getfilefolderinfo /q/z /p=tempfolder tempfilename
+	copyfile /o/p=$(pname) basename+"-primary.csv" as getenvironmentVariable("TMP")+"\\"+ tempfilename
+	LoadWave/q/O/J/D/A/K=0/P=tempfolder/W tempfilename
+	deletefile /p=tempfolder tempfilename
+
+
+
+
+
+
+
+>>>>>>> da81b5dc7c6a9f6ce96f8a45cb27ac967a806a0b
 	wave /z datawave = $(stringfromlist(0,S_waveNames))
 	if(!waveexists(datawave))
 		setdatafolder currentfolder
@@ -125,6 +147,11 @@ function NRB_loadprimary([update,row])
 		redimension /n=(dimsize(RSoXS_Sample_Up_Down,0)) steplist, steplistsel
 		steplist[] = num2str(seq_num[p]) + " - (" + num2str(round(RSoXS_Sample_Outboard_Inboard[p]*100)/100) + " , " + num2str(round(RSoXS_Sample_Up_Down[p]*100)/100) + ")"
 		foundloc = 1
+	endif
+	if(whichlistitem("timeW",s_wavenames)>=0)
+		wave /z times = timeW
+	else
+		wave /z times
 	endif
 	if(whichlistitem("en_energy",s_wavenames)>=0)
 		
@@ -167,6 +194,37 @@ function NRB_loadprimary([update,row])
 	endif
 	
 	
+	
+	//monitors
+	string mdfiles= indexedfile($(pnamemd),-1,".csv")
+	string metadatafilenames = greplist(mdfiles,"^"+basename+".*_monitor[.]csv$")
+
+	string mdfilename
+	string monitorname
+	duplicate /free times, goodpulse, rises, falls
+	goodpulse = 0
+	for(i=0;i<itemsinlist(metadatafilenames);i+=1)
+		mdfilename = stringfromlist(i,metadatafilenames)
+		Splitstring /e="^"+basename+"-(.*)_monitor[.]csv$" mdfilename, monitorname
+		//print monitorname
+		newpath /o/q tempfolder, (getenvironmentVariable("TMP"))
+		tempfilename = "RSoXSmd"+num2str(round(abs(enoise(100000))))+".csv"
+		getfilefolderinfo /q/z /p=tempfolder tempfilename
+		copyfile /o/p=$(pnamemd) mdfilename as getenvironmentVariable("TMP")+"\\"+ tempfilename
+		LoadWave/L={0,1,0,0,2}/Q/O/J/D/n=$cleanupname(monitorname,0)/K=0/P=tempfolder/m tempfilename
+		deletefile /p=tempfolder tempfilename
+	
+		
+		
+		wave mdwave = $stringfromlist(0,s_wavenames)
+		wave newchannelwave = NRB_splitsignal(mdwave,times, rises, falls, goodpulse)
+		insertpoints /M=0 0,1, channellist, channellistsel
+		channellist[0][1] = nameofwave(newchannelwave)
+		channellist[0][0] = ""
+		channellistsel[0][0] = 32
+	endfor
+	
+	
 	if(update)
 		// we are essentially done now, we don't need to reload the metadata or baseline info, which hasn't changed
 		setdatafolder currentfolder
@@ -178,7 +236,7 @@ function NRB_loadprimary([update,row])
 	
 	wave /t mdlist = root:Packages:NikaNISTRSoXS:mdlist
 	
-	string jsonfiles= indexedfile($(pname),-1,".jsonl")
+	string jsonfiles= indexedfile($(pnamemd),-1,".jsonl")
 	variable jsonfound=0
 	string metadatafilename
 	string metadata=""
@@ -188,23 +246,23 @@ function NRB_loadprimary([update,row])
 	else
 		jsonfound = 1
 		metadatafilename = stringfromlist(0,greplist(jsonfiles,"^"+basename+".*jsonl"))
-		metadata = addmetadatafromjson(pname,"institution",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"project_name",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"proposal_id",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"sample_name",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"sample_desc",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"sample_id",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"sample_set",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"user_name",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"user_id",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"notes",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"uid",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"dim1",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"dim2",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"dim3",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"chemical_formula",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"density",metadatafilename,metadata)
-		metadata = addmetadatafromjson(pname,"project_desc",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"institution",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"project_name",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"proposal_id",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"sample_name",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"sample_desc",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"sample_id",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"sample_set",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"user_name",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"user_id",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"notes",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"uid",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"dim1",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"dim2",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"dim3",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"chemical_formula",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"density",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"project_desc",metadatafilename,metadata)
 		metadata = replacestring(":",metadata,"  -  ")
 		redimension /n=(itemsinlist(metadata)) mdlist
 		mdlist[] = stringfromlist(p,metadata)
@@ -212,39 +270,47 @@ function NRB_loadprimary([update,row])
 	endif	
 	
 	//baselines
-	getfilefolderinfo /z /q /P=$(pname) basename+"-baseline.csv"
+	getfilefolderinfo /z /q /P=$(pnameimages) basename+"-baseline.csv"
 	if(v_flag!=0)
 		wave /z /t bllist = root:Packages:NikaNISTRSoXS:bllist
 		bllist = {"no baselines found",""}
 	else
-		LoadWave/Q/O/J/D/n=baseline/K=0/P=$(pname)/m  basename+"-baseline.csv"
+		LoadWave/Q/O/J/D/n=baseline/K=0/P=$(pnameimages)/m  basename+"-baseline.csv"
 		wave /t baselines = $stringfromlist(0,S_waveNames)
 		matrixtranspose baselines
 		duplicate /o baselines, root:Packages:NikaNISTRSoXS:bllist
 	endif
 	svar location = root:Packages:NikaNISTRSoXS:location
-	if(foundloc)
-		findvalue /TEXT="en energy" baselines
-		if(v_value>=0)
-			location = baselines[v_value][1]
+	if(waveexists(baselines))
+		if(foundloc)
+			findvalue /TEXT="en energy" baselines
+			if(v_value>=0)
+				location = baselines[v_value][1]
+			else
+				location = ""
+			endif
 		else
-			location = ""
+			findvalue /TEXT="RSoXS Sample Outboard-Inboard" baselines
+			if(v_value>=0)
+				location = "("+num2str(round(str2num(baselines[v_value][1])*100)/100) + ","
+			else
+				location = ""
+			endif
+			findvalue /TEXT="RSoXS Sample Up-Down" baselines
+			if(v_value>=0)
+				location += num2str(round(str2num(baselines[v_value][1])*100)/100) + ")"
+			else
+				location = ""
+			endif
+			
 		endif
-	else
-		findvalue /TEXT="RSoXS Sample Outboard-Inboard" baselines
-		if(v_value>=0)
-			location = "("+num2str(round(str2num(baselines[v_value][1])*100)/100) + ","
-		else
-			location = ""
-		endif
-		findvalue /TEXT="RSoXS Sample Up-Down" baselines
-		if(v_value>=0)
-			location += num2str(round(str2num(baselines[v_value][1])*100)/100) + ")"
-		else
-			location = ""
-		endif
-		
 	endif
+	
+	
+	
+	
+	
+	
 	NRB_updateimageplot()
 	
 	setdatafolder currentfolder
@@ -947,7 +1013,11 @@ function NRB_plotchannels([fresh])
 			continue
 		endif
 		wave channel = root:Packages:NikaNISTRSoXS:channels:$channeltoplot
+		wave /z errorwave = root:Packages:NikaNISTRSoXS:channels:$replacestring("m_",channeltoplot,"s_")
 		appendtograph /w=NISTRSoXSBrowser#Graph1D channel vs xwave
+		if(waveexists(errorwave) && stringmatch(channeltoplot,"m_*"))
+			ErrorBars /w=NISTRSoXSBrowser#Graph1D $nameofwave(channel) SHADE= {0,0,(0,0,0,0),(0,0,0,0)},wave=(errorwave,errorwave)
+		endif
 	endfor
 	NRB_ColorTraces("SpectrumBlack","NISTRSoXSBrowser#Graph1D")
 end
@@ -1253,3 +1323,60 @@ Function NRP_Viewdarks_butproc(cba) : CheckBoxControl
 
 	return 0
 End
+
+function /wave NRB_splitsignal(wavein,times, rises, falls, goodpulse)
+	wave wavein,times, rises, falls,goodpulse
+	
+	make /free /n=(dimsize(wavein,0)) /d timesin = wavein[p][0], datain = wavein[p][1]
+	
+	string name = nameofwave(wavein)
+	wave /z waveout = $("_"+name)
+	if(numpnts(wavein)<2* numpnts(times))
+		print "not valid waves"
+		return waveout
+	endif
+	make /o/n=(dimsize(times,0)) $("m_"+name), $("s_"+name), $("f_"+name)
+	wave waveout = $("m_"+name), stdwave = $("s_"+name), fncwave = $("f_"+name)
+	make /n=(dimsize(times,0)) /free pntlower, pntupper
+	pntupper = binarysearch(timesin,times[p])
+	pntupper = pntupper[p]==-2 ? numpnts(timesin)-1 : pntupper[p]
+	duplicate /o /free pntupper, pntlower, pntlower1
+	pntlower1 = binarysearch(timesin,times[p]-1.5)
+	
+	insertpoints /v=0 0,1,pntlower
+	make /free temprises, tempfalls
+	waveout = mean(datain,pntlower1[p]+2,pntupper[p]-0)
+	stdwave = sqrt(variance(datain,pntlower1[p]+2,pntupper[p]-0))
+	variable i, meanvalue, alreadygood, err
+	for(i=0;i<dimsize(times,0);i+=1)
+		//meanvalue = mean(datain,pntlower[i],pntupper[i])
+		meanvalue = (9/10) *(wavemin(datain,pntlower[i],pntupper[i]) + wavemax(datain,pntlower[i],pntupper[i]))
+		try
+			findlevels /B=3/EDGE=1 /Q /P /D=temprises /R=[max(0,pntlower[i]),min(numpnts(datain)-1,pntupper[i])] datain, meanvalue;AbortonRTE // look for rising and falling edges
+			findlevels /B=3/EDGE=2 /Q /P /D=tempfalls /R=[max(0,pntlower[i]),min(numpnts(datain)-1,pntupper[i])] datain, meanvalue;AbortonRTE
+		catch
+			err = getRTError(1)
+			//print getErrMessage(err)
+			goodpulse[i]=0
+			break
+		endtry
+		if(dimsize(temprises,0) == 1 && dimsize(tempfalls,0)== 1 ) // did we find a single pulse?
+			alreadygood = goodpulse[i]
+			rises[i] = timesin(temprises[0]) // if so, change them to times (so they work for all channels)
+			falls[i] = timesin(tempfalls[0])
+			waveout[i] = mean(datain,binarysearchinterp(timesin,rises[i])+1,binarysearchinterp(timesin,falls[i])-1)
+			stdwave[i] = sqrt(variance(datain,binarysearchinterp(timesin,rises[i])+1,binarysearchinterp(timesin,falls[i])-1))
+			goodpulse[i]=1
+		else
+			if(alreadygood) // have we already found the rising and falling times?
+				waveout[i] = mean(datain,binarysearch(timesin,rises[i])+0,binarysearch(timesin,falls[i]))
+				stdwave[i] = sqrt(variance(datain,binarysearch(timesin,rises[i])+0,binarysearch(timesin,falls[i])))
+			else
+				goodpulse[i]=0
+			endif
+		endif
+	endfor
+	
+	//curvefit
+	return waveout
+end
