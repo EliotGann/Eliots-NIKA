@@ -972,7 +972,6 @@ Function EGNA_SaveDataPerUserReq(CurOrient,wavelengths)
 	NVAR UseDspacing=root:Packages:Convert2Dto1D:UseDspacing
 	NVAR UseGrazingIncidence=root:Packages:Convert2Dto1D:UseGrazingIncidence
 
-	
 	variable ItemsInLst, i
 	string OldNote
 	string LocalUserFileName
@@ -1045,7 +1044,7 @@ Function EGNA_SaveDataPerUserReq(CurOrient,wavelengths)
 		variable j, imax = numpnts(LineProfileIntensity)
 		for(j=imax-1;j>=0;j-=1)
 			if(LineProfileIntensity[j]*LineProfileError[j]*LineProfileQ[j]*LineProfileQx[j]*LineProfileQy[j]*LineProfileQz[j]*LineProfileQxy[j]*LineProfileXi[j]*LineProfileTh[j]*0 != 0) //*LineProfileZValsPix[j]*LineProfileYValsPix[j]*tempWv1234[j]
- 				Deletepoints j, 1, LineProfileIntensity,LineProfileError,LineProfileQ,LineProfileQx,LineProfileQy,LineProfileQz,LineProfileQxy,LineProfileXi,LineProfileTh //,LineProfileZValsPix,LineProfileYValsPix,tempWv1234
+				Deletepoints j, 1, LineProfileIntensity,LineProfileError,LineProfileQ,LineProfileQx,LineProfileQy,LineProfileQz,LineProfileQxy,LineProfileXi,LineProfileTh //,LineProfileZValsPix,LineProfileYValsPix,tempWv1234
 			endif
 		endfor
 		
@@ -1111,7 +1110,8 @@ Function EGNA_SaveDataPerUserReq(CurOrient,wavelengths)
 //			else
 //				Save/A/W/J/M="\r\n"/P=Convert2Dto1DOutputPath LineProfQ, LineProfQy, LineProfQz, LineProfIntensity, LineProfError as (UseName+".dat")			
 //			endif		
-			KillWaves/Z TextWv, LineProfQ, LineProfQy,LineProfQx, LineProfQz,LineProfQxy ,LineProfQxz ,LineProfXi, LineProfTh, LineProfIntensity, LineProfError
+
+			KillWaves/Z TextWv, LineProfQ, LineProfQy,LineProfQx, LineProfQz,LineProfQxy ,LineProfQxz ,LineProfXi, LineProfIntensity, LineProfError, LineProfTh
 		endif
 
 		if(DisplayDataAfterProcessing)
@@ -1135,10 +1135,10 @@ Function EGNA_SaveDataPerUserReq(CurOrient,wavelengths)
 			elseif(stringmatch(LineProf_CurveType,"Ellipse"))
 				Wave Int=$cleanupname("r_"+UseName,1)
 				if(UseGrazingIncidence)
- 					Wave Avec=$cleanupname("Xi_"+UseName,1)
- 				else
- 					Wave Avec=$cleanupname("Th_"+UseName,1)
- 				endif
+					Wave Avec=$cleanupname("Xi_"+UseName,1)
+				else
+					Wave Avec=$cleanupname("Th_"+UseName,1)
+				endif
 				Wave err=$cleanupname("s_"+UseName,1)
 				EGNA_DisplayLineoutAfterProc(int,Avec,Err,1,4)
 			else
@@ -1264,10 +1264,8 @@ Function EGNA_DisplayLineoutAfterProc(int,Qvec,Err,NumOfWavesToKeep,typeGraph)
 	wave int,Qvec,Err
 	variable NumOfWavesToKeep
 	variable typeGraph	//1 for q, 2 for d, and 3 for twoTheta
-
-NVAR UseGrazingIncidence=root:Packages:Convert2Dto1D:UseGrazingIncidence
-
-
+	NVAR UseGrazingIncidence=root:Packages:Convert2Dto1D:UseGrazingIncidence
+	
 	if(typeGraph==1)
 		DoWindow LineuotDisplayPlot_Q
 		if(V_Flag)
@@ -1318,10 +1316,10 @@ NVAR UseGrazingIncidence=root:Packages:Convert2Dto1D:UseGrazingIncidence
 			ModifyGraph log=0
 			Label left "Intensity"
 			if(Usegrazingincidence)
- 				Label bottom "Chi (pole figure) [degrees]"
- 			else
- 				Label bottom "Phi (azimuthal angle) [degrees]"
- 			endif
+				Label bottom "Chi (pole figure) [degrees]"
+			else
+				Label bottom "Phi (azimuthal angle) [degrees]"
+			endif
 			Doupdate
 		endif		
 	else

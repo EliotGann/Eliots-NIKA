@@ -215,9 +215,9 @@ Function EGNA_LineProf_CreateLP()
 		Duplicate/O W_ImageLineProfile, LineProfileXi
 		LineprofileXi *=sign(lineprofileqxy)
 		ImageLineProfile/S xWave=ywave, yWave=xwave, srcwave=thwave , width= LineProf_Width
- 		Duplicate/O W_ImageLineProfile, LineProfileTh
- 		//LineprofileTh *=sign(lineprofileqxy)
-		
+		Duplicate/O W_ImageLineProfile, LineProfileTh
+		//LineprofileTh *=sign(lineprofileqxy)
+	
 		//add notes...
 		note LineProfileIntensity,  OldNote
 		note  LineProfileQvalues, OldNote
@@ -228,7 +228,7 @@ Function EGNA_LineProf_CreateLP()
 		note  LineProfileQxy , OldNote
 //		note  LineProfileQxz , OldNote
 		note  LineProfileXi , OldNote
-		note  LineProfileTh, OldNote
+		note  LineProfileTh , OldNote
 		
 		//and now add the mirror lines, if needed...
 		if(LineProf_UseBothHalfs)
