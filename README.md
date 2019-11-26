@@ -24,3 +24,8 @@ Suggested Installation Method:
 6.) Install XMLUtils (https://www.wavemetrics.com/project/XMLutils)
 
 7.) Restart Igor Pro, you should see the RSoXS menu appear
+
+8.) to update to the latest version, just go to github desktop and click the fetch origin button when Eliots-NIKA is selected*
+
+
+*NOTE If upgrading from a pre-Nov 26, 2019 version, re-install is required.  Delete all shortcuts in the NIKA folder and recreate them from the github directory.  They have all changed name to allow simultaneous operation with the modern version of NIKA (THANKS TO PETER BEAUCAGE FOR THIS)
