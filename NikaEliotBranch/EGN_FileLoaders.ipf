@@ -73,7 +73,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		else
 			NEWPATH /O /Q/Z BS_metadata, S_Path
 		endif
-
+		
 		string teststring= indexedfile($PathName,-1,".csv")
 		string baselinestring = greplist(teststring,"^"+FileNametoLoad[0,6]+".*baseline")
 		newdatafolder /o/s importdata
@@ -84,7 +84,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
 			pxsizex = 0.015 * numberbykey(detectortype+ "cam_bin_x",teststring)
 			nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
-			pxsizey = 0.015 * numberbykey(detectortype+ "cam_bin_x",teststring)
+			pxsizey = 0.015 * numberbykey(detectortype+ "cam_bin_y",teststring)
 			
 			
 			nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
@@ -94,7 +94,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
 			xrayenergy = numberbykey("en_energy_setpoint",teststring)/1000
 			nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
-			wavelength = 12.39/xrayenergy
+			wavelength = 12.39842/xrayenergy
 			variable BSS, BSW, SAXST, WAXST, SamZ
 			BSS = numberbykey("Beam Stop SAXS",teststring)
 			BSW = numberbykey("Beam Stop WAXS",teststring)
@@ -109,7 +109,6 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		endif
 		teststring= indexedfile(BS_metadata,-1,".csv")
 		teststring = greplist(teststring,"^"+FileNametoLoad[0,6]+".*primary")
-
 		LoadWave/Q/O/J/D/A/K=0/P=BS_metadata/W  stringfromlist(0,teststring)
 		wave /z datawave = $(stringfromlist(0,S_waveNames))
 		if(waveexists(datawave))
@@ -185,10 +184,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		splitstring /e="^([1234567890]*)-(.{3,8})-" filenametoload, imagenum,  userfilename
 		userfilename = stringbykey("sample_name",metadata)
 		UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100000)/100)+"eV_"+detectortype[0] + "_"+ num2str(imnum)// + imagenum + "_" 
-
-		print "Pushing filename as:"
-		print userfilename	
-	
+			
 		wave LoadedWvHere=$(NewWaveName)
 		Redimension/N=(-1,-1,0)/i 	LoadedWvHere			//this is fix for 3 layer tiff files...
 		NewNote+="DataFileName="+FileNameToLoad+";"
