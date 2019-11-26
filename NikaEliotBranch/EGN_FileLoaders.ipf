@@ -71,8 +71,10 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		
 		//check if baseline csv is in current dir, if so use current, else use parent
 		string imagepathdir = indexedfile($PathName,-1,".csv")
-		string baselinefile = greplist(filedir,"^"+FileNametoLoad[0,6]+".*baseline")
+		string baselinefile = greplist(imagepathdir,"^"+FileNametoLoad[0,6]+".*baseline")
 		
+		print "Baseline CSV seems to be in"
+		print stringfromlist(0,baselinefile)
 		if(strlen(stringfromlist(0,baselinefile))==0)  // if it's not in the image dir, use the parent dir.
 			NEWPATH /O /Q/Z BS_metadata, parsefilepath(1,S_Path,":",1,0)
 		else //just use the image dir
@@ -83,7 +85,10 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		string baselinestring = greplist(teststring,"^"+FileNametoLoad[0,6]+".*baseline")
 
 		newdatafolder /o/s importdata
-		LoadWave/Q/O/J/M/U={0,0,1,0}/D/A=wave/K=0/L={0,1,0,0,0}/P=$PathName  stringfromlist(0,baselinestring)
+		LoadWave/Q/O/J/M/U={0,0,1,0}/D/A=wave/K=0/L={0,1,0,0,0}/P=BS_metadata  stringfromlist(0,baselinestring)
+		
+		// Peter changed line above from $PathName to BS_metadata bc that seems to be where it should be.
+		
 		wave /z datawave = $(stringfromlist(0,S_waveNames))
 		if(waveexists(datawave))
 			teststring = Colwavetostring(datawave)
