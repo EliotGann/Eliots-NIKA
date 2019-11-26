@@ -9,7 +9,7 @@ If you run into any problems, besides just emailing me, please create an issue i
 
 Suggested Installation Method:
 
-1.) Clone this repository to your local machine.  (I strongly suggest to downlowd github desktop, which makes this incredibly easy, unless you are a github expert already.  Just paste the repository address in and hit clone)
+1.) Clone this repository to your local machine.  (I strongly suggest to download github desktop, which makes this incredibly easy, unless you are a github expert already.  Just paste the repository address in and hit clone)
 
 2.) Find out where the repository is stored on your local computer
 
