@@ -2,45 +2,45 @@
 
 
 
-Function NI1A_StoreLoadCurSettingPnl()
+Function EGNA_StoreLoadCurSettingPnl()
 
 	string OldDf=GetDataFolder(1)
 	SetDataFolder root:Packages:Convert2Dto1D
 	//mini initialization for this panel
-	DoWindow NI1A_SaveLoadPanel
+	DoWindow EGNA_SaveLoadPanel
 	if(!V_Flag)
 		Wave/Z/T SaveLoadDataAvailable
 		if(!WaveExists(SaveLoadDataAvailable))
 			make/O/N=0/T SaveLoadDataAvailable, ConfigFileContent	
 		endif
-		Execute("NI1A_SaveLoadPanel()")
+		Execute("EGNA_SaveLoadPanel()")
 	else
-		DoWindow/F NI1A_SaveLoadPanel
+		DoWindow/F EGNA_SaveLoadPanel
 	endif
 
 	setDataFolder OldDf
 end
 
-Proc NI1A_SaveLoadPanel()
+Proc EGNA_SaveLoadPanel()
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /K=1/W=(236,50,605,338) as "Save and Recall Configurations"
-	DoWindow/C NI1A_SaveLoadPanel
+	DoWindow/C EGNA_SaveLoadPanel
 	SetDrawLayer UserBack
 	SetDrawEnv fsize= 16,fstyle= 3,textrgb= (0,0,65280)
 	DrawText 38,22,"Save and Load configuration files"
-	Button SelectSaveLoadPath,pos={84,31},size={150,20},proc=NI1A_SaveLoadButtonProc,title="Select data path"
+	Button SelectSaveLoadPath,pos={84,31},size={150,20},proc=EGNA_SaveLoadButtonProc,title="Select data path"
 	Button SelectSaveLoadPath,help={"Select path to your configuration files. You can create new folders by typing them in."}
 	Button SelectSaveLoadPath,font="Times New Roman"
-	ListBox SavedDataList,pos={3,76},size={164,117},proc=NI1A_SaveLoadListBoxProc
+	ListBox SavedDataList,pos={3,76},size={164,117},proc=EGNA_SaveLoadListBoxProc
 	ListBox SavedDataList,listWave=root:Packages:Convert2Dto1D:SaveLoadDataAvailable
 	ListBox SavedDataList,mode= 1,selRow= 5
 	ListBox ContentOfTheConfigFile,pos={171,77},size={192,116}
 	ListBox ContentOfTheConfigFile,font="Times New Roman",fSize=9
 	ListBox ContentOfTheConfigFile,listWave=root:Packages:Convert2Dto1D:ConfigFileContent
-	Button SaveCurrentConfig,pos={13,242},size={130,20},proc=NI1A_SaveLoadButtonProc,title="Save configuration"
+	Button SaveCurrentConfig,pos={13,242},size={130,20},proc=EGNA_SaveLoadButtonProc,title="Save configuration"
 	Button SaveCurrentConfig,help={"Store current configuration into the file"}
 	Button SaveCurrentConfig,font="Times New Roman"
-	Button LoadConfiguration,pos={185,241},size={130,20},proc=NI1A_SaveLoadButtonProc,title="Load configuration"
+	Button LoadConfiguration,pos={185,241},size={130,20},proc=EGNA_SaveLoadButtonProc,title="Load configuration"
 	Button LoadConfiguration,help={"Load data from saved configuration file"}
 	Button LoadConfiguration,font="Times New Roman"
 	SetVariable Convert2Dto1DConfigPath,pos={3,58},size={350,15},disable=2,title="Path:   "
@@ -61,7 +61,7 @@ Proc NI1A_SaveLoadPanel()
 	SetVariable ConfFileUserName,limits={-inf,inf,0},value= root:Packages:Convert2Dto1D:ConfFileUserName
 EndMacro
 
-Function NI1A_SaveLoadButtonProc(ctrlName) : ButtonControl
+Function EGNA_SaveLoadButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 	
 	if(cmpstr(ctrlName,"SelectSaveLoadPath")==0)
@@ -69,17 +69,17 @@ Function NI1A_SaveLoadButtonProc(ctrlName) : ButtonControl
 		SVAR ConfigurationDataPath=root:Packages:Convert2Dto1D:ConfigurationDataPath
 		PathInfo Convert2Dto1DConfigPath
 		ConfigurationDataPath=S_path
-		NI1A_UpdateSaveLoadListBox()
-		NI1A_ShowUserConfigContent()
+		EGNA_UpdateSaveLoadListBox()
+		EGNA_ShowUserConfigContent()
 	endif
 	if(cmpstr(ctrlName,"SaveCurrentConfig")==0)
-		NI1A_CopyConfigurationOut()
-		NI1A_UpdateSaveLoadListBox()
+		EGNA_CopyConfigurationOut()
+		EGNA_UpdateSaveLoadListBox()
 	endif
 	if(cmpstr(ctrlName,"LoadConfiguration")==0)
-		controlInfo/W=NI1A_SaveLoadPanel SavedDataList
+		controlInfo/W=EGNA_SaveLoadPanel SavedDataList
 		if(V_Value>=0)
-			NI1A_LoadSavedConfigContent(V_Value)
+			EGNA_LoadSavedConfigContent(V_Value)
 		endif
 	endif
 
@@ -87,12 +87,12 @@ Function NI1A_SaveLoadButtonProc(ctrlName) : ButtonControl
 End
 
 
-Function NI1A_LoadSavedConfigContent(row)
+Function EGNA_LoadSavedConfigContent(row)
 	variable row
 	
 	string OldDf=GetDataFolder(1)
 	//initialize definitions of variables in case user has old experiment nad new config file..
-	NI1A_Initialize2Dto1DConversion()
+	EGNA_Initialize2Dto1DConversion()
 	SetDataFolder root:Packages:Convert2Dto1D
 	Wave/T SaveLoadDataAvailable=root:Packages:Convert2Dto1D:SaveLoadDataAvailable
 	string LoadFile=SaveLoadDataAvailable[row]+".dat"
@@ -104,12 +104,12 @@ Function NI1A_LoadSavedConfigContent(row)
 	Wave/T ConfigFileContent0=root:Packages:Convert2Dto1D:ConfigFileContent0
 	string NewConfiguration=ConfigFileContent0[0]
 	KillWaves ConfigFileContent0
-	NI1A_RecoverStoredToolSetting(NewConfiguration)
+	EGNA_RecoverStoredToolSetting(NewConfiguration)
 	setDataFolder OldDf
 
 end
 
-Function NI1A_CopyConfigurationOut()
+Function EGNA_CopyConfigurationOut()
 	
 	setDataFolder root:Packages:Convert2Dto1D
 	variable i
@@ -153,12 +153,12 @@ Function NI1A_CopyConfigurationOut()
 			
 			NewNotebook /F=0 /V=0/N=$NbkNm 
 			Notebook $NbkNm selection={endOfFile, endOfFile}
-			Notebook $NbkNm text=NI1A_RecordCurrentToolSetting()
+			Notebook $NbkNm text=EGNA_RecordCurrentToolSetting()
 			SaveNotebook /S=3/O/P=Convert2Dto1DConfigPath $NbkNm as ExportName
 			DoWindow /K testNbk
 end
 
-Function NI1A_SaveLoadListBoxProc(ctrlName,row,col,event) : ListBoxControl
+Function EGNA_SaveLoadListBoxProc(ctrlName,row,col,event) : ListBoxControl
 	String ctrlName
 	Variable row
 	Variable col
@@ -166,12 +166,12 @@ Function NI1A_SaveLoadListBoxProc(ctrlName,row,col,event) : ListBoxControl
 					//5=cell select with shift key, 6=begin edit, 7=end
 
 	if(event==2)
-		NI1A_ShowUserConfigContent()
+		EGNA_ShowUserConfigContent()
 	endif
 	return 0
 End
 
-Function NI1A_ShowUserConfigContent()
+Function EGNA_ShowUserConfigContent()
 	
 	string OldDf=GetDataFolder(1)
 	SetDataFolder root:Packages:Convert2Dto1D
@@ -184,7 +184,7 @@ Function NI1A_ShowUserConfigContent()
 		abort
 	endif
 	variable row
-	controlInfo/W=NI1A_SaveLoadPanel SavedDataList
+	controlInfo/W=EGNA_SaveLoadPanel SavedDataList
 	row=V_Value
 	if(row>=0)
 		string LoadFile=SaveLoadDataAvailable[row]+".dat"
@@ -213,7 +213,7 @@ Function NI1A_ShowUserConfigContent()
 end
 
 
-Function NI1A_UpdateSaveLoadListBox()
+Function EGNA_UpdateSaveLoadListBox()
 
 		Wave/T  SaveLoadDataAvailable=root:Packages:Convert2Dto1D:SaveLoadDataAvailable
 		string ListOfAvailableConfigs
@@ -230,7 +230,7 @@ Function NI1A_UpdateSaveLoadListBox()
 		sort SaveLoadDataAvailable, SaveLoadDataAvailable
 end	
 
-Function/S NI1A_RecordCurrentToolSetting()
+Function/S EGNA_RecordCurrentToolSetting()
 	//returns string with the current tool setting.
 
 	string OldDf=GetDataFolder(1)
@@ -266,7 +266,7 @@ Function/S NI1A_RecordCurrentToolSetting()
 //	ListOfVariables+="A2DImageRangeMin;A2DImageRangeMax;A2DImageRangeMinLimit;A2DImageRangeMaxLimit;A2DLineoutDisplayLogInt;A2DmaskImage;"
 //	ListOfVariables+="RemoveFirstNColumns;RemoveLastNColumns;RemoveFirstNRows;RemoveLastNRows;MaskDisplayLogImage;"
 //	ListOfVariables+="OverwriteDataIfExists;SectorsNumSect;SectorsSectWidth;SectorsGraphStartAngle;SectorsGraphEndAngle;"
-//	ListOfVariables+="DisplayBeamCenterIn2DGraph;DisplaySectorsIn2DGraph;"
+//	ListOfVariables+="DisplayBeamCenterEG_N2DGraph;DisplaySectorsEG_N2DGraph;"
 //	ListOfVariables+="UseQvector;UseTheta;UseDspacing;"
 //	ListOfVariables+="UserThetaMin;UserThetaMax;UserDMin;UserDMax;UserQMin;UserQMax;"
 //	ListOfVariables+="DoGeometryCorrection;InvertImages;"
@@ -304,7 +304,7 @@ Function/S NI1A_RecordCurrentToolSetting()
 	setDataFolder OldDf
 end
 
-Function NI1A_RecoverStoredToolSetting(StoredSettings)
+Function EGNA_RecoverStoredToolSetting(StoredSettings)
 	string StoredSettings
 	//recovers setting of the tool from stored in string.
 
@@ -333,29 +333,29 @@ Function NI1A_RecoverStoredToolSetting(StoredSettings)
 		endif
 	endfor
 	//Now need to set all popus used - if they exist so they are in sync with the tool...
-	DoWindow NI1A_Convert2Dto1DPanel
+	DoWindow EGNA_Convert2Dto1DPanel
 	if(V_Flag)
-		Execute("PopupMenu Select2DDataType, win=NI1A_Convert2Dto1DPanel, mode=2,popvalue=root:Packages:Convert2Dto1D:DataFileExtension,value= #root:Packages:Convert2Dto1D:ListOfKnownExtensions")
-		Execute("PopupMenu SelectBlank2DDataType, win=NI1A_Convert2Dto1DPanel, mode=2, popvalue=root:Packages:Convert2Dto1D:DataFileExtension")
+		Execute("PopupMenu Select2DDataType, win=EGNA_Convert2Dto1DPanel, mode=2,popvalue=root:Packages:Convert2Dto1D:DataFileExtension,value= #root:Packages:Convert2Dto1D:ListOfKnownExtensions")
+		Execute("PopupMenu SelectBlank2DDataType, win=EGNA_Convert2Dto1DPanel, mode=2, popvalue=root:Packages:Convert2Dto1D:DataFileExtension")
 		//now update textboxes... 
 		SVAR MainPathInfoStr=root:Packages:Convert2Dto1D:MainPathInfoStr
 		NewPath/C/O Convert2Dto1DDataPath, MainPathInfoStr
-		NI1A_UpdateDataListBox()	
-		ControlInfo/W=NI1A_Convert2Dto1DPanel Convert2Dto1DTab
-		NI1A_TabProc("bla",V_Value)
+		EGNA_UpdateDataListBox()	
+		ControlInfo/W=EGNA_Convert2Dto1DPanel Convert2Dto1DTab
+		EGNA_TabProc("bla",V_Value)
 	endif
 	
-	DoWindow NI1_CreateBmCntrFieldPanel
+	DoWindow EGN_CreateBmCntrFieldPanel
 	if(V_Flag)
-		Execute("PopupMenu BmCntrFileType, win=NI1_CreateBmCntrFieldPanel, mode=2, popvalue=root:Packages:Convert2Dto1D:DataFileExtension")
-		Execute("PopupMenu BmCntrFileType, win=NI1_CreateBmCntrFieldPanel, mode=2, popvalue=root:Packages:Convert2Dto1D:BmCntrFileType")
-		Execute("PopupMenu BmCalibrantName, win=NI1_CreateBmCntrFieldPanel, mode=2, popvalue=root:Packages:Convert2Dto1D:BmCalibrantName")
-		Execute("PopupMenu BMFunctionName, win=NI1_CreateBmCntrFieldPanel, mode=2, popvalue=root:Packages:Convert2Dto1D:BMFunctionName")
+		Execute("PopupMenu BmCntrFileType, win=EGN_CreateBmCntrFieldPanel, mode=2, popvalue=root:Packages:Convert2Dto1D:DataFileExtension")
+		Execute("PopupMenu BmCntrFileType, win=EGN_CreateBmCntrFieldPanel, mode=2, popvalue=root:Packages:Convert2Dto1D:BmCntrFileType")
+		Execute("PopupMenu BmCalibrantName, win=EGN_CreateBmCntrFieldPanel, mode=2, popvalue=root:Packages:Convert2Dto1D:BmCalibrantName")
+		Execute("PopupMenu BMFunctionName, win=EGN_CreateBmCntrFieldPanel, mode=2, popvalue=root:Packages:Convert2Dto1D:BMFunctionName")
 		//now update textboxes... 
 		SVAR BCPathInfoStr=root:Packages:Convert2Dto1D:BCPathInfoStr
 		NewPath/C/O Convert2Dto1DBmCntrPath, BCPathInfoStr
 		NI1BC_UpdateBmCntrListBox()
-		ControlInfo/W=NI1_CreateBmCntrFieldPanel BmCntrTab
+		ControlInfo/W=EGN_CreateBmCntrFieldPanel BmCntrTab
 		NI1BC_TabProc("",V_Value)
 	endif
 	setDataFolder OldDf

@@ -6,7 +6,7 @@
 #include <Remove Points>
 #include "GIWAXS multipeakfitting and WAv2"
 #include "ccdplotting"
-#include "NI1_Loader"
+#include "EGN_Loader"
 #include "GIWAXSLatticeCalcs"
 //#include "GIWAXSbkgRemoval-v4"
 
@@ -26,10 +26,10 @@ Function /s loadfitsfilenika(filename,path,refnum,NewWaveName)
 	variable imagefpos=0
 	variable fpos=0
 	string extension
-	string/g root:packages:nika1101:name1,root:packages:nika1101:name2,root:packages:nika1101:sernum,root:packages:nika1101:imnum
-	svar name1 = root:packages:nika1101:name1 ,  name2 = root:packages:nika1101:name2, sernum= root:packages:nika1101:sernum, imnum= root:packages:nika1101:imnum
-	svar regexpg= root:packages:nika1101:loaderregexp
-	svar namecreationg = root:packages:nika1101:namecreation
+	string/g root:packages:EGNika101:name1,root:packages:EGNika101:name2,root:packages:EGNika101:sernum,root:packages:EGNika101:imnum
+	svar name1 = root:packages:EGNika101:name1 ,  name2 = root:packages:EGNika101:name2, sernum= root:packages:EGNika101:sernum, imnum= root:packages:EGNika101:imnum
+	svar regexpg= root:packages:EGNika101:loaderregexp
+	svar namecreationg = root:packages:EGNika101:namecreation
 	string regexp = regexpg
 	string namecreation = namecreationg
 	if(strlen(regexp)<1 || strlen(namecreation)<1)
@@ -37,7 +37,7 @@ Function /s loadfitsfilenika(filename,path,refnum,NewWaveName)
 	endif
 	variable failed=0
 	
-	nvar fuckedi0s = root:packages:nika1101:fuckedI0s
+	nvar fuckedi0s = root:packages:EGNika101:fuckedI0s
 	if(fuckedI0s)
 		// try to find last file
 		splitstring /e=regexp filename,name1,name2,sernum,imnum
@@ -265,7 +265,7 @@ Function /s loadfitsfilenika(filename,path,refnum,NewWaveName)
 	Use1DPolarizationCor=0
 	Use2DPolarizationCor=1
 	//Write header to a few locations so it is available
-	string /g root:packages:nika1101:headerinfo = header
+	string /g root:packages:EGNika101:headerinfo = header
 	string /g root:headerinfo = header
 //Read Data
 	Fstatus refnum
@@ -280,11 +280,11 @@ Function /s loadfitsfilenika(filename,path,refnum,NewWaveName)
 	switch (chkwaitfile(filename,imagesize,path)) 	//check if filename is the right size in loop sleep .1 second between reads
 		case -2:
 			print "file could not be opened at all"
-			String/G root:Packages:Nika1101:bkg:message="file could not be opened even to check the size"
+			String/G root:Packages:EGNika101:bkg:message="file could not be opened even to check the size"
 			return "file could not be opened even to check the size;"
 		case -1:
 			print "timed out waiting for file to be written"
-			String/G root:Packages:Nika1101:bkg:message="timed out waiting for file to be written"
+			String/G root:Packages:EGNika101:bkg:message="timed out waiting for file to be written"
 			return "timed out waiting for file to be written;"
 	endswitch
 	//Create Wave at NIKA's perfered location
@@ -320,8 +320,8 @@ Function /s loadfitsfilenika(filename,path,refnum,NewWaveName)
 	close refnum
 //Update the loader panel, incase the available header items have changed
 	updatefitsloaderpaneloptions()
-//Change directory to Nika1101 for the rest of manipulation
-	setdatafolder root:packages:nika1101
+//Change directory to EGNika101 for the rest of manipulation
+	setdatafolder root:packages:EGNika101
 //Correct DATA as needed
 	//Correct data from BZERO (an offset because Fits files are only Signed, where as the data is unsigned)
 	data+=bzero
@@ -382,7 +382,7 @@ Function /s loadfitsfilenika(filename,path,refnum,NewWaveName)
 	// find the zero offset if there is the option, and there exists a avg_mask ... created in the 11.0.1.2 loader panel
 	nvar UseSubtractFixedOffset =  root:Packages:Convert2Dto1D:UseSubtractFixedOffset
 	nvar SubtractFixedOffset =  root:Packages:Convert2Dto1D:SubtractFixedOffset
-	wave/z avg_mask = root:Packages:Nika1101:avg_mask
+	wave/z avg_mask = root:Packages:EGNika101:avg_mask
 	if(usesubtractfixedoffset&&waveexists(avg_mask))
 		imagestats /r=avg_mask data
 		data -= v_avg
@@ -469,7 +469,7 @@ function/d correctI0(i0in,en,pol,os)
 	variable i0in,en,pol,os
 	variable c_io=NAN
 	string foldersave=getdatafolder(1)
-	setdatafolder root:Packages:nika1101:
+	setdatafolder root:Packages:EGNika101:
 //	os = os<3.4?0:1
 	nvar i0offset
 	nvar pdoffset
@@ -534,12 +534,12 @@ function correctbeamcenter()
 	nvar beamy = root:Packages:Convert2Dto1D:BeamCenterY
 	nvar Horztilt = root:Packages:Convert2Dto1D:HorizontalTilt
 	nvar Verttilt = root:Packages:Convert2Dto1D:VerticalTilt
-	nvar CCDTH0 = root:Packages:Nika1101:CCDTHzero
-	nvar CCDY0 = root:Packages:Nika1101:CCDYzero
-	nvar CCDX0 = root:Packages:Nika1101:CCDXzero
-	nvar SAD0 = root:Packages:Nika1101:SADzero
-	nvar BX0 = root:Packages:Nika1101:BXzero
-	nvar BY0 = root:Packages:Nika1101:bYzero
+	nvar CCDTH0 = root:Packages:EGNika101:CCDTHzero
+	nvar CCDY0 = root:Packages:EGNika101:CCDYzero
+	nvar CCDX0 = root:Packages:EGNika101:CCDXzero
+	nvar SAD0 = root:Packages:EGNika101:SADzero
+	nvar BX0 = root:Packages:EGNika101:BXzero
+	nvar BY0 = root:Packages:EGNika101:bYzero
 	nvar SAD = root:Packages:Convert2Dto1D:SampleToCCDDistance
 	svar header = root:headerinfo
 	variable CCDx  = str2num(stringbykey("CCDX",header))
@@ -568,7 +568,7 @@ End
 
 Function setbeamzero()
 	svar filestr = root:Packages:Convert2Dto1D:FileNameToLoad
-	if(exists("root:Packages:Nika1101:CCDTHzero")&&exists("root:Packages:Nika1101:CCDXzero")&&stringmatch(filestr,"*.fits"))
+	if(exists("root:Packages:EGNika101:CCDTHzero")&&exists("root:Packages:EGNika101:CCDXzero")&&stringmatch(filestr,"*.fits"))
 		nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
 		nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
 		nvar beamx = root:Packages:Convert2Dto1D:BeamCenterX
@@ -576,12 +576,12 @@ Function setbeamzero()
 		nvar Horztilt = root:Packages:Convert2Dto1D:HorizontalTilt
 		nvar Verttilt = root:Packages:Convert2Dto1D:VerticalTilt
 		nvar SAD = root:Packages:Convert2Dto1D:SampleToCCDDistance
-		nvar CCDTH0 = root:Packages:Nika1101:CCDTHzero
-		nvar CCDY0 = root:Packages:Nika1101:CCDYzero
-		nvar CCDX0 = root:Packages:Nika1101:CCDXzero
-		nvar SAD0 = root:Packages:Nika1101:SADzero
-		nvar BX0 = root:Packages:Nika1101:BXzero
-		nvar BY0 = root:Packages:Nika1101:bYzero
+		nvar CCDTH0 = root:Packages:EGNika101:CCDTHzero
+		nvar CCDY0 = root:Packages:EGNika101:CCDYzero
+		nvar CCDX0 = root:Packages:EGNika101:CCDXzero
+		nvar SAD0 = root:Packages:EGNika101:SADzero
+		nvar BX0 = root:Packages:EGNika101:BXzero
+		nvar BY0 = root:Packages:EGNika101:bYzero
 		svar header = root:headerinfo
 		variable CCDx  = str2num(stringbykey("CCDX",header))
 		variable CCDY  = str2num(stringbykey("CCDY",header))
@@ -599,20 +599,20 @@ Function setbeamzero()
 //	CCDth0 = (1/pxsizey) *sad*sin(pi*ccdTheta/180)/cos((ccdtheta+verttilt)*pi/180) - beamy
 end
 
-function NI1_FitsLoaderPanelFnct() : Panel
+function EGN_FitsLoaderPanelFnct() : Panel
 	string currentfolder = getdatafolder(1)
-	DoWindow  NI1_FitsLoaderPanel
+	DoWindow  EGN_FitsLoaderPanel
 	if(V_Flag)
-		DoWindow/F NI1_FitsLoaderPanel
-		setdatafolder root:packages:nika1101
+		DoWindow/F EGN_FitsLoaderPanel
+		setdatafolder root:packages:EGNika101
 		string /g imagekeys=""
 	else
-		if(!datafolderexists("root:packages:nika1101"))
-			newdatafolder /s /o root:Packages:Nika1101
+		if(!datafolderexists("root:packages:EGNika101"))
+			newdatafolder /s /o root:Packages:EGNika101
 			string /g headerinfo
 			defaultfitsexps()
 		else
-			setdatafolder root:packages:nika1101
+			setdatafolder root:packages:EGNika101
 			string /g loaderregexp
 			string /g namecreation
 		endif
@@ -661,69 +661,69 @@ function NI1_FitsLoaderPanelFnct() : Panel
 		variable/g FuckedI0s // because beamline 11.0.1.2 recorded series data incorrectly Dec-2013
 
 		PauseUpdate; Silent 1		// building window...
-		NewPanel /K=1 /W=(1077,58,1561,333)/N=NI1_FitsLoaderPanel as "Fits Naming"
-		ModifyPanel/w=NI1_FitsLoaderPanel fixedSize=1
-		SetDrawLayer/w=NI1_FitsLoaderPanel UserBack
-		SetDrawEnv/w=NI1_FitsLoaderPanel fillfgc= (32768,65280,65280)
-		DrawRect/w=NI1_FitsLoaderPanel 197,81,477,123
-		SetDrawEnv/w=NI1_FitsLoaderPanel fillfgc= (32768,65280,32768)
-		DrawRect/w=NI1_FitsLoaderPanel 197,2,477,78
-		SetDrawEnv/w=NI1_FitsLoaderPanel fillfgc= (65280,65280,48896)
-		DrawRect/w=NI1_FitsLoaderPanel 3,126,478,201
-		SetDrawEnv/w=NI1_FitsLoaderPanel fillfgc= (51456,44032,58880)
-		DrawRect/w=NI1_FitsLoaderPanel 3,2,193,123
-		DrawText/w=NI1_FitsLoaderPanel 43,19,"Build Name from:"
-		CheckBox mot1_ch,pos={169,24},size={16,14},title="",win=NI1_FitsLoaderPanel
-		CheckBox mot1_ch,variable= root:Packages:Nika1101:usefitskey1,win=NI1_FitsLoaderPanel
-		CheckBox mot2_ch,pos={169,46},size={16,14},title="",win=NI1_FitsLoaderPanel
-		CheckBox mot2_ch,variable= root:Packages:Nika1101:usefitskey2,win=NI1_FitsLoaderPanel
-		CheckBox mot3_ch,pos={169,68},size={16,14},title="",win=NI1_FitsLoaderPanel
-		CheckBox mot3_ch,variable= root:Packages:Nika1101:usefitskey3,win=NI1_FitsLoaderPanel
-		CheckBox mot4_ch,pos={169,90},size={16,14},title="",win=NI1_FitsLoaderPanel
-		CheckBox mot4_ch,variable= root:Packages:Nika1101:usefitskey4,win=NI1_FitsLoaderPanel
-		CheckBox Ai3izero_ch,pos={204,207},size={105,14},title="Use Ai3Izero for I0",win=NI1_FitsLoaderPanel
-		CheckBox Ai3izero_ch,variable= root:Packages:Nika1101:Ai3izero,win=NI1_FitsLoaderPanel
-		PopupMenu motor1_pop,pos={15,19},size={145,21},bodyWidth=100,proc=PopMenuProc_1,title="Motor 1: ",win=NI1_FitsLoaderPanel
-		PopupMenu motor1_pop,mode=1,popvalue="none",value= #"root:packages:nika1101:imagekeys",win=NI1_FitsLoaderPanel
-		PopupMenu motor2_pop,pos={15,41},size={145,21},bodyWidth=100,proc=PopMenuProc_2,title="Motor 2: ",win=NI1_FitsLoaderPanel
-		PopupMenu motor2_pop,mode=1,popvalue="none",value= #"root:packages:nika1101:imagekeys",win=NI1_FitsLoaderPanel
-		PopupMenu motor3_pop,pos={15,63},size={145,21},bodyWidth=100,proc=PopMenuProc_3,title="Motor 3: ",win=NI1_FitsLoaderPanel
-		PopupMenu motor3_pop,mode=1,popvalue="none",value= #"root:packages:nika1101:imagekeys",win=NI1_FitsLoaderPanel
-		PopupMenu motor4_pop,pos={15,85},size={145,21},bodyWidth=100,proc=PopMenuProc_4,title="Motor 4: ",win=NI1_FitsLoaderPanel
-		PopupMenu motor4_pop,mode=1,popvalue="none",value= #"root:packages:nika1101:imagekeys",win=NI1_FitsLoaderPanel
-		CheckBox automot_ch1,pos={211,17},size={226,14},title="Adjust Beam center based on CCD Location",win=NI1_FitsLoaderPanel
-		CheckBox automot_ch1,variable= root:Packages:Nika1101:ADJBeam,win=NI1_FitsLoaderPanel
-		SetVariable CCDX_zero,pos={234,38},size={174,16},title="CCDX - calibrated zero",win=NI1_FitsLoaderPanel
-		SetVariable CCDX_zero,limits={-100,100,0.1},value= root:Packages:Nika1101:CCDXZero,win=NI1_FitsLoaderPanel
-		SetVariable CCDTheta_zero1,pos={219,58},size={190,16},title="CCDTheta calibrated zero",win=NI1_FitsLoaderPanel
-		SetVariable CCDTheta_zero1,limits={-100,100,0.1},value= root:Packages:Nika1101:CCDThZero,win=NI1_FitsLoaderPanel
-		CheckBox flattenimageck,pos={215,87},size={203,14},title="Flatten image with screened out pixels?",win=NI1_FitsLoaderPanel
-		CheckBox flattenimageck,variable= root:Packages:Nika1101:chkflatten,win=NI1_FitsLoaderPanel
-		SetVariable Calibrationlinebox,pos={203,105},size={161,16},title="Flatten Center Line",win=NI1_FitsLoaderPanel
-		SetVariable Calibrationlinebox,limits={0,2700,1},value= root:Packages:Nika1101:flatten_line,win=NI1_FitsLoaderPanel
-		SetVariable Calibrationlinebox1,pos={370,104},size={93,16},title="Width",win=NI1_FitsLoaderPanel
-		SetVariable Calibrationlinebox1,limits={0,2000,1},value= root:Packages:Nika1101:flatten_width
-		SetVariable setvar0,pos={9,132},size={466,16},title="Regular Expression for Naming (Advanced) :",win=NI1_FitsLoaderPanel
-		SetVariable setvar0,value= root:Packages:Nika1101:loaderregexp,win=NI1_FitsLoaderPanel
-		SetVariable setvar1,pos={9,149},size={466,16},title="Naming String Construction (Advanced) :",win=NI1_FitsLoaderPanel
-		SetVariable setvar1,value= root:Packages:Nika1101:namecreation,win=NI1_FitsLoaderPanel
-		Button button0,pos={300,169},size={141,21},proc=dfe_buttoncctl,title="Set to Naming Defaults",win=NI1_FitsLoaderPanel
-		CheckBox Exposurecorr_ch1,pos={15,206},size={166,14},title="Correct Data for Exposure Time",win=NI1_FitsLoaderPanel
-		CheckBox Exposurecorr_ch1,variable= root:Packages:Nika1101:Exposecorr,win=NI1_FitsLoaderPanel
-		CheckBox DIspHeader_ch,pos={36,108},size={134,14},title="Display Header On Load",win=NI1_FitsLoaderPanel
-		CheckBox DIspHeader_ch,variable= root:Packages:Nika1101:dispheader,win=NI1_FitsLoaderPanel
-		Button SetBeamzero,pos={415,34},size={58,41},proc=Setbeamzero_ButtonProc,title="Set Now",win=NI1_FitsLoaderPanel
-		Button LoadI0,pos={13,228},size={70,40},proc=ButtonProc_5,title="Load I0\rScan",win=NI1_FitsLoaderPanel
-		ListBox list0,pos={92,229},size={381,42},win=NI1_FitsLoaderPanel
-		ListBox list0,listWave=root:Packages:Nika1101:loadedizeros,row= 1,win=NI1_FitsLoaderPanel
-		CheckBox Sup_Extra_ch,pos={19,171},size={174,26},title="Suppress Extra Name Characters\r (eg C, glp etc)",win=NI1_FitsLoaderPanel
-		CheckBox Sup_Extra_ch,variable= root:Packages:Nika1101:SupExChar,win=NI1_FitsLoaderPanel
-		CheckBox Ai3izero_ch1,pos={342,205},size={86,14},title="Messed up I0s",win=NI1_FitsLoaderPanel
-		CheckBox Ai3izero_ch1,variable= root:Packages:Nika1101:FuckedI0s,win=NI1_FitsLoaderPanel
+		NewPanel /K=1 /W=(1077,58,1561,333)/N=EGN_FitsLoaderPanel as "Fits Naming"
+		ModifyPanel/w=EGN_FitsLoaderPanel fixedSize=1
+		SetDrawLayer/w=EGN_FitsLoaderPanel UserBack
+		SetDrawEnv/w=EGN_FitsLoaderPanel fillfgc= (32768,65280,65280)
+		DrawRect/w=EGN_FitsLoaderPanel 197,81,477,123
+		SetDrawEnv/w=EGN_FitsLoaderPanel fillfgc= (32768,65280,32768)
+		DrawRect/w=EGN_FitsLoaderPanel 197,2,477,78
+		SetDrawEnv/w=EGN_FitsLoaderPanel fillfgc= (65280,65280,48896)
+		DrawRect/w=EGN_FitsLoaderPanel 3,126,478,201
+		SetDrawEnv/w=EGN_FitsLoaderPanel fillfgc= (51456,44032,58880)
+		DrawRect/w=EGN_FitsLoaderPanel 3,2,193,123
+		DrawText/w=EGN_FitsLoaderPanel 43,19,"Build Name from:"
+		CheckBox mot1_ch,pos={169,24},size={16,14},title="",win=EGN_FitsLoaderPanel
+		CheckBox mot1_ch,variable= root:Packages:EGNika101:usefitskey1,win=EGN_FitsLoaderPanel
+		CheckBox mot2_ch,pos={169,46},size={16,14},title="",win=EGN_FitsLoaderPanel
+		CheckBox mot2_ch,variable= root:Packages:EGNika101:usefitskey2,win=EGN_FitsLoaderPanel
+		CheckBox mot3_ch,pos={169,68},size={16,14},title="",win=EGN_FitsLoaderPanel
+		CheckBox mot3_ch,variable= root:Packages:EGNika101:usefitskey3,win=EGN_FitsLoaderPanel
+		CheckBox mot4_ch,pos={169,90},size={16,14},title="",win=EGN_FitsLoaderPanel
+		CheckBox mot4_ch,variable= root:Packages:EGNika101:usefitskey4,win=EGN_FitsLoaderPanel
+		CheckBox Ai3izero_ch,pos={204,207},size={105,14},title="Use Ai3Izero for I0",win=EGN_FitsLoaderPanel
+		CheckBox Ai3izero_ch,variable= root:Packages:EGNika101:Ai3izero,win=EGN_FitsLoaderPanel
+		PopupMenu motor1_pop,pos={15,19},size={145,21},bodyWidth=100,proc=PopMenuProc_1,title="Motor 1: ",win=EGN_FitsLoaderPanel
+		PopupMenu motor1_pop,mode=1,popvalue="none",value= #"root:packages:EGNika101:imagekeys",win=EGN_FitsLoaderPanel
+		PopupMenu motor2_pop,pos={15,41},size={145,21},bodyWidth=100,proc=PopMenuProc_2,title="Motor 2: ",win=EGN_FitsLoaderPanel
+		PopupMenu motor2_pop,mode=1,popvalue="none",value= #"root:packages:EGNika101:imagekeys",win=EGN_FitsLoaderPanel
+		PopupMenu motor3_pop,pos={15,63},size={145,21},bodyWidth=100,proc=PopMenuProc_3,title="Motor 3: ",win=EGN_FitsLoaderPanel
+		PopupMenu motor3_pop,mode=1,popvalue="none",value= #"root:packages:EGNika101:imagekeys",win=EGN_FitsLoaderPanel
+		PopupMenu motor4_pop,pos={15,85},size={145,21},bodyWidth=100,proc=PopMenuProc_4,title="Motor 4: ",win=EGN_FitsLoaderPanel
+		PopupMenu motor4_pop,mode=1,popvalue="none",value= #"root:packages:EGNika101:imagekeys",win=EGN_FitsLoaderPanel
+		CheckBox automot_ch1,pos={211,17},size={226,14},title="Adjust Beam center based on CCD Location",win=EGN_FitsLoaderPanel
+		CheckBox automot_ch1,variable= root:Packages:EGNika101:ADJBeam,win=EGN_FitsLoaderPanel
+		SetVariable CCDX_zero,pos={234,38},size={174,16},title="CCDX - calibrated zero",win=EGN_FitsLoaderPanel
+		SetVariable CCDX_zero,limits={-100,100,0.1},value= root:Packages:EGNika101:CCDXZero,win=EGN_FitsLoaderPanel
+		SetVariable CCDTheta_zero1,pos={219,58},size={190,16},title="CCDTheta calibrated zero",win=EGN_FitsLoaderPanel
+		SetVariable CCDTheta_zero1,limits={-100,100,0.1},value= root:Packages:EGNika101:CCDThZero,win=EGN_FitsLoaderPanel
+		CheckBox flattenimageck,pos={215,87},size={203,14},title="Flatten image with screened out pixels?",win=EGN_FitsLoaderPanel
+		CheckBox flattenimageck,variable= root:Packages:EGNika101:chkflatten,win=EGN_FitsLoaderPanel
+		SetVariable Calibrationlinebox,pos={203,105},size={161,16},title="Flatten Center Line",win=EGN_FitsLoaderPanel
+		SetVariable Calibrationlinebox,limits={0,2700,1},value= root:Packages:EGNika101:flatten_line,win=EGN_FitsLoaderPanel
+		SetVariable Calibrationlinebox1,pos={370,104},size={93,16},title="Width",win=EGN_FitsLoaderPanel
+		SetVariable Calibrationlinebox1,limits={0,2000,1},value= root:Packages:EGNika101:flatten_width
+		SetVariable setvar0,pos={9,132},size={466,16},title="Regular Expression for Naming (Advanced) :",win=EGN_FitsLoaderPanel
+		SetVariable setvar0,value= root:Packages:EGNika101:loaderregexp,win=EGN_FitsLoaderPanel
+		SetVariable setvar1,pos={9,149},size={466,16},title="Naming String Construction (Advanced) :",win=EGN_FitsLoaderPanel
+		SetVariable setvar1,value= root:Packages:EGNika101:namecreation,win=EGN_FitsLoaderPanel
+		Button button0,pos={300,169},size={141,21},proc=dfe_buttoncctl,title="Set to Naming Defaults",win=EGN_FitsLoaderPanel
+		CheckBox Exposurecorr_ch1,pos={15,206},size={166,14},title="Correct Data for Exposure Time",win=EGN_FitsLoaderPanel
+		CheckBox Exposurecorr_ch1,variable= root:Packages:EGNika101:Exposecorr,win=EGN_FitsLoaderPanel
+		CheckBox DIspHeader_ch,pos={36,108},size={134,14},title="Display Header On Load",win=EGN_FitsLoaderPanel
+		CheckBox DIspHeader_ch,variable= root:Packages:EGNika101:dispheader,win=EGN_FitsLoaderPanel
+		Button SetBeamzero,pos={415,34},size={58,41},proc=Setbeamzero_ButtonProc,title="Set Now",win=EGN_FitsLoaderPanel
+		Button LoadI0,pos={13,228},size={70,40},proc=ButtonProc_5,title="Load I0\rScan",win=EGN_FitsLoaderPanel
+		ListBox list0,pos={92,229},size={381,42},win=EGN_FitsLoaderPanel
+		ListBox list0,listWave=root:Packages:EGNika101:loadedizeros,row= 1,win=EGN_FitsLoaderPanel
+		CheckBox Sup_Extra_ch,pos={19,171},size={174,26},title="Suppress Extra Name Characters\r (eg C, glp etc)",win=EGN_FitsLoaderPanel
+		CheckBox Sup_Extra_ch,variable= root:Packages:EGNika101:SupExChar,win=EGN_FitsLoaderPanel
+		CheckBox Ai3izero_ch1,pos={342,205},size={86,14},title="Messed up I0s",win=EGN_FitsLoaderPanel
+		CheckBox Ai3izero_ch1,variable= root:Packages:EGNika101:FuckedI0s,win=EGN_FitsLoaderPanel
 	endif
 
 		
-	setdatafolder root:packages:nika1101
+	setdatafolder root:packages:EGNika101
 	svar header = headerinfo
 	svar imagekeys
 	imagekeys = ""
@@ -753,30 +753,30 @@ function NI1_FitsLoaderPanelFnct() : Panel
 	string imagekeystring = imagekeys
 	if(strlen(stringbykey(fitskeyname1,header))>0)
 		fitskeypick1 =whichlistitem(fitskeyname1,imagekeys)+1
-		PopupMenu motor1_pop,mode=fitskeypick1,win=NI1_FitsLoaderPanel
+		PopupMenu motor1_pop,mode=fitskeypick1,win=EGN_FitsLoaderPanel
 	else
-		PopupMenu motor1_pop,mode=fitskeypick1,win=NI1_FitsLoaderPanel
+		PopupMenu motor1_pop,mode=fitskeypick1,win=EGN_FitsLoaderPanel
 		fitskeyname1 = stringfromlist(fitskeypick1-1,imagekeys)
 	endif
 	if(strlen(stringbykey(fitskeyname2,header))>0)
 		fitskeypick2 =whichlistitem(fitskeyname2,imagekeys)+1
-		PopupMenu motor2_pop,mode=fitskeypick2,win=NI1_FitsLoaderPanel
+		PopupMenu motor2_pop,mode=fitskeypick2,win=EGN_FitsLoaderPanel
 	else
-		PopupMenu motor2_pop,mode=fitskeypick2,win=NI1_FitsLoaderPanel
+		PopupMenu motor2_pop,mode=fitskeypick2,win=EGN_FitsLoaderPanel
 		fitskeyname2 = stringfromlist(fitskeypick2-1,imagekeys)
 	endif
 	if(strlen(stringbykey(fitskeyname3,header))>0)
 		fitskeypick3 =whichlistitem(fitskeyname3,imagekeys)+1
-		PopupMenu motor3_pop,mode=fitskeypick3,win=NI1_FitsLoaderPanel
+		PopupMenu motor3_pop,mode=fitskeypick3,win=EGN_FitsLoaderPanel
 	else
-		PopupMenu motor3_pop,mode=fitskeypick3,win=NI1_FitsLoaderPanel
+		PopupMenu motor3_pop,mode=fitskeypick3,win=EGN_FitsLoaderPanel
 		fitskeyname3 = stringfromlist(fitskeypick3-1,imagekeys)
 	endif
 	if(strlen(stringbykey(fitskeyname4,header))>0)
 		fitskeypick4 =whichlistitem(fitskeyname4,imagekeys)+1
-		PopupMenu motor4_pop,mode=fitskeypick4,win=NI1_FitsLoaderPanel
+		PopupMenu motor4_pop,mode=fitskeypick4,win=EGN_FitsLoaderPanel
 	else
-		PopupMenu motor4_pop,mode=fitskeypick4,win=NI1_FitsLoaderPanel
+		PopupMenu motor4_pop,mode=fitskeypick4,win=EGN_FitsLoaderPanel
 		fitskeyname4 = stringfromlist(fitskeypick1-1,imagekeys)
 	endif
 
@@ -790,11 +790,11 @@ End
 
 function updatefitsloaderpaneloptions()
 	string currentfolder = getdatafolder(1)
-	if(!datafolderexists("root:packages:nika1101"))
-		newdatafolder /s /o root:Packages:Nika1101
+	if(!datafolderexists("root:packages:EGNika101"))
+		newdatafolder /s /o root:Packages:EGNika101
 		string /g headerinfo
 	else
-		setdatafolder root:packages:nika1101
+		setdatafolder root:packages:EGNika101
 	endif
 	string /g imagekeys=""
 	nvar/z fitskeypick1
@@ -838,30 +838,30 @@ function updatefitsloaderpaneloptions()
 	endfor
 	if(strlen(stringbykey(fitskeyname1,header))>0)
 		fitskeypick1 =whichlistitem(fitskeyname1,imagekeys)+1
-		PopupMenu motor1_pop,mode=fitskeypick1, win=NI1_FitsLoaderPanel
+		PopupMenu motor1_pop,mode=fitskeypick1, win=EGN_FitsLoaderPanel
 	else
-		PopupMenu motor1_pop,mode=fitskeypick1,win=NI1_FitsLoaderPanel
+		PopupMenu motor1_pop,mode=fitskeypick1,win=EGN_FitsLoaderPanel
 		fitskeyname1 = stringfromlist(fitskeypick1-1,imagekeys)
 	endif
 	if(strlen(stringbykey(fitskeyname2,header))>0)
 		fitskeypick2 =whichlistitem(fitskeyname2,imagekeys)+1
-		PopupMenu motor2_pop,mode=fitskeypick2, win=NI1_FitsLoaderPanel
+		PopupMenu motor2_pop,mode=fitskeypick2, win=EGN_FitsLoaderPanel
 	else
-		PopupMenu motor2_pop,mode=fitskeypick2,win=NI1_FitsLoaderPanel
+		PopupMenu motor2_pop,mode=fitskeypick2,win=EGN_FitsLoaderPanel
 		fitskeyname2 = stringfromlist(fitskeypick2-1,imagekeys)
 	endif
 	if(strlen(stringbykey(fitskeyname3,header))>0)
 		fitskeypick3 =whichlistitem(fitskeyname3,imagekeys)+1
-		PopupMenu motor3_pop,mode=fitskeypick3, win=NI1_FitsLoaderPanel
+		PopupMenu motor3_pop,mode=fitskeypick3, win=EGN_FitsLoaderPanel
 	else
-		PopupMenu motor3_pop,mode=fitskeypick3,win=NI1_FitsLoaderPanel
+		PopupMenu motor3_pop,mode=fitskeypick3,win=EGN_FitsLoaderPanel
 		fitskeyname3 = stringfromlist(fitskeypick3-1,imagekeys)
 	endif
 	if(strlen(stringbykey(fitskeyname4,header))>0)
 		fitskeypick4 =whichlistitem(fitskeyname4,imagekeys)+1
-		PopupMenu motor4_pop,mode=fitskeypick4, win=NI1_FitsLoaderPanel
+		PopupMenu motor4_pop,mode=fitskeypick4, win=EGN_FitsLoaderPanel
 	else
-		PopupMenu motor4_pop,mode=fitskeypick4,win=NI1_FitsLoaderPanel
+		PopupMenu motor4_pop,mode=fitskeypick4,win=EGN_FitsLoaderPanel
 		fitskeyname4 = stringfromlist(fitskeypick1-1,imagekeys)
 	endif
 
@@ -886,7 +886,7 @@ End
 
 function defaultfitsexps()
 	string currentfolder = getdatafolder(1)
-	setdatafolder root:packages:nika1101
+	setdatafolder root:packages:EGNika101
 	string /g loaderregexp="^([^_]{1,6})[^_]*?_([^_]{1,6})?.*([1234567890]{4,6})-?(.{3,6}?).fits$"
 	string /g namecreation= "name1"
 	setdatafolder currentfolder
@@ -931,7 +931,7 @@ Function PopMenuProc_1(pa) : PopupMenuControl
  			Variable popNum = pa.popNum
 			String popStr = pa.popStr
 			string currentfolder = getdatafolder(1)
-			setdatafolder root:packages:nika1101
+			setdatafolder root:packages:EGNika101
 			variable /g fitskeypick1 = popnum
 			svar headerinfo
 			string /g fitsvalue1 = stringbykey(popstr,headerinfo)
@@ -950,7 +950,7 @@ Function PopMenuProc_2(pa) : PopupMenuControl
 			Variable popNum = pa.popNum
 			String popStr = pa.popStr
 			string currentfolder = getdatafolder(1)
-			setdatafolder root:packages:nika1101
+			setdatafolder root:packages:EGNika101
 			variable /g fitskeypick2 = popnum
 			svar headerinfo
 			string /g fitsvalue2 = stringbykey(popstr,headerinfo)
@@ -970,7 +970,7 @@ Function PopMenuProc_3(pa) : PopupMenuControl
 			Variable popNum = pa.popNum
 			String popStr = pa.popStr
 			string currentfolder = getdatafolder(1)
-			setdatafolder root:packages:nika1101
+			setdatafolder root:packages:EGNika101
 			variable /g fitskeypick3 = popnum
 			svar headerinfo
 			string /g fitsvalue3 = stringbykey(popstr,headerinfo)
@@ -989,7 +989,7 @@ Function PopMenuProc_4(pa) : PopupMenuControl
 			Variable popNum = pa.popNum
 			String popStr = pa.popStr
 			string currentfolder = getdatafolder(1)
-			setdatafolder root:packages:nika1101
+			setdatafolder root:packages:EGNika101
 			variable /g fitskeypick4 = popnum
 			svar headerinfo
 			string /g fitsvalue4 = stringbykey(popstr,headerinfo)
@@ -1076,7 +1076,7 @@ Function Loadi0(OS,i0wavename,pdname, [polarization,pdOff,izerooff, notNIKA, hLi
 	variable polarization //polarization of this scan (used if epu_polarization is not loaded)
 	Variable pdOff //Override value for the photodiode zero offset (usually read from file when "CCDshutterInihibit" is used)
 	Variable izerooff //I0 value offset (0 if unset)
-	Variable notNIKA //Binary, don't store in NIKA1101 folder (don't affect the official NIKA I0correction)
+	Variable notNIKA //Binary, don't store in EGNika101 folder (don't affect the official NIKA I0correction)
 	Variable hLine //line number of the headers in the wave: sigma scans are on line 12 and trajectory scans are line 9
 	izerooff = paramisdefault(izerooff) ? 0 : izerooff
 	polarization = paramisdefault(polarization) ? -1 : polarization
@@ -1085,8 +1085,8 @@ Function Loadi0(OS,i0wavename,pdname, [polarization,pdOff,izerooff, notNIKA, hLi
 	String CurrentFolder=GetDataFolder(1)
 	If( !notNIKA )
 		NewDataFolder/O root:Packages
-		NewDataFolder/O root:Packages:Nika1101
-		NewDataFolder/O/S root:Packages:Nika1101:RawI0scan
+		NewDataFolder/O root:Packages:EGNika101
+		NewDataFolder/O/S root:Packages:EGNika101:RawI0scan
 	else
 		NewDataFolder/O/S $(CurrentFolder+"Raw")
 	endif
@@ -1172,7 +1172,7 @@ Function Loadi0(OS,i0wavename,pdname, [polarization,pdOff,izerooff, notNIKA, hLi
 		if(waveexists(osp))
 			os = osp[start]
 		else
-			nvar ospanelvalue= root:Packages:Nika1101:i0oslocation
+			nvar ospanelvalue= root:Packages:EGNika101:i0oslocation
 			os=ospanelvalue
 		endif
 		sprintf noteStr, "POL:%f;OS:%f;", polarization, OS
@@ -1180,7 +1180,7 @@ Function Loadi0(OS,i0wavename,pdname, [polarization,pdOff,izerooff, notNIKA, hLi
 		notestr = addlistitem("CreationDate:"+createddate,notestr)
 		notestr = addlistitem("Path:"+pathloaded,notestr)
 		
-		//save each scan to Nika1101
+		//save each scan to EGNika101
 		
 		nIndex=FindExistingEscan(polarization, OS)
 		If( strLen(nIndex)<1 ) //create brand new I0 scan
@@ -1212,7 +1212,7 @@ Function Loadi0(OS,i0wavename,pdname, [polarization,pdOff,izerooff, notNIKA, hLi
 			Textbox/C/N=Lgnd/W=i0corrData
 			AppendText/N=Lgnd/W=i0corrData lgndTxt
 		endif
-		NewDataFolder/O/S root:Packages:Nika1101:I0data
+		NewDataFolder/O/S root:Packages:EGNika101:I0data
 		Duplicate/d/o I0corr $I0corrName
 		Duplicate/d/o eI0corr $Ename
 		Duplicate/d/o Photodiode $PDnamenew
@@ -1259,7 +1259,7 @@ Function/S ParseEscan(w)
 	return pVals
 End
 
-//Checks existing I0 scans in Nika1101 for scans that have the same polarization and order sorter info
+//Checks existing I0 scans in EGNika101 for scans that have the same polarization and order sorter info
 Function/S FindExistingEscan(pol,OS)
 	Variable OS, pol
 	string matchStr="", I0scans=wavelist("I0corr*",";","")
@@ -1378,8 +1378,8 @@ Function NikaBG()
 	endif
 	String dfSav= GetDataFolder(1)// so we can leave current DF as we found it
 	NewDataFolder/O/S root:Packages
-	NewDataFolder/O/S root:Packages:Nika1101
-	NewDataFolder/O/S root:Packages:Nika1101:bkg // our variables go here
+	NewDataFolder/O/S root:Packages:EGNika101
+	NewDataFolder/O/S root:Packages:EGNika101:bkg // our variables go here
 	string /g CommandStr=""
 	// still here if no panel, create globals if needed
 	if( NumVarOrDefault("inited",0) == 0 )
@@ -1397,47 +1397,47 @@ Function NikaBG()
 	DoWindow/C AutoLoadPanel // set panel name
 	Button StartButton,pos={21,12},size={50,20},proc=BGStartStopProc,title="Start"
 	SetVariable msg,pos={21,43},size={300,17},title=" ",frame=0
-	SetVariable msg,limits={-Inf,Inf,1},value= root:Packages:Nika1101:bkg:message
+	SetVariable msg,limits={-Inf,Inf,1},value= root:Packages:EGNika101:bkg:message
 	SetVariable CommandStringBox,pos={79,16},size={250,16},title="Command to Run: "
-	SetVariable CommandStringBox,value= root:Packages:Nika1101:bkg:CommandStr
+	SetVariable CommandStringBox,value= root:Packages:EGNika101:bkg:CommandStr
 	SetVariable msg noedit=1
 End
 
 Function NikaBGTask(s)
 	STRUCT WMBackgroundStruct &s
-	NVAR running= root:Packages:Nika1101:bkg:running
+	NVAR running= root:Packages:EGNika101:bkg:running
 	if( running == 0 )
 		return 0 // not running -- wait for user
 	endif
-	NVAR lastRunTicks= root:Packages:Nika1101:bkg:lastRunTicks
+	NVAR lastRunTicks= root:Packages:EGNika101:bkg:lastRunTicks
 	if( (lastRunTicks+20) >= ticks )
 		return 0 // not time yet, wait
 	endif
-	NVAR runNumber= root:Packages:Nika1101:bkg:runNumber
+	NVAR runNumber= root:Packages:EGNika101:bkg:runNumber
 	runNumber += 1
 	variable bgcheck= BGCheckdir()
 	if(bgcheck==2)
-		svar filename = root:Packages:Nika1101:bkg:filename 
+		svar filename = root:Packages:EGNika101:bkg:filename 
 		print "New fits file loaded: " + filename
-		String/G root:Packages:Nika1101:bkg:message="Converted "+filename+" - execution failed - waiting for new file"
+		String/G root:Packages:EGNika101:bkg:message="Converted "+filename+" - execution failed - waiting for new file"
 		doupdate
 	elseif(bgcheck==1)
-		svar filename = root:Packages:Nika1101:bkg:filename 
+		svar filename = root:Packages:EGNika101:bkg:filename 
 		print "New fits file loaded: " + filename
-		String/G root:Packages:Nika1101:bkg:message="Converted "+filename+" - execution successful -  waiting for new file"
+		String/G root:Packages:EGNika101:bkg:message="Converted "+filename+" - execution successful -  waiting for new file"
 		doupdate
 	elseif(bgcheck==3)
-		svar filename = root:Packages:Nika1101:bkg:filename 
+		svar filename = root:Packages:EGNika101:bkg:filename 
 		print "New fits file loaded: " + filename
-		String/G root:Packages:Nika1101:bkg:message="Converted "+filename+" - waiting for new file"
+		String/G root:Packages:EGNika101:bkg:message="Converted "+filename+" - waiting for new file"
 		doupdate
 	elseif(bgcheck<0)
-		String/G root:Packages:Nika1101:bkg:message="Failed to check directory"
+		String/G root:Packages:EGNika101:bkg:message="Failed to check directory"
 		print "NIKA Bkg autoloader: Failed directory check"
 		doupdate
 		return 0
 	else
-		String/G root:Packages:Nika1101:bkg:message="Waiting for a new file to convert"
+		String/G root:Packages:EGNika101:bkg:message="Waiting for a new file to convert"
 		doupdate
 	endif
 	lastRunTicks= ticks
@@ -1446,11 +1446,11 @@ End
 
 Function BGStartStopProc(ctrlName) : ButtonControl
 	String ctrlName
-	NVAR running= root:Packages:Nika1101:bkg:running
+	NVAR running= root:Packages:EGNika101:bkg:running
 	if( CmpStr(ctrlName,"StartButton") == 0 )
 		running= 1
 		Button $ctrlName,rename=StopButton,title="Stop"
-		String/G root:Packages:Nika1101:bkg:message="starting up"	
+		String/G root:Packages:EGNika101:bkg:message="starting up"	
 		svar Extension=root:Packages:Convert2Dto1D:DataFileExtension
 		svar pilatusfiletype = root:Packages:Convert2Dto1D:pilatusfiletype
 		string datafileextension = extension
@@ -1460,14 +1460,14 @@ Function BGStartStopProc(ctrlName) : ButtonControl
 		if(!stringmatch(".*",datafileextension))
 			datafileextension = "."+datafileextension	
 		endif
-		string/g root:Packages:Nika1101:bkg:oldfilenames = IndexedFile(Convert2Dto1DDataPath, -1, DatafileExtension)
+		string/g root:Packages:EGNika101:bkg:oldfilenames = IndexedFile(Convert2Dto1DDataPath, -1, DatafileExtension)
 		CtrlNamedBackground NikaBGTask, burst=0, proc=NikaBGTask, period=60,dialogsOK=0, start
 	endif
 	if( CmpStr(ctrlName,"StopButton") == 0 )
 		running= 0
 		Button $ctrlName,rename=StartButton,title="Start"
 		CtrlNamedBackground NikaBGTask, stop
-		String/G root:Packages:Nika1101:bkg:message="Task paused. Press Start to resume."
+		String/G root:Packages:EGNika101:bkg:message="Task paused. Press Start to resume."
 	endif
 End
 
@@ -1503,7 +1503,7 @@ end
 
 function BGCheckdir()
 	string dfsave = getdatafolder(1)
-	setdatafolder root:Packages:Nika1101:bkg
+	setdatafolder root:Packages:EGNika101:bkg
 	string /g oldfilenames
 	svar Extension=root:Packages:Convert2Dto1D:DataFileExtension
 	svar pilatusfiletype = root:Packages:Convert2Dto1D:pilatusfiletype
@@ -1527,7 +1527,7 @@ function BGCheckdir()
 			//filename is not in the old list of files  this filename is the one to open!
 			string/g filename = testfilename
 			newfilefound = 1
-			String/G root:Packages:Nika1101:bkg:message="Found New File - Waiting for file to be written"
+			String/G root:Packages:EGNika101:bkg:message="Found New File - Waiting for file to be written"
 			doupdate
 			if(waitfor2==1)
 				string hilo,otherfilename,otherhilo
@@ -1537,27 +1537,27 @@ function BGCheckdir()
 				elseif(!cmpstr("hi",hilo))
 					otherhilo = "lo"
 					otherfilename = replacestring(hilo,testfilename,otherhilo)
-					String/G root:Packages:Nika1101:bkg:message="Found "+testfilename+" - waiting for " + otherfilename
+					String/G root:Packages:EGNika101:bkg:message="Found "+testfilename+" - waiting for " + otherfilename
 					doupdate
 					do
 						sleep /s 1
 						GetFileFolderInfo /P=Convert2Dto1DDataPath /Q /Z otherfilename
 						written = v_flag? 0:1
 					while(written==0)
-					String/G root:Packages:Nika1101:bkg:message="Found both files! "
+					String/G root:Packages:EGNika101:bkg:message="Found both files! "
 					doupdate
 					sleep /s 1
 				elseif(!cmpstr("lo",hilo))
 					otherhilo = "hi"
 					otherfilename = replacestring(hilo,testfilename,otherhilo)
-					String/G root:Packages:Nika1101:bkg:message="Found "+testfilename+" - waiting for " + otherfilename
+					String/G root:Packages:EGNika101:bkg:message="Found "+testfilename+" - waiting for " + otherfilename
 					doupdate
 					do
 						sleep /s 1
 						GetFileFolderInfo /P=Convert2Dto1DDataPath /Q /Z otherfilename
 						written = v_flag? 0:1
 					while(written==0)
-					String/G root:Packages:Nika1101:bkg:message="Found both files! "
+					String/G root:Packages:EGNika101:bkg:message="Found both files! "
 					doupdate
 					sleep /s 1
 				endif
@@ -1567,15 +1567,15 @@ function BGCheckdir()
 //			switch (chkwaitfile(filename,imagesize)) 	//check if filename is the right size in loop sleep .1 second between writes
 //			case -2:
 //				print "file could not be opened at all"
-//				String/G root:Packages:Nika1101:bkg:message="file could not be opened even to check the size - skipping this file"
+//				String/G root:Packages:EGNika101:bkg:message="file could not be opened even to check the size - skipping this file"
 //				return 0
 //			case -1:
 //				print "timed out waiting for file to be written"
-//				String/G root:Packages:Nika1101:bkg:message="timed out waiting for file to be written - skipping this file"
+//				String/G root:Packages:EGNika101:bkg:message="timed out waiting for file to be written - skipping this file"
 //				return 0
 //			endswitch
-//			String/G root:Packages:Nika1101:bkg:message="Found New File - Asking Nika to Convert the new file"
-			NI1A_UpdateDataListBox()
+//			String/G root:Packages:EGNika101:bkg:message="Found New File - Asking Nika to Convert the new file"
+			EGNA_UpdateDataListBox()
 			doupdate
 			Wave/T  ListOf2DSampleData=root:Packages:Convert2Dto1D:ListOf2DSampleData
 			Wave ListOf2DSampleDataNumbers=root:Packages:Convert2Dto1D:ListOf2DSampleDataNumbers
@@ -1584,26 +1584,26 @@ function BGCheckdir()
 				ListOf2DSampleDataNumbers = 0
 				ListOf2DSampleDataNumbers[v_value] = 1
 				
-				NI1A_CheckParametersForConv()
+				EGNA_CheckParametersForConv()
 				//set selections for using RAW/Converted data...
 				NVAR LineProfileUseRAW=root:Packages:Convert2Dto1D:LineProfileUseRAW
 				NVAR LineProfileUseCorrData=root:Packages:Convert2Dto1D:LineProfileUseCorrData
 				NVAR SectorsUseRAWData=root:Packages:Convert2Dto1D:SectorsUseRAWData
 				NVAR SectorsUseCorrData=root:Packages:Convert2Dto1D:SectorsUseCorrData
-				svar commandstr=root:Packages:nika1101:bkg:CommandStr
+				svar commandstr=root:Packages:EGNika101:bkg:CommandStr
 				svar username=root:Packages:Convert2Dto1D:OutputDataName
-				svar sernum=root:Packages:nika1101:sernum
-				svar header=root:Packages:nika1101:headerinfo
-				svar imnum=root:Packages:nika1101:imnum
-				svar name1=root:Packages:nika1101:name1
-				svar name2=root:Packages:nika1101:name2
+				svar sernum=root:Packages:EGNika101:sernum
+				svar header=root:Packages:EGNika101:headerinfo
+				svar imnum=root:Packages:EGNika101:imnum
+				svar name1=root:Packages:EGNika101:name1
+				svar name2=root:Packages:EGNika101:name2
 				svar filename=root:Packages:Convert2Dto1D:FileNameToLoad
 				LineProfileUseRAW=0
 				LineProfileUseCorrData=1
 				SectorsUseRAWData=0
 				SectorsUseCorrData=1
 				//selection done
-				NI1A_LoadManyDataSetsForConv()	
+				EGNA_LoadManyDataSetsForConv()	
 				string commandstring = replacestring("*name*",commandstr,username)
 				if(!cmpstr(commandstr,"")||!cmpstr(username,"") )
 					commandstring=""
@@ -2292,7 +2292,7 @@ end
 function addQ2nmaxis(info)
 	struct WMAxisHookStruct &info
 	string foldersave = getdatafolder(1)
-	NewDataFolder /s/o root:packages:nika1101
+	NewDataFolder /s/o root:packages:EGNika101
 	newdatafolder /s/o TransformedAxes
 	getaxis /q bottom
 	variable mind = 10^(floor(log(2*pi/v_max) ) )
@@ -2364,7 +2364,7 @@ end
 function addQ2nmaxisplain()
 	string foldersave = getdatafolder(1)
 	NewDataFolder /s/o root:packages
-	NewDataFolder /s/o nika1101
+	NewDataFolder /s/o EGNika101
 	NewDataFolder /s/o TransformedAxes
 	getaxis /q bottom
 	variable mind = 10^(floor(log(2*pi/v_max) ) )
@@ -2450,7 +2450,7 @@ end
 
 function UpdateIzeroList()
 	string foldersave=getdatafolder(1)
-	setdatafolder root:Packages:nika1101:
+	setdatafolder root:Packages:EGNika101:
 	wave /t loadedizeros
 	setdatafolder i0data
 	string ioname,I0liststr = wavelist("I0corr*",";","")
@@ -2480,7 +2480,7 @@ function UpdateIzeroList()
 	return 0
 end
 
-Function Nika1101BG_button(ba) : ButtonControl
+Function EGNika101BG_button(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -2496,11 +2496,11 @@ End
 
 function LoadI0panel() : Panel
 	string foldersave = getdatafolder(1)
-	setdatafolder root:packages:nika1101
+	setdatafolder root:packages:EGNika101
 	DoWindow  LoadIzeroPanel
 	if(V_Flag)
-		DoWindow/F NI1_FitsLoaderPanel
-		setdatafolder root:packages:nika1101
+		DoWindow/F EGN_FitsLoaderPanel
+		setdatafolder root:packages:EGNika101
 	else
 		if(!exists("i0photodiode"))
 			string /g i0photodiode = "Photodiode"
@@ -2541,22 +2541,22 @@ function LoadI0panel() : Panel
 		NewPanel /K=1 /W=(820,69,1044,326) as "Load Izero panel"
 		ModifyPanel fixedSize=1
 		SetVariable OSval,pos={61,30},size={148,15},title="Order Sorter Value:   "
-		SetVariable OSval,value= root:Packages:Nika1101:i0oslocation
+		SetVariable OSval,value= root:Packages:EGNika101:i0oslocation
 		SetVariable hlineval,pos={7,6},size={201,15},title="Line containing Column names   "
-		SetVariable hlineval,value= root:Packages:Nika1101:i0hline
+		SetVariable hlineval,value= root:Packages:EGNika101:i0hline
 		SetVariable i0val,pos={78,79},size={111,15},title="I0 to load: "
-		SetVariable i0val,value= root:Packages:Nika1101:i0Izero
+		SetVariable i0val,value= root:Packages:EGNika101:i0Izero
 		SetVariable pdval,pos={10,101},size={195,15},title="Photodiode Scan to load"
-		SetVariable pdval,value= root:Packages:Nika1101:i0photodiode
+		SetVariable pdval,value= root:Packages:EGNika101:i0photodiode
 		Button LOADI0,pos={81,175},size={101,41},proc=Loadi0file_button,title="Load File"
 		SetVariable polval,pos={63,54},size={146,15},title="Polarization Value:   "
-		SetVariable polval,value= root:Packages:Nika1101:i0polarization
+		SetVariable polval,value= root:Packages:EGNika101:i0polarization
 		SetVariable pdval1,pos={10,101},size={195,15},title="Photodiode Scan to load"
-		SetVariable pdval1,value= root:Packages:Nika1101:i0photodiode
+		SetVariable pdval1,value= root:Packages:EGNika101:i0photodiode
 		SetVariable pdoffset,pos={56,128},size={146,15},title="Photodiode Offset:   "
-		SetVariable pdoffset,value= root:Packages:Nika1101:pdoffset
+		SetVariable pdoffset,value= root:Packages:EGNika101:pdoffset
 		SetVariable i0offsetinput,pos={58,146},size={146,15},title="I0 Offset:    "
-		SetVariable i0offsetinput,value= root:Packages:Nika1101:i0offset
+		SetVariable i0offsetinput,value= root:Packages:EGNika101:i0offset
 	endif
 	setdatafolder foldersave
 End
@@ -2567,7 +2567,7 @@ Function Loadi0file_button(ba) : ButtonControl
 	switch( ba.eventCode )
 		case 2: // mouse up
 			string foldersave = getdatafolder(1)
-			setdatafolder root:packages:nika1101
+			setdatafolder root:packages:EGNika101
 			svar i0photodiode,i0Izero
 			nvar i0hline,i0oslocation,i0polarization
 			nvar i0offset, pdoffset
@@ -2635,7 +2635,7 @@ function GI_ReHistImage()
 	//	variable diff6=cmpstr(oldSampleToCCDDistance,num2str(SampleToCCDDistance))!=0 || cmpstr(oldBeamCenterX,num2str(BeamCenterX))!=0 || cmpstr(oldBeamCenterY,num2str(BeamCenterY))!=0
 	//	variable diff7 = cmpstr(oldPixelSizeX,num2str(PixelSizeX))!=0 || cmpstr(oldPixelSizeY,num2str(PixelSizeY))!=0  || cmpstr(oldHorizontalTilt,num2str(HorizontalTilt))!=0  || cmpstr(oldVerticalTilt,num2str(VerticalTilt))!=0
 	//	if(diff6 || diff7)
-			NI1A_Create2DQWave(data) // need qz and qxy 2d waves which are created here
+			EGNA_Create2DQWave(data) // need qz and qxy 2d waves which are created here
 		//endif
 		
 	wave qxywave
@@ -3487,21 +3487,21 @@ Function ButtonChangetoSel(ba) : ButtonControl
 				variable row = v_value
 				SetDataFOlder root:Packages:Convert2Dto1D
 				NewPath/q/O/M="Select path to your data" Convert2Dto1DMaskPath,listwave[row][5]
-				NI1A_UpdateMainMaskListBox()	
+				EGNA_UpdateMainMaskListBox()	
 				NI1M_UpdateMaskListBox()
 				
 				SVAR CurrentMaskFileName=root:Packages:Convert2Dto1D:CurrentMaskFileName
 				nvar bcx = root:Packages:Convert2Dto1D:BeamCenterX
 				nvar bcy = root:Packages:Convert2Dto1D:BeamCenterY
 				nvar sdd = root:Packages:Convert2Dto1D:SampleToCCDDistance
-				nvar flatten_line = root:Packages:NIKA1101:flatten_line
-				nvar flatten_width = root:Packages:NIKA1101:flatten_width
+				nvar flatten_line = root:Packages:EGNika101:flatten_line
+				nvar flatten_width = root:Packages:EGNika101:flatten_width
 				name = listwave[row][0] 
 				bcx = str2num(listwave[row][1])
 				bcy = str2num(listwave[row][2])
 				sdd = str2num(listwave[row][3])
 				
-				NI1A_UniversalLoader("Convert2Dto1DMaskPath",listwave[row][4],"tiff","M_ROIMask")
+				EGNA_UniversalLoader("Convert2Dto1DMaskPath",listwave[row][4],"tiff","M_ROIMask")
 				CurrentMaskFileName = listwave[row][4]
 				wave M_ROIMask
 				Redimension/B/U M_ROIMask
@@ -3535,8 +3535,8 @@ Function ButtonAddSwitch(ba) : ButtonControl
 				nvar bcx = root:Packages:Convert2Dto1D:BeamCenterX
 				nvar bcy = root:Packages:Convert2Dto1D:BeamCenterY
 				nvar sdd = root:Packages:Convert2Dto1D:SampleToCCDDistance
-				nvar flatten_line = root:Packages:NIKA1101:flatten_line
-				nvar flatten_width = root:Packages:NIKA1101:flatten_width
+				nvar flatten_line = root:Packages:EGNika101:flatten_line
+				nvar flatten_width = root:Packages:EGNika101:flatten_width
 				variable index = dimsize(listwave,0)
 				redimension /n=(index+1,8) selwave,listwave
 				selwave = p==index ? 3 : 2

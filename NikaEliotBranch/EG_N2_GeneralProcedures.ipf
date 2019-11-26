@@ -8,32 +8,32 @@
 //* in the file LICENSE that is included with this distribution. 
 //*************************************************************************/
 
-//1.78 added Function/S IN2G_CreateUniqueFolderName(InFolderName)	//takes folder name and returns unique version if needed
-//       added IN2G_RemoveNaNsFrom7Waves
+//1.78 added Function/S EG_N2G_CreateUniqueFolderName(InFolderName)	//takes folder name and returns unique version if needed
+//       added EG_N2G_RemoveNaNsFrom7Waves
 //1.77 minor change in CheckScreenSize function
 //1.76 removed Exectue as prep for Igor 7
 //1.75 removed wave/d, Function/d and variable/d. Obsolete
-//1.74 added IN2G_EstimateFolderSize(FolderName)
-//1.73 added IN2G_CheckForSlitSmearedRange() which checks if the slit smearing Qmax > 3*Slit length
+//1.74 added EG_N2G_EstimateFolderSize(FolderName)
+//1.73 added EG_N2G_CheckForSlitSmearedRange() which checks if the slit smearing Qmax > 3*Slit length
 //1.72 updated log rebinning search for parameters using Optimize. Much better... 
 //1.71 added new log-rebinning routine using IgorExchange version of the code. Need to update other code topp use it. Modified to use standard error of mean. 
 //1.70 added ANL copyright
-//1.69 modified IN2G_roundToUncertainity to handle very small numbers. 
+//1.69 modified EG_N2G_roundToUncertainity to handle very small numbers. 
 //1.86 added for log rebining functions tool to find start value to match minimum step. 
 //1.67 added ZapNonLetterNumStart(strIN) which removes any non letter, non number start of the string for ASCII importer.
 //1.66 Spline smoothing changed to use FREE waves. Changed direction of panel content move buttnos. 
 //1.65 changed back to rtGlobals=2, need to check code much more to make it 3
 //1.64 added checkbox, checkbox procedure and scrolling hook function for panels, fixed another indexes running out
 //1.63 changed to rtGlobals=3
-//1.62 added IN2G_roundToUncertainity(val, uncert,N)	 to prepare presentation of results with uncertainities for graphs and notebooks
-//1.61 fixed IN2G_ReturnExistingWaveName to work wityh liberal names
-//1.60 added IN2G_ReturnExistingWaveNameGrep
-//1.59 added IN2G_ColorTopGrphRainbow()
+//1.62 added EG_N2G_roundToUncertainity(val, uncert,N)	 to prepare presentation of results with uncertainities for graphs and notebooks
+//1.61 fixed EG_N2G_ReturnExistingWaveName to work wityh liberal names
+//1.60 added EG_N2G_ReturnExistingWaveNameGrep
+//1.59 added EG_N2G_ColorTopGrphRainbow()
 //1.58 adds function to find different elements between two text waves
 //1.57 speed up some of the functions
 //1.56 added removeNaNs from 6 waves
 //1.55 removed CursorMovedHook function and converted when needed to WindowHookFunctions
-//1.54 optimization of some proceudres to gain speed. 12/10/2010, changed IN2G_FindFolderWithWaveTypes, 
+//1.54 optimization of some proceudres to gain speed. 12/10/2010, changed EG_N2G_FindFolderWithWaveTypes, 
 
 //This is file containing genrally useful functions, which are used by two major packages - Indra 2 and Irena,
 // and various other Igor projects I wrote. This file should bve fully backward compatible, please check that you have 
@@ -41,175 +41,175 @@
 // e-mail me: ilavsky@aps.anl.gov.
 
 //This is list of procedures with short description. 
-//Function/S IN2G_CreateUniqueFolderName(InFolderName)	//takes folder name and returns unique version if needed
+//Function/S EG_N2G_CreateUniqueFolderName(InFolderName)	//takes folder name and returns unique version if needed
 //	string InFolderName										//this will take root:Packages:SomethingHere and will make SomethingHere unique if necessary. 
-//Function IN2G_CheckForSlitSmearedRange(slitSmearedData,Qmax, SlitLength)
+//Function EG_N2G_CheckForSlitSmearedRange(slitSmearedData,Qmax, SlitLength)
 //   aborts execution with errro message if qmax < 3* slit length for slit smerared data
 //
-//Function IN2G_RebinLogData(Wx,Wy,NumberOfPoints,MinStep,[Wsdev,Wxwidth,W1, W2, W3, W4, W5])
+//Function EG_N2G_RebinLogData(Wx,Wy,NumberOfPoints,MinStep,[Wsdev,Wxwidth,W1, W2, W3, W4, W5])
 //  Rebins data (x,y.etc) on log scale oiptionally with enforcing minimum step size. 
 //
-//Function IN2G_ScrollHook(info)
+//Function EG_N2G_ScrollHook(info)
 //  Should make panels scrollable, will need to test. 
 //
-//IN2G_AppendAnyText
+//EG_N2G_AppendAnyText
 //	checks for definitions and existence of logbook and appends the text to the end of the logbook
 //	
-//IN2G_AppendNoteToAllWaves(key,value)
+//EG_N2G_AppendNoteToAllWaves(key,value)
 //	appends (or replaces) key:value (str) pair to all waves in the folder
 //	
-// IN2G_AppendNoteToListOfWaves(ListOfWaveNames, Key,notetext)	
+// EG_N2G_AppendNoteToListOfWaves(ListOfWaveNames, Key,notetext)	
 //	appends (or replaces) key:value (str) pair to waves listed in ListOfWaveNames and present in the folder
 //
-// IN2G_ReturnExistingWaveName(FolderNm,WaveMatchStr)
-// IN2G_ReturnExistingWaveNameGrep(FolderNm,RegEx)
+// EG_N2G_ReturnExistingWaveName(FolderNm,WaveMatchStr)
+// EG_N2G_ReturnExistingWaveNameGrep(FolderNm,RegEx)
 //	text function which returns either full string for wave name, if it exists in the folder probed or empty string if wave does not exist.
 //
-//IN2G_AppendorReplaceWaveNote(WaveNm,Key,Value)
+//EG_N2G_AppendorReplaceWaveNote(WaveNm,Key,Value)
 //	Appends or replaces in note for wave $Wavename the key:Value
 //
-//IN2G_AppendStringToWaveNote(WaveNm,Str)		
+//EG_N2G_AppendStringToWaveNote(WaveNm,Str)		
 //	this will append or replace new string with Keyword-list note to wave
 //	
-//IN2G_AutoAlignGraphAndPanel
+//EG_N2G_AutoAlignGraphAndPanel
 //	Aligns next to each other graph (left) and panel (right)
-//IN2G_AutoAlignPanelAndGraph()
+//EG_N2G_AutoAlignPanelAndGraph()
 //  Aligns next to each other panel (left) and graph(right)
 //	
-//IN2G_BasicGraphStyle
+//EG_N2G_BasicGraphStyle
 //	My basic graph style used in these macros. May be made later platform specific...
 //	
-//IN2G_CleanupFolderOfWaves
+//EG_N2G_CleanupFolderOfWaves
 //	Deletes waves with names starting on fit_ and W_, which are used by Igor fitting routines
 //	
-//IN2G_ConvertDataDirToList(str)
+//EG_N2G_ConvertDataDirToList(str)
 //	Converts string returned by FolderDirectory function into list of folders. Meant for directories of specXX types...
 //	
-//IN2G_CreateListOfItemsInFolder(datafolder, itemtype)
+//EG_N2G_CreateListOfItemsInFolder(datafolder, itemtype)
 //	Generates list of items in directory specified. 1-directories, 2-waves, 4 - variables, 8- strings
 //	
 //
-//IN2G_FindFolderWithWaveTypes(startDF, levels, WaveTypes, LongShortType)
+//EG_N2G_FindFolderWithWaveTypes(startDF, levels, WaveTypes, LongShortType)
 //	Returns list of folders with waves of given type. Long (1) type is full path, short (0) is  only folder names.
 
-//IN2G_NewFindFolderWithWaveTypes(startDF, levels, WaveTypes, LongShortType)
+//EG_N2G_NewFindFolderWithWaveTypes(startDF, levels, WaveTypes, LongShortType)
 //	Returns list of folders with waves of given type. Long (1) type is full path, short (0) is  only folder names. For one type, but should be faster then the old one... May behave differently.
 
 //	 
-//IN2G_FindFolderWithWvTpsList(startDF, levels, WaveTypes, LongShortType)
+//EG_N2G_FindFolderWithWvTpsList(startDF, levels, WaveTypes, LongShortType)
 //	Returns list of folders with waves of given type - but takes list of wave types, separated by ";" or ",". Long (1) type is full path, short (0) is  only folder names.
 
 //	 
-//IN2G_FixTheFileName
+//EG_N2G_FixTheFileName
 //	Fixes file names from known info in the folder. May need tweaking for this version of Indra.
 //
-//IN2G_GetMeListOfEPICSKeys
+//EG_N2G_GetMeListOfEPICSKeys
 //	Returns list of "useful" - UPD related - keywords used by spec...
 //	
-//IN2G_GetMeMostLikelyEPICSKey(str)
+//EG_N2G_GetMeMostLikelyEPICSKey(str)
 //	Returns list of EPICS keywords closest to str.
 //	
-//IN2G_KillAllGraphsAndTables
+//EG_N2G_KillAllGraphsAndTables
 //	Kills all of the graphs and tables.
 //	
-//IN2G_KillGraphsAndTables
+//EG_N2G_KillGraphsAndTables
 //	Kills top graph and, if exists, panel for UPD control.
 //	
-//IN2G_KillTopGraph
+//EG_N2G_KillTopGraph
 //	Name says it all...
 //	
-//IN2G_RemovePointWithCursorA
+//EG_N2G_RemovePointWithCursorA
 //	Sets point with cursor A to NaN, for R  wave creation also sets USAXS_PD point to NaN, to work with change of UPD parameters.
 //
-//IN2G_ReplaceColons(str)
+//EG_N2G_ReplaceColons(str)
 //	Returns string with : replaced by _. 
 //
-//IN2G_ReplaceOrChangeList(MyList,Key,NewValue)
+//EG_N2G_ReplaceOrChangeList(MyList,Key,NewValue)
 //	Returns MyList after replacing - or appending if needed - pair Key:NewValue
 //
-//IN2G_ResetGraph
+//EG_N2G_ResetGraph
 //	Basically ctrl-A for graph. Users convenience...
 //	
-//IN2G_ReversXAxis
+//EG_N2G_ReversXAxis
 //	Guess what...
 //	
-//IN2G_ScreenWidthHeight(width/height)
+//EG_N2G_ScreenWidthHeight(width/height)
 //	Returns number such, that - independent on platform and screen resolution - the size of graph can be set in %. Use after multiplying by proper % size (60 for 60%).
 //	
-//IN2G_WindowTitle(WindowsName)
+//EG_N2G_WindowTitle(WindowsName)
 //	Returns WindowTitle of the WindowName.
 //
-//IN2G_RemoveNaNsFrom3Waves(Wv1,wv2,wv3)
+//EG_N2G_RemoveNaNsFrom3Waves(Wv1,wv2,wv3)
 //	Removes NaNs from 3 waves, used to clean NaNs from waves before desmearing etc.
 //
-//IN2G_RemoveNaNsFrom2Waves(Wv1,wv2)
+//EG_N2G_RemoveNaNsFrom2Waves(Wv1,wv2)
 //	Removes NaNs from 2 waves, used to clean NaNs from waves before desmearing etc.
 //
-//IN2G_RemoveNaNsFrom5Waves(Wv1,wv2,wv3,wv4,wv5)
+//EG_N2G_RemoveNaNsFrom5Waves(Wv1,wv2,wv3,wv4,wv5)
 //	Removes NaNs from 5 waves, used to clean NaNs from waves before desmearing etc.
-// available also for 6, and 7 waves with similar names. IN2G_RemoveNaNsFrom7Waves
+// available also for 6, and 7 waves with similar names. EG_N2G_RemoveNaNsFrom7Waves
 //
-//IN2G_RemNaNsFromAWave(Wv1)	//removes NaNs from 1 wave
+//EG_N2G_RemNaNsFromAWave(Wv1)	//removes NaNs from 1 wave
 //assume same number of points in the waves
 //
-//IN2G_ReplaceNegValsByNaNWaves(Wv1,wv2,wv3)		
+//EG_N2G_ReplaceNegValsByNaNWaves(Wv1,wv2,wv3)		
 //	Replaces Negative values in 3 waves by NaNs , assume same number of points
 //
-//IN2G_GenerateLegendForGraph()
+//EG_N2G_GenerateLegendForGraph()
 //	generates legend for graph and kills the old one. It uses wave names and waves notes to generate the 
 //	proper label. Very useful...
 //
-//IN2G_ColorTopGrphRainbow()
+//EG_N2G_ColorTopGrphRainbow()
 //    Colors top graph with rainbow colors
 //
-//IN2G_CleanupFolderOfGenWaves(fldrname)		
+//EG_N2G_CleanupFolderOfGenWaves(fldrname)		
 //cleans waves from waves created by generic plot
 //
-//IN2G_CheckFldrNmSemicolon(FldrName,Include)	
+//EG_N2G_CheckFldrNmSemicolon(FldrName,Include)	
 //this function returns string - probably path
 //with ending semicolon included or not, depending on Include being 1 (include) and 0 (do not include)	
 //
-// IN2G_AutoscaleAxisFromZero(which,where)		
+// EG_N2G_AutoscaleAxisFromZero(which,where)		
 //this function autoscales axis from 0, which is "bottom", "left" etc., where is "up" or "down"
 //
-//IN2G_SetPointWithCsrAToNaN(ctrlname) : Buttoncontrol
+//EG_N2G_SetPointWithCsrAToNaN(ctrlname) : Buttoncontrol
 //this function sets point with Csr A to Nan
 //
-//Function IN2G_AppendListToAllWavesNotes(notetext)	
+//Function EG_N2G_AppendListToAllWavesNotes(notetext)	
 //this function appends or replaces List to wave note  
 //
-//Function IN2G_WriteSetOfData(which)		
+//Function EG_N2G_WriteSetOfData(which)		
 //this procedure saves selected data from current folder
 //
-//Function IN2G_PasteWnoteToWave(waveNm, textWv)
+//Function EG_N2G_PasteWnoteToWave(waveNm, textWv)
 //this function pastes the content of wave named waveNm into textwave textWv, redimensiones as needed
 //used to append the data to exported columns to the end
 //
-//Function IN2G_UniversalFolderScan(startDF, levels, FunctionName)
+//Function EG_N2G_UniversalFolderScan(startDF, levels, FunctionName)
 //runs Function called in stgring FunctionName in each subfolder of the startDF
-//e.g. IN2G_UniversalFolderScan("root:USAXS:", 5, "IN2G_CheckTheFolderName()")
+//e.g. EG_N2G_UniversalFolderScan("root:USAXS:", 5, "EG_N2G_CheckTheFolderName()")
 //
-//Function IN2G_CheckTheFolderName()
+//Function EG_N2G_CheckTheFolderName()
 // this function checks the current folder name and compares it with string in the folder
 //and then fixes the pointers in the wavenotes
 //
-//IN2G_TrimExportWaves(Q,I,E)	
+//EG_N2G_TrimExportWaves(Q,I,E)	
 //this function trims export I, Q, E waves as required
 //curently the two trims are - remove points with Q<0.0002 and with negative intensities
 //this function is not used for export of R wave
 //
-//IN2G_CreateListOfScans(df) 
+//EG_N2G_CreateListOfScans(df) 
 //this function together with the next behind it creates list of folders in any folder with SpecComments appended, used with 
 //converting the scans
 //
-//Function IN2G_KillWavesFromList(WvList)
+//Function EG_N2G_KillWavesFromList(WvList)
 //this function kills all waves from list, use ; as list separator, no check for this is done
 //
-//Function IN2G_KillPanel(ctrlName) : ButtonControl
+//Function EG_N2G_KillPanel(ctrlName) : ButtonControl
 //this procedure kills panel which it is called from, so I can continue in paused for user procedure
 //
-//Function IN2G_AppendSizeTopWave(GraphName,BotWave, LeftWave, AxisPosition, LabelPosX, LabelPosY)
-//Function IN2G_AppendGuinierTopWave(GraphName,BotWave, LeftWave,AxisPos,LabelX,LabelY)
+//Function EG_N2G_AppendSizeTopWave(GraphName,BotWave, LeftWave, AxisPosition, LabelPosX, LabelPosY)
+//Function EG_N2G_AppendGuinierTopWave(GraphName,BotWave, LeftWave,AxisPos,LabelX,LabelY)
 //this function appends to the log-log graph size indicator. Assume that BotWave is Q vector in A-1
 //appends LeftWave to top size axis. Use carefully, will screw up if bottom axis is scaled using axis dialog.
 
@@ -220,59 +220,59 @@
 //	MinPoint, MaxPoint - point numbers between which integrate (point numbers, not diameters)
 //	removeNegs - set ot 1 to set negative diameters to 0, 0 to include them as negative numbers
 //Volume Fraction Result is dimensionless
-//Function IN2G_VolumeFraction(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+//Function EG_N2G_VolumeFraction(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 //
 //Number density Result is in 1/A3
-//Function IN2G_NumberDensity(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+//Function EG_N2G_NumberDensity(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 //
 //Specific Surface Result is in A2/A3
-//Function IN2G_SpecificSurface(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+//Function EG_N2G_SpecificSurface(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 //
 //Volume weighted mean diameter
-//Function IN2G_VWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+//Function EG_N2G_VWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 //
 //Number weighted mean diameter
-//Function IN2G_NWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+//Function EG_N2G_NWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 //
 //Volume weighted Standard deviation
-//Function IN2G_VWStandardDeviation(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+//Function EG_N2G_VWStandardDeviation(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 //
 //Number weighted Standard deviation
-//Function IN2G_NWStandardDeviation(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+//Function EG_N2G_NWStandardDeviation(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 //
-//Function/T IN2G_DivideWithErrors(A1,S1,A2,S2)		divides A1 by A2 ...A1/A2
-//Function/T IN2G_MulitplyWithErrors(A1,S1,A2,S2)		A1*A2
-//Function/T IN2G_SubtractWithErrors(A1,S1,A2,S2)		A1-A2
-//Function/T IN2G_SumWithErrors(A1,S1,A2,S2)			A1+A2
+//Function/T EG_N2G_DivideWithErrors(A1,S1,A2,S2)		divides A1 by A2 ...A1/A2
+//Function/T EG_N2G_MulitplyWithErrors(A1,S1,A2,S2)		A1*A2
+//Function/T EG_N2G_SubtractWithErrors(A1,S1,A2,S2)		A1-A2
+//Function/T EG_N2G_SumWithErrors(A1,S1,A2,S2)			A1+A2
 //these functions do math with errors... Return string with first element result and second element error
-//Function IN2G_ErrorsForDivision(A1,S1,A2,S2)
-//Function IN2G_ErrorsForMultiplication(A1,S1,A2,S2)
-//Function IN2G_ErrorsForSubAndAdd(A1,S1,A2,S2)
+//Function EG_N2G_ErrorsForDivision(A1,S1,A2,S2)
+//Function EG_N2G_ErrorsForMultiplication(A1,S1,A2,S2)
+//Function EG_N2G_ErrorsForSubAndAdd(A1,S1,A2,S2)
 //these functions return the errors for numerical procedures
 //
-//Function IN2G_CreateItem(TheSwitch,NewName)
+//Function EG_N2G_CreateItem(TheSwitch,NewName)
 //this function creates strings or variables with the name passed
 // TheSwitch =string or variable, NewName is the name for variable or string
 //
-//Function IN2G_IntegrateXY(xWave, yWave)
+//Function EG_N2G_IntegrateXY(xWave, yWave)
 //copy of the integration XY proc from Wavemetrics, replaces yWave with it's increasing integral
 //Function CursorMovedHook(info)   <<<<< removed in version 1.55 May 8, 2011 to avoid conflicts 
 //this function makes various graphs in both Indra and Irena "live"
 //
-//IN2G_ChangePartsOfString(str,oldpart,newpart)
+//EG_N2G_ChangePartsOfString(str,oldpart,newpart)
 // this is small function which replaces part of the string (delimiter) with another one (new delimiter) 
 //addopted from John Tishler
-//IN2G_RemoveExtraQuote(str,starting,Ending)
+//EG_N2G_RemoveExtraQuote(str,starting,Ending)
 //this is used to remove extra ' from parts of liberal names so they can be modified and used...
 //
-//Function IN2G_CheckScreenSize(which,MinVal),     which = height, width, MinVal is in pixles
+//Function EG_N2G_CheckScreenSize(which,MinVal),     which = height, width, MinVal is in pixles
 //this checks for screen size and if the screen is smaller, aborts and returns error message
 //  
 //
 //Function IR1G_UpdateSetVarStep(MyControlName,NewStepFraction)
 // changes control step to fraction of the current value
 //	
-//Function IN2G_FolderSelectPanel(SVARString, TitleString,StartingFolder,FolderOrFile,AllowNew,AllowDelete,AllowRename,AllowLiberal)		
+//Function EG_N2G_FolderSelectPanel(SVARString, TitleString,StartingFolder,FolderOrFile,AllowNew,AllowDelete,AllowRename,AllowLiberal)		
 	// 	This is universal widget for programmers to call when user needs to select folder and possibly string/wave/variable name 
 	//	User is allowed to manipulate folders and see their content, with functionality close to standard OS widgets
 	//
@@ -289,7 +289,7 @@
 	//	AllowDelete		set to 1 to allow user to delete folder
 	//	AllowRename	set to 1 to allow user to rename existing folder
 
-//Function IN2G_InputPeriodicTable(ButonFunctionName, NewWindowName, NewWindowTitleStr, PositionLeft,PositionTop)
+//Function EG_N2G_InputPeriodicTable(ButonFunctionName, NewWindowName, NewWindowTitleStr, PositionLeft,PositionTop)
 //	string ButonFunctionName, NewWindowName, NewWindowTitleStr
 //	variable PositionLeft,PositionTop
 //	creates periodic table with buttons with element names. 
@@ -300,7 +300,7 @@
 //
 //
 //
-//Function IN2G_SplineSmooth(n1,n2,xWv,yWv,dyWv,S,AWv,CWv)
+//Function EG_N2G_SplineSmooth(n1,n2,xWv,yWv,dyWv,S,AWv,CWv)
 //	variable n1,n2,S
 //	Wave/Z xWv,yWv,dyWv,AWv,CWv
 // 	CWv is optional parameter, if not needed use $"" as input and the function will not complain
@@ -316,21 +316,21 @@
 //
 //
 //
-//Function/T IN2G_FixWindowsPathAsNeed(PathString,DoubleSingleQuotes, EndingQuotes)
+//Function/T EG_N2G_FixWindowsPathAsNeed(PathString,DoubleSingleQuotes, EndingQuotes)
 //	string PathString			path from Igor Info on windows: c:program files:Wavemetrics:Igor Pro Folder
 //	variable DoubleSingleQuotes, EndingQuotes	//DoubleSingleQuotes = 1 for single, 2 for double, EndingQuotes=1 for ending separator and 0 for none...
 //
-// IN2G_roundToUncertainity(val, uncert,N)
+// EG_N2G_roundToUncertainity(val, uncert,N)
 // returns val rounded to uncertainity with N number of singificant digits. 
 // returns string with "val +/- Uncert" 
 //
-// IN2G_roundSignificant(val,N)
+// EG_N2G_roundSignificant(val,N)
 // returns val rounded to number of singificant digits
 //
-// IN2G_roundDecimalPlaces(val,N)
+// EG_N2G_roundDecimalPlaces(val,N)
 //returns val rounded to N decimal places (if needed)
 //
-//Function IN2G_GenerateSASErrors(IntWave,ErrWave,Pts_avg,Pts_avg_multiplier, IntMultiplier,MultiplySqrt,Smooth_Points)
+//Function EG_N2G_GenerateSASErrors(IntWave,ErrWave,Pts_avg,Pts_avg_multiplier, IntMultiplier,MultiplySqrt,Smooth_Points)
 //	wave IntWave,ErrWave
 //	variable Pts_avg,Pts_avg_multiplier, IntMultiplier,MultiplySqrt,Smooth_Points
 	//this function will generate some kind of SAXS errors using many different methods... 
@@ -339,10 +339,10 @@
 	// min number of points is 3
 	//smooth final error wave, note minimum number of points to use is 2
 //
-//Function IN2G_printvec(w)
+//Function EG_N2G_printvec(w)
 //	prints wave into history area with more sensible format...
 //
-// IN2G_FindNewTextElements(w1,w2,reswave)   finds different elements between the two text waves, returns reswave with the elements which are NOT 
+// EG_N2G_FindNewTextElements(w1,w2,reswave)   finds different elements between the two text waves, returns reswave with the elements which are NOT 
 //    common to the two waves w1 and w2. Takes TEXT waves, reswave is redimensioned 
 
 //*****************************************************************************************************************
@@ -353,7 +353,7 @@
 //*************************************************************************************************************************************
 // Calculates the experiment size and returns it in bytes
 // Last Modified 2012/07/09 by Jamie Boyd
-Function IN2G_EstimateFolderSize (dataFolder)
+Function EG_N2G_EstimateFolderSize (dataFolder)
 	string dataFolder
 	
 	variable expSize
@@ -375,14 +375,14 @@ Function IN2G_EstimateFolderSize (dataFolder)
 	// subfolders
 	nObjs = CountObjects(dataFolder, 4)
 	for (iObj =0; iObj < nObjs; iObj += 1)
-		expSize += IN2G_EstimateFolderSize ( dataFolder + possiblyquoteName(GetIndexedObjName (dataFolder, 4, iObj)) + ":")
+		expSize += EG_N2G_EstimateFolderSize ( dataFolder + possiblyquoteName(GetIndexedObjName (dataFolder, 4, iObj)) + ":")
 	endfor
 	return expSize
 end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 //*****************************************************************************************************************
-Function IN2G_CheckForSlitSmearedRange(slitSmearedData,Qmax, SlitLength,[userMessage])
+Function EG_N2G_CheckForSlitSmearedRange(slitSmearedData,Qmax, SlitLength,[userMessage])
 	variable slitSmearedData,Qmax, SlitLength
 	string userMessage
 	
@@ -412,7 +412,7 @@ end
 //**********************************************************************************************************
 //**********************************************************************************************************
 //**********************************************************************************************************
-Function IN2G_RebinLogData(Wx,Wy,NumberOfPoints,MinStep,[Wsdev,Wxsdev, Wxwidth,W1, W2, W3, W4, W5])
+Function EG_N2G_RebinLogData(Wx,Wy,NumberOfPoints,MinStep,[Wsdev,Wxsdev, Wxwidth,W1, W2, W3, W4, W5])
 		Wave Wx, Wy
 		Variable NumberOfPoints, MinStep
 		Wave Wsdev,Wxsdev
@@ -439,7 +439,7 @@ Function IN2G_RebinLogData(Wx,Wy,NumberOfPoints,MinStep,[Wsdev,Wxsdev, Wxwidth,W
 		endif
 		CorrectStart = Wx[0]
 		if(MinStep>0)
-			StartX = IN2G_FindCorrectLogScaleStart(Wx[0],Wx[numpnts(Wx)-1],NumberOfPoints,MinStep)
+			StartX = EG_N2G_FindCorrectLogScaleStart(Wx[0],Wx[numpnts(Wx)-1],NumberOfPoints,MinStep)
 		else
 			StartX = CorrectStart
 		endif
@@ -598,7 +598,7 @@ end
 //**********************************************************************************************************
 //**********************************************************************************************************
 //**********************************************************************************************************
-Function IN2G_FindCorrectLogScaleStart(StartValue,EndValue,NumPoints,MinStep)
+Function EG_N2G_FindCorrectLogScaleStart(StartValue,EndValue,NumPoints,MinStep)
 	variable StartValue,EndValue,NumPoints,MinStep
 	Make/Free/N=3 w
 	w={EndValue-StartValue, NumPoints,MinStep}
@@ -610,14 +610,14 @@ Function IN2G_FindCorrectLogScaleStart(StartValue,EndValue,NumPoints,MinStep)
 //	print LastMinStep
 	return V_minloc
 end
-Function myFindStartValueFunc(w,x1)
+Function EGN_myFindStartValueFunc(w,x1)
 	Wave w		//this is {totalRange, NumSteps,MinStep}
 	Variable x1	//this is startValue where we need to start with log stepping...
 	variable LastMinStep = 10^(log(X1) + (log(X1+w[0])-log(X1))/w[1]) - 10^(log(X1))
 	return abs(LastMinStep-w[2])
 End
 
-//Function IN2G_FindCorrectLogScaleStart(StartValue,EndValue,NumPoints,MinStep)
+//Function EG_N2G_FindCorrectLogScaleStart(StartValue,EndValue,NumPoints,MinStep)
 //	variable StartValue,EndValue,NumPoints,MinStep
 //	//find Start/end values for log scale so the step betwen first and second point is MinStep
 //	variable TotalValueDiff=abs(EndValue-StartValue)
@@ -661,7 +661,7 @@ End
 //**********************************************************************************************************
 //**********************************************************************************************************
 //**********************************************************************************************************
-//Function IN2G_FindCorrectStart(StartValue,EndValue,NumPoints,MinStep)
+//Function EG_N2G_FindCorrectStart(StartValue,EndValue,NumPoints,MinStep)
 //	variable StartValue,EndValue,NumPoints,MinStep
 //	
 //	variable AngleDiff=abs(EndValue-StartValue)
@@ -696,19 +696,19 @@ End
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 //FUNCTIONS AND PROCEDURES FOR USE IN ALL INDRA 2 MACROS	
-Function ING2_AddScrollControl()
+Function EGN_ING2_AddScrollControl()
 	//string WindowName
 	getWindow kwTopWin, wsizeDC
-	//CheckBox ScrollWidown title="\\W614",proc=IN2G_ScrollWindowCheckProc, pos={V_right-75,2}
-	Button ScrollButtonUp title="\\W617",pos={(V_right-V_left)-17,2},size={15,15}, proc=IN2G_ScrollButtonProc
-	Button ScrollButtonDown title="\\W623",pos={(V_right-V_left)-17,17},size={15,15}, proc=IN2G_ScrollButtonProc
+	//CheckBox ScrollWidown title="\\W614",proc=EG_N2G_ScrollWindowCheckProc, pos={V_right-75,2}
+	Button ScrollButtonUp title="\\W617",pos={(V_right-V_left)-17,2},size={15,15}, proc=EG_N2G_ScrollButtonProc
+	Button ScrollButtonDown title="\\W623",pos={(V_right-V_left)-17,17},size={15,15}, proc=EG_N2G_ScrollButtonProc
 end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
 //*****************************************************************************************************************
 //*****************************************************************************************************************
-static Function IN2G_MoveControlsPerRequest(WIndowName, HowMuch)
+static Function EG_N2G_MoveControlsPerRequest(WIndowName, HowMuch)
 	variable HowMuch
 	string WIndowName			
 	String controls = ControlNameList(WIndowName)
@@ -737,7 +737,7 @@ end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function IN2G_FindNewTextElements(w1,w2,reswave)
+Function EG_N2G_FindNewTextElements(w1,w2,reswave)
 	Wave/t w1,w2,reswave
 	//comment, up to 1e4 points seems reasonably fast (0.2sec), then gets really slow, 1e5 is 14 seconds. 
 	make/n=(numpnts(w1) + numpnts(w2))/free/t total
@@ -763,14 +763,14 @@ End
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 //*****************************************************************************************************************
-Function/T IN2G_ReturnExistingWaveName(FolderNm,WaveMatchStr)
+Function/T EG_N2G_ReturnExistingWaveName(FolderNm,WaveMatchStr)
 	string FolderNm,WaveMatchStr
 	if(!DataFolderExists(FolderNm))
 		return ""
 	endif
 	string OldDf=GetDataFolder(1)
 	setDataFolder FolderNm
-	string ListOfWvs=IN2G_ConvertDataDirToList(DataFolderDir(2))
+	string ListOfWvs=EG_N2G_ConvertDataDirToList(DataFolderDir(2))
 	setDataFolder OldDf
 	string WaveNmFound=""
 	variable i
@@ -785,14 +785,14 @@ end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 //*****************************************************************************************************************
-Function/T IN2G_ReturnExistingWaveNameGrep(FolderNm,WaveMatchStr)
+Function/T EG_N2G_ReturnExistingWaveNameGrep(FolderNm,WaveMatchStr)
 	string FolderNm,WaveMatchStr
 	if(!DataFolderExists(FolderNm))
 		return ""
 	endif
 	string OldDf=GetDataFolder(1)
 	setDataFolder FolderNm
-	string ListOfWvs=IN2G_ConvertDataDirToList(DataFolderDir(2))
+	string ListOfWvs=EG_N2G_ConvertDataDirToList(DataFolderDir(2))
 	setDataFolder OldDf
 	string WaveNmFound=""
 	variable i
@@ -807,7 +807,7 @@ end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 //*****************************************************************************************************************
-Function IN2G_CreateAndSetArbFolder(folderPathStr)
+Function EG_N2G_CreateAndSetArbFolder(folderPathStr)
 	string folderPathStr
 	//takes folder path string, if it starts with root: cretaes all folders as necessary, if not then creates folder from current location.
 	
@@ -817,14 +817,14 @@ Function IN2G_CreateAndSetArbFolder(folderPathStr)
 		istart=1
 	endif
 	For(i=istart;i<ItemsInList(folderPathStr,":");i+=1)
-		NewDataFolder/O/S $(IN2G_RemoveExtraQuote(StringFromList(i,folderPathStr,":"),1,1))
+		NewDataFolder/O/S $(EG_N2G_RemoveExtraQuote(StringFromList(i,folderPathStr,":"),1,1))
 	endfor
 	
 end	
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function IN2G_printvec(w)		// print a vector to screen
+Function EG_N2G_printvec(w)		// print a vector to screen
 	Wave w
 	String name=NameOfWave(w)
 	Wave/T tw=$GetWavesDataFolder(w,2)
@@ -861,7 +861,7 @@ End
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function IN2G_GenerateSASErrors(IntWave,ErrWave,Pts_avg,Pts_avg_multiplier, IntMultiplier,MultiplySqrt,Smooth_Points)
+Function EG_N2G_GenerateSASErrors(IntWave,ErrWave,Pts_avg,Pts_avg_multiplier, IntMultiplier,MultiplySqrt,Smooth_Points)
 	wave IntWave,ErrWave
 	variable Pts_avg,Pts_avg_multiplier, IntMultiplier,MultiplySqrt,Smooth_Points
 	//this function will generate some kind of SAXS errors using many differnt methods... 
@@ -894,10 +894,10 @@ end
 
 //*****************************************************************************************************************
 //*****************************************************************************************************************
-Function/S IN2G_roundToUncertainity(val, uncert,N)		//returns properlly formated "Val +/- Uncert" string
+Function/S EG_N2G_roundToUncertainity(val, uncert,N)		//returns properlly formated "Val +/- Uncert" string
 	variable val, uncert,N
 	
-	uncert = IN2G_roundSignificant(uncert,N)  		//this rounds uncert to N sig. digits
+	uncert = EG_N2G_roundSignificant(uncert,N)  		//this rounds uncert to N sig. digits
 	variable decPlaces, allPlaces
 	string tempStr, tmpExpStr
 	variable tempVar, tmpExpNum
@@ -907,11 +907,11 @@ Function/S IN2G_roundToUncertainity(val, uncert,N)		//returns properlly formated
 			tmpExpStr = tempStr[strsearch(tempStr, "e-", 0),inf]
 			tmpExpNum = str2num("1"+tmpExpStr)
 			decPlaces = strlen(tempStr[0,strsearch(tempStr, "e-", 0)-1])-1
-			val = IN2G_roundDecimalPlaces(val/tmpExpNum,decPlaces)
+			val = EG_N2G_roundDecimalPlaces(val/tmpExpNum,decPlaces)
 			val*=tmpExpNum	
 		else
 			decPlaces = strlen(tempStr)-2
-			val = IN2G_roundDecimalPlaces(val,decPlaces)		
+			val = EG_N2G_roundDecimalPlaces(val,decPlaces)		
 		endif
 	elseif(uncert>=1)
 		if((ceil(uncert)-uncert)==0)		//the rounded uncertinity is integer
@@ -922,7 +922,7 @@ Function/S IN2G_roundToUncertainity(val, uncert,N)		//returns properlly formated
 			sprintf tempStr, "%g", uncert		//all of the numbers
 			tempVar = floor(log(floor(uncert)))+2 	//numbers before decimal point
 			tempVar = strlen(tempStr) - tempVar
-			val = IN2G_roundDecimalPlaces(val,tempVar)
+			val = EG_N2G_roundDecimalPlaces(val,tempVar)
 			decPlaces=tempVar
 		endif
 	endif
@@ -938,7 +938,7 @@ end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function IN2G_roundSignificant(val,N)        // round val to N significant figures
+Function EG_N2G_roundSignificant(val,N)        // round val to N significant figures
         Variable val                    // input value to round
         Variable N                      // number of significant figures
 
@@ -955,7 +955,7 @@ End
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function IN2G_roundDecimalPlaces(val,N)        // round val to N decimal places, if needed
+Function EG_N2G_roundDecimalPlaces(val,N)        // round val to N decimal places, if needed
         Variable val                    // input value to round
         Variable N                      // number of significant figures
 
@@ -974,7 +974,7 @@ End
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function/T IN2G_FixWindowsPathAsNeed(PathString,DoubleSingleQuotes, EndingQuotes)
+Function/T EG_N2G_FixWindowsPathAsNeed(PathString,DoubleSingleQuotes, EndingQuotes)
 	string PathString
 	variable DoubleSingleQuotes, EndingQuotes	//1 for single, 2 for double
 	
@@ -998,9 +998,9 @@ end
 
 //*****************************************************************************************************************
 //*****************************************************************************************************************
-Function/S IN2G_ExtractFldrNmFromPntr(FullPointerToWaveVarStr)
+Function/S EG_N2G_ExtractFldrNmFromPntr(FullPointerToWaveVarStr)
 	string FullPointerToWaveVarStr
-	//returns only the folder part of full pointer to wave/string/variable returned by IN2G_FolderSelectPanel
+	//returns only the folder part of full pointer to wave/string/variable returned by EG_N2G_FolderSelectPanel
 	variable numItems=ItemsInList(FullPointerToWaveVarStr,":")
 	
 	string tempStr=RemoveFromList(StringFromList(numItems-1,FullPointerToWaveVarStr,":"), FullPointerToWaveVarStr , ":")
@@ -1015,7 +1015,7 @@ end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function IN2G_FolderSelectPanel(SVARString, TitleString,StartingFolder,FolderOrFile,AllowNew,AllowDelete,AllowRename,AllowLiberal,ExecuteMyFunction)		
+Function EG_N2G_FolderSelectPanel(SVARString, TitleString,StartingFolder,FolderOrFile,AllowNew,AllowDelete,AllowRename,AllowLiberal,ExecuteMyFunction)		
 	string SVARString, TitleString, StartingFolder, ExecuteMyFunction	
 	variable FolderOrFile, AllowNew,AllowDelete,AllowRename	,AllowLiberal		
 	//		Jan Ilavsky, 12/13/2003 version 1
@@ -1036,14 +1036,14 @@ Function IN2G_FolderSelectPanel(SVARString, TitleString,StartingFolder,FolderOrF
 	//	AllowRename	set to 1 to allow user to rename existing folder
 	//	ExecuteMyFunction	string with function to call when user is done. Set to "" if no function (just kill this panel) should be called.
 	//
-	// 	a panel with this name:      IN2G_FolderSelectPanelPanel     , is used. Only one can exist at a time... Existing will be killed...
+	// 	a panel with this name:      EG_N2G_FolderSelectPanelPanel     , is used. Only one can exist at a time... Existing will be killed...
 	// 	to use properly, call this function:
-	//				IN2G_FolderSelectPanel("root:Packages:HereIsTheResult", "This is panel title for user to know what I want","root:xxxx",1,1,1,1)
+	//				EG_N2G_FolderSelectPanel("root:Packages:HereIsTheResult", "This is panel title for user to know what I want","root:xxxx",1,1,1,1)
 	//		to get folder path and name,   or
-	//				IN2G_FolderSelectPanel("root:Packages:HereIsTheResult", "This is panel title for user to know what I want","root:xxxx",0,1,1,1)
+	//				EG_N2G_FolderSelectPanel("root:Packages:HereIsTheResult", "This is panel title for user to know what I want","root:xxxx",0,1,1,1)
 	//		to get path to folder only
 	//	 and then do
-	//		           PauseForUser  IN2G_SelectFolderPanelPanel
+	//		           PauseForUser  EG_N2G_SelectFolderPanelPanel
 	//					note !!!!  this disables the double clicking selection, you need to use buttons...
 	//	when done find result in the 
 	//				SVAR StringWithResult=$(SVARString)    {in this example :SVAR StringWithResult=$("root:Packages:HereIsTheResult")}
@@ -1055,20 +1055,20 @@ Function IN2G_FolderSelectPanel(SVARString, TitleString,StartingFolder,FolderOrF
 	//	Note, that if user hits Cancel, the panel is killed AND the string variable is left set to "", so to check for user cancel check the strlen()...
 	//
 	// Example of use:
-	// 	IN2G_FolderSelectPanel("root:Packages:ControlString","Select this particular path","root:",1,1,1,1,"YourContinueFunction()")
+	// 	EG_N2G_FolderSelectPanel("root:Packages:ControlString","Select this particular path","root:",1,1,1,1,"YourContinueFunction()")
 
 	
 	string OldDf=GetDataFolder(1)
-	IN2G_FolderSelectInitialize(OldDf,SVARString,StartingFolder,FolderOrFile,AllowLiberal,ExecuteMyFunction)
-	IN2G_FolderSelectRefreshList()
-	IN2G_FolderSelectRefFldrCont()
-	IN2G_FolderSelectPanelW(TitleString,FolderOrFile,AllowNew,AllowDelete,AllowRename)
+	EG_N2G_FolderSelectInitialize(OldDf,SVARString,StartingFolder,FolderOrFile,AllowLiberal,ExecuteMyFunction)
+	EG_N2G_FolderSelectRefreshList()
+	EG_N2G_FolderSelectRefFldrCont()
+	EG_N2G_FolderSelectPanelW(TitleString,FolderOrFile,AllowNew,AllowDelete,AllowRename)
 	setDataFolder OldDf
 end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-static Function IN2G_FolderSelectInitialize(OldDf,SVARStringL,StartingFolder,FolderOrFileL,AllowLiberalL,ExecuteMyFunctionL)
+static Function EG_N2G_FolderSelectInitialize(OldDf,SVARStringL,StartingFolder,FolderOrFileL,AllowLiberalL,ExecuteMyFunctionL)
 	string OldDf,SVARStringL,StartingFolder,ExecuteMyFunctionL
 	variable FolderOrFileL,AllowLiberalL
 
@@ -1107,7 +1107,7 @@ end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-static Function IN2G_FolderSelectRefreshList()
+static Function EG_N2G_FolderSelectRefreshList()
 
 	string OldDf=GetDataFolder(1)
 	SVAR CurrentFolder=root:Packages:FolderSelectPanel:CurrentFolder
@@ -1134,9 +1134,9 @@ static Function IN2G_FolderSelectRefreshList()
 		FOr(i=0;i<imax;i+=1)
 		ListOfSubfolders[i+StartIndex] =StringFromList(i,CurrentList,",")
 	endfor
-	DoWIndow IN2G_FolderSelectPanelPanel
+	DoWIndow EG_N2G_FolderSelectPanelPanel
 	if(V_Flag)
-		ListBox ListOfSubfolders,selRow=-1, row=0, win=IN2G_FolderSelectPanelPanel
+		ListBox ListOfSubfolders,selRow=-1, row=0, win=EG_N2G_FolderSelectPanelPanel
 		DoUpdate
 	endif
 	setDataFolder OldDf
@@ -1145,7 +1145,7 @@ end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-static Function IN2G_FolderSelectRefFldrCont()
+static Function EG_N2G_FolderSelectRefFldrCont()
 
 	string OldDf=GetDataFolder(1)
 	SVAR CurrentFolder=root:Packages:FolderSelectPanel:CurrentFolder
@@ -1192,20 +1192,20 @@ end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function IN2G_FolderSelectCheckProc(ctrlName,checked) : CheckBoxControl
+Function EG_N2G_FolderSelectCheckProc(ctrlName,checked) : CheckBoxControl
 	String ctrlName
 	Variable checked
 	
 	if(cmpstr(ctrlName,"DisplayWaves"))
 	
 	endif
-	IN2G_FolderSelectRefFldrCont()
+	EG_N2G_FolderSelectRefFldrCont()
 End
 
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function IN2G_ColorTopGrphRainbow()
+Function EG_N2G_ColorTopGrphRainbow()
 
 	String topGraph=WinName(0,1)
 	Variable traceIndex, numTraces
@@ -1256,7 +1256,7 @@ end
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function IN2G_FolderSelectListBoxProc(ctrlName,row,col,event)
+Function EG_N2G_FolderSelectListBoxProc(ctrlName,row,col,event)
 	String ctrlName
 	Variable row
 	Variable col
@@ -1284,10 +1284,10 @@ Function IN2G_FolderSelectListBoxProc(ctrlName,row,col,event)
 				CurrentFolder=CurrentFolder+possiblyQUoteName(ListOfSubfolders[V_value])
 				LastFolder=CurrentFolder
 			endif
-			SetVariable DisplayValue,disable=1,win=IN2G_FolderSelectPanelPanel
-			Button EditStrOrVar, disable=1,win=IN2G_FolderSelectPanelPanel
-			IN2G_FolderSelectRefreshList()
-			IN2G_FolderSelectRefFldrCont()
+			SetVariable DisplayValue,disable=1,win=EG_N2G_FolderSelectPanelPanel
+			Button EditStrOrVar, disable=1,win=EG_N2G_FolderSelectPanelPanel
+			EG_N2G_FolderSelectRefreshList()
+			EG_N2G_FolderSelectRefFldrCont()
 		endif
 	endif
 	if(cmpstr(ctrlName,"ListOfFolderContent")==0 && FolderOrFile>0)
@@ -1300,14 +1300,14 @@ Function IN2G_FolderSelectListBoxProc(ctrlName,row,col,event)
 			endif
 			variable objType=exists(tempName)
 			if (objType==2)
-				SetVariable DisplayValue,disable=0,noedit=1,frame=0,value=$(CurrentFolder+tempName), win=IN2G_FolderSelectPanelPanel
-				Button EditStrOrVar, disable=0,win=IN2G_FolderSelectPanelPanel
+				SetVariable DisplayValue,disable=0,noedit=1,frame=0,value=$(CurrentFolder+tempName), win=EG_N2G_FolderSelectPanelPanel
+				Button EditStrOrVar, disable=0,win=EG_N2G_FolderSelectPanelPanel
 			else
-				SetVariable DisplayValue,disable=1,win=IN2G_FolderSelectPanelPanel
-				Button EditStrOrVar, disable=1,win=IN2G_FolderSelectPanelPanel
+				SetVariable DisplayValue,disable=1,win=EG_N2G_FolderSelectPanelPanel
+				Button EditStrOrVar, disable=1,win=EG_N2G_FolderSelectPanelPanel
 			endif
 			if(objType==1)
-				Button EditStrOrVar, disable=0,win=IN2G_FolderSelectPanelPanel
+				Button EditStrOrVar, disable=0,win=EG_N2G_FolderSelectPanelPanel
 			endif
 		
 		endif
@@ -1333,12 +1333,12 @@ Function IN2G_FolderSelectListBoxProc(ctrlName,row,col,event)
 				endif
 				if (!isOK)
 						if (FolderOrFile>1)
-							Button Done, title="NotUnique",disable=2,fColor=(0,0,0),win=IN2G_FolderSelectPanelPanel
+							Button Done, title="NotUnique",disable=2,fColor=(0,0,0),win=EG_N2G_FolderSelectPanelPanel
 						else
-							Button Done, title="Done/NotUnique",disable=0,fColor=(65280,48896,48896),win=IN2G_FolderSelectPanelPanel
+							Button Done, title="Done/NotUnique",disable=0,fColor=(65280,48896,48896),win=EG_N2G_FolderSelectPanelPanel
 						endif
 				else
-						Button Done, title="Done",disable=0,fColor=(0,0,0),win=IN2G_FolderSelectPanelPanel
+						Button Done, title="Done",disable=0,fColor=(0,0,0),win=EG_N2G_FolderSelectPanelPanel
 				endif  			
 			endif
 		endif
@@ -1349,7 +1349,7 @@ End
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function IN2G_FolderSelectButtonProc(ctrlName) : ButtonControl
+Function EG_N2G_FolderSelectButtonProc(ctrlName) : ButtonControl
 	String ctrlName
 
 		string OldDf=GetDataFolder(1)
@@ -1371,7 +1371,7 @@ Function IN2G_FolderSelectButtonProc(ctrlName) : ButtonControl
 			endif
 			variable objType=exists(tempName)
 			if (objType==2)			//string or variable
-				SetVariable DisplayValue,noedit=0, frame=1, win=IN2G_FolderSelectPanelPanel
+				SetVariable DisplayValue,noedit=0, frame=1, win=EG_N2G_FolderSelectPanelPanel
 			elseif(objType==1)		//wave
 				edit/K=1 $(tempName)
 			endif
@@ -1387,9 +1387,9 @@ Function IN2G_FolderSelectButtonProc(ctrlName) : ButtonControl
 		NewDataFolder/O/S $(CurrentFolder+NewName)
 		CurrentFolder=GetDataFolder(1)
 		LastFolder=CurrentFolder
-		IN2G_FolderSelectRefreshList()
-		IN2G_FolderSelectRefFldrCont()
-		IN2G_FolderSelectSetVarProc("NewName",1,"","")		//this fixes the button "done" into appropriate state
+		EG_N2G_FolderSelectRefreshList()
+		EG_N2G_FolderSelectRefFldrCont()
+		EG_N2G_FolderSelectSetVarProc("NewName",1,"","")		//this fixes the button "done" into appropriate state
 	endif
 	if(cmpstr(ctrlName,"DeleteFolder")==0)
 		DoAlert 1, "Deleting folder is unrecoverable, are you sure that you want to do this? You can loose data..."
@@ -1402,9 +1402,9 @@ Function IN2G_FolderSelectButtonProc(ctrlName) : ButtonControl
 			if (DataFOlderExists (CurrentFolder+KillNameFldr))
 				KillDataFOlder $(CurrentFolder+KillNameFldr)
 			endif
-			IN2G_FolderSelectRefreshList()
-			IN2G_FolderSelectRefFldrCont()
-			IN2G_FolderSelectSetVarProc("NewName",1,"","")		//this fixes the button "done" into appropriate state
+			EG_N2G_FolderSelectRefreshList()
+			EG_N2G_FolderSelectRefFldrCont()
+			EG_N2G_FolderSelectSetVarProc("NewName",1,"","")		//this fixes the button "done" into appropriate state
 		endif
 	endif
 	if(cmpstr(ctrlName,"OpenFolder")==0)
@@ -1421,9 +1421,9 @@ Function IN2G_FolderSelectButtonProc(ctrlName) : ButtonControl
 				CurrentFolder=CurrentFolder+possiblyQUoteName(ListOfSubfolders[V_value])
 				LastFolder=CurrentFolder
 		endif
-			IN2G_FolderSelectRefreshList()
-			IN2G_FolderSelectRefFldrCont()
-			IN2G_FolderSelectSetVarProc("NewName",1,"","")		//this fixes the button "done" into appropriate state
+			EG_N2G_FolderSelectRefreshList()
+			EG_N2G_FolderSelectRefFldrCont()
+			EG_N2G_FolderSelectSetVarProc("NewName",1,"","")		//this fixes the button "done" into appropriate state
 	endif
 	if(cmpstr(ctrlName,"RenameFolder")==0)
 			ControlInfo ListOfSubfolders
@@ -1436,9 +1436,9 @@ Function IN2G_FolderSelectButtonProc(ctrlName) : ButtonControl
 	//		NewName=possiblyQuoteName(NewName[0,29])
 			NewName=(NewName[0,29])
 			RenameDataFolder $(CurrentFolder+KillNameFldr), $(NewName)
-			IN2G_FolderSelectRefreshList()
-			IN2G_FolderSelectRefFldrCont()
-			IN2G_FolderSelectSetVarProc("NewName",1,"","")		//this fixes the button "done" into appropriate state
+			EG_N2G_FolderSelectRefreshList()
+			EG_N2G_FolderSelectRefFldrCont()
+			EG_N2G_FolderSelectSetVarProc("NewName",1,"","")		//this fixes the button "done" into appropriate state
 	endif
 
 	if(cmpstr(ctrlName,"Done")==0)
@@ -1453,7 +1453,7 @@ Function IN2G_FolderSelectButtonProc(ctrlName) : ButtonControl
 			WHereToPutRes=CurrentFolder	
 		endif
 		LastFolder=CurrentFolder
-		DoWIndow/K IN2G_FolderSelectPanelPanel
+		DoWIndow/K EG_N2G_FolderSelectPanelPanel
 		if (strlen(ExecuteMyFunction)>0)
 			Execute(ExecuteMyFunction)
 		endif
@@ -1465,7 +1465,7 @@ Function IN2G_FolderSelectButtonProc(ctrlName) : ButtonControl
 		SVAR NewNameStr=root:Packages:FolderSelectPanel:NewName
 		LastFolder=CurrentFolder
 		WHereToPutRes=""	
-		DoWIndow/K IN2G_FolderSelectPanelPanel
+		DoWIndow/K EG_N2G_FolderSelectPanelPanel
 	endif
 
 
@@ -1474,7 +1474,7 @@ End
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function IN2G_FolderSelectSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
+Function EG_N2G_FolderSelectSetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 	String ctrlName
 	Variable varNum
 	String varStr
@@ -1506,12 +1506,12 @@ Function IN2G_FolderSelectSetVarProc(ctrlName,varNum,varStr,varName) : SetVariab
 				endif
 		if (!isOK)
 				if (FolderOrFile>1)
-					Button Done, title="NotUnique",disable=2,fColor=(0,0,0),win=IN2G_FolderSelectPanelPanel
+					Button Done, title="NotUnique",disable=2,fColor=(0,0,0),win=EG_N2G_FolderSelectPanelPanel
 				else
-					Button Done, title="Done/NotUnique",disable=0,fColor=(65280,48896,48896),win=IN2G_FolderSelectPanelPanel
+					Button Done, title="Done/NotUnique",disable=0,fColor=(65280,48896,48896),win=EG_N2G_FolderSelectPanelPanel
 				endif
 		else
-				Button Done, title="Done",fColor=(0,0,0),disable=0,win=IN2G_FolderSelectPanelPanel
+				Button Done, title="Done",fColor=(0,0,0),disable=0,win=EG_N2G_FolderSelectPanelPanel
 		endif  
 		setDataFolder oldDf
 	endif
@@ -1519,69 +1519,69 @@ End
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-static Function IN2G_FolderSelectPanelW(TitleString,FolderOrFile,AllowNew,AllowDelete,AllowRename)
+static Function EG_N2G_FolderSelectPanelW(TitleString,FolderOrFile,AllowNew,AllowDelete,AllowRename)
 	string TitleString
 	variable FolderOrFile,AllowNew,AllowDelete,AllowRename
-	DoWIndow IN2G_FolderSelectPanelPanel
+	DoWIndow EG_N2G_FolderSelectPanelPanel
 	if(V_Flag)
-		DoWIndow/K IN2G_FolderSelectPanelPanel
+		DoWIndow/K EG_N2G_FolderSelectPanelPanel
 	endif
 	//PauseUpdate; Silent 1		// building window...
 	NewPanel /K=1/W=(100,60,630,340) as TitleString
-	DoWindow/C IN2G_FolderSelectPanelPanel
+	DoWindow/C EG_N2G_FolderSelectPanelPanel
 	TitleBox Title title="   "+TitleString+"   ",disable=2,frame=0,pos={1,3}
 	TitleBox Title font="Arial Black",fSize=11,fColor=(0,0,0), labelBack=(56576,56576,56576)
 	SetVariable CurrentFolder,pos={3,25},size={500,19},disable=2, title="Current Folder: "
 	SetVariable CurrentFolder,labelBack=(56576,56576,56576),fSize=12,frame=0,help={"Name of currently selected folder"}
 	SetVariable CurrentFolder,limits={0,0,0},value= root:Packages:FolderSelectPanel:CurrentFolder
 	if (FolderOrFile)
-		SetVariable NewName,pos={3,45},size={500,19},title="Current  Name: ", proc=IN2G_FolderSelectSetVarProc
+		SetVariable NewName,pos={3,45},size={500,19},title="Current  Name: ", proc=EG_N2G_FolderSelectSetVarProc
 		SetVariable NewName,help={"Name of new wave/variable/string"}, frame=1,labelBack=(56576,56576,56576)
 		SetVariable NewName,value= root:Packages:FolderSelectPanel:NewName,fSize=12
 	endif
-	ListBox ListOfSubfolders,pos={3,70},size={250,130},proc=IN2G_FolderSelectListBoxProc
+	ListBox ListOfSubfolders,pos={3,70},size={250,130},proc=EG_N2G_FolderSelectListBoxProc
 	ListBox ListOfSubfolders,listWave=root:Packages:FolderSelectPanel:ListOfSubfolders
 	ListBox ListOfSubfolders,mode= 1,editStyle= 1,help={"Double clisk on folder to go to, select folder and click on Delete/Rename/Open folder buttons"}
 
-	CheckBox DisplayWaves title="Show waves?",proc=IN2G_FolderSelectCheckProc, pos={260,70}
+	CheckBox DisplayWaves title="Show waves?",proc=EG_N2G_FolderSelectCheckProc, pos={260,70}
 	CheckBox DisplayWaves variable=root:Packages:FolderSelectPanel:DisplayWaves
 	CheckBox DisplayWaves help={"Check here to display waves in the currently selected folder below"}	
-	CheckBox DisplayStrings title="Strings?",proc=IN2G_FolderSelectCheckProc, pos={365,70}
+	CheckBox DisplayStrings title="Strings?",proc=EG_N2G_FolderSelectCheckProc, pos={365,70}
 	CheckBox DisplayStrings variable=root:Packages:FolderSelectPanel:DisplayStrings
 	CheckBox DisplayStrings help={"Check here to display string in the currently selected folder below"}	
-	CheckBox DisplayVariables title="Variables?",proc=IN2G_FolderSelectCheckProc, pos={440,70}
+	CheckBox DisplayVariables title="Variables?",proc=EG_N2G_FolderSelectCheckProc, pos={440,70}
 	CheckBox DisplayVariables variable=root:Packages:FolderSelectPanel:DisplayVariables
 	CheckBox DisplayVariables help={"Check here to display variables in the currently selected folder below"}	
 	
-	ListBox ListOfFolderContent,pos={255,90},size={265,110},proc=IN2G_FolderSelectListBoxProc
+	ListBox ListOfFolderContent,pos={255,90},size={265,110},proc=EG_N2G_FolderSelectListBoxProc
 	ListBox ListOfFolderContent,listWave=root:Packages:FolderSelectPanel:ListWithFolderContent
 	ListBox ListOfFolderContent,mode= 1, frame=1, editStyle= 1,help={"Content of folder selected above, to move around use buttons, double click may not work... "}
 
 	if(AllowNew)
-		Button CreateNewFolder,pos={10,225},size={100,20},proc=IN2G_FolderSelectButtonProc,title="New fldr"
+		Button CreateNewFolder,pos={10,225},size={100,20},proc=EG_N2G_FolderSelectButtonProc,title="New fldr"
 		Button CreateNewFolder,help={"Click to create new folder in the current folder displayed in the blue field"},fSize=10
 	endif
 	if(AllowDelete)
-		Button DeleteFolder,pos={10,250},size={100,20},proc=IN2G_FolderSelectButtonProc,title="Delete fldr"
+		Button DeleteFolder,pos={10,250},size={100,20},proc=EG_N2G_FolderSelectButtonProc,title="Delete fldr"
 		Button DeleteFolder,help={"Click to delete existing folder selected in the box above"},fSize=10
 	endif
-	Button OpenFolder,pos={120,225},size={100,20},proc=IN2G_FolderSelectButtonProc,title="Open fldr"
+	Button OpenFolder,pos={120,225},size={100,20},proc=EG_N2G_FolderSelectButtonProc,title="Open fldr"
 	Button OpenFolder,help={"Click to open folder selected in the box above"}, font="Times New Roman",fSize=10
 	if(AllowRename)
-		Button RenameFolder,pos={120,250},size={100,20},proc=IN2G_FolderSelectButtonProc,title="Rename fldr"
+		Button RenameFolder,pos={120,250},size={100,20},proc=EG_N2G_FolderSelectButtonProc,title="Rename fldr"
 		Button RenameFolder,help={"Click to rename existing folder selected in the box above"},fSize=10
 	endif
-	SetVariable DisplayValue,pos={20,205},size={400,19},title="Value : ", proc=IN2G_FolderSelectSetVarProc
+	SetVariable DisplayValue,pos={20,205},size={400,19},title="Value : ", proc=EG_N2G_FolderSelectSetVarProc
 	SetVariable DisplayValue,fSize=10,frame=0,help={"Value of selected variable or string"}, limits={-inf,inf,0}, noedit=1,disable=1
 	//SetVariable DisplayValue,value= "  "
-	Button EditStrOrVar,pos={420,205},size={100,20},proc=IN2G_FolderSelectButtonProc,title="Edit",disable=1
+	Button EditStrOrVar,pos={420,205},size={100,20},proc=EG_N2G_FolderSelectButtonProc,title="Edit",disable=1
 	Button EditStrOrVar,help={"Click to edit value of selected string, variable, or wave"},fSize=10
-	Button CancelBtn,pos={240,250},size={100,20},proc=IN2G_FolderSelectButtonProc,title="Cancel",fSize=10
+	Button CancelBtn,pos={240,250},size={100,20},proc=EG_N2G_FolderSelectButtonProc,title="Cancel",fSize=10
 	Button CancelBtn,help={"Click to here to Cancel. "}
-	Button Done,pos={360,250},size={150,20},proc=IN2G_FolderSelectButtonProc,title="Done/Continue",fSize=10
+	Button Done,pos={360,250},size={150,20},proc=EG_N2G_FolderSelectButtonProc,title="Done/Continue",fSize=10
 	Button Done,help={"Click to here to continue. If the W/S/V name selected exists and it is allowed this button is RED, if it is not allowed button is greyed. "}
 	DoUpdate
-	IN2G_FolderSelectSetVarProc("NewName",1,"","")
+	EG_N2G_FolderSelectSetVarProc("NewName",1,"","")
 EndMacro
 //*****************************************************************************************************************
 //*****************************************************************************************************************
@@ -1589,7 +1589,7 @@ EndMacro
 //*****************************************************************************************************************
 //*****************************************************************************************************************
 
-Function IR1G_UpdateSetVarStep(MyControlName,NewStepFraction)
+Function EGN_IR1G_UpdateSetVarStep(MyControlName,NewStepFraction)
 	string MyControlName
 	variable NewStepFraction
 	//updates setVar step. Needs setVarName, and fraction of current value to be new step
@@ -1609,7 +1609,7 @@ end
 
 
 
-Function/T IN2G_RemoveExtraQuote(str,starting,Ending)
+Function/T EG_N2G_RemoveExtraQuote(str,starting,Ending)
 	String str
 	variable starting,Ending
 	
@@ -1631,7 +1631,7 @@ End
 
 
 
-Function/T IN2G_ChangePartsOfString(str,oldpart,newpart)
+Function/T EG_N2G_ChangePartsOfString(str,oldpart,newpart)
 	String str
 	String oldpart
 	String newpart
@@ -1672,7 +1672,7 @@ End
 //		string/g root:Packages:DesmearWorkFolder:CsrMoveInfo
 //		SVAR CsrMoveInfo=root:Packages:DesmearWorkFolder:CsrMoveInfo
 //		CsrMoveInfo=info
-//		Execute("IN2D_CursorMoved()")
+//		Execute("EG_N2D_CursorMoved()")
 //	endif
 //	if (cmpstr(StringByKey("Graph", info), "CheckTheBackgroundExtns")==0)
 //		string/g root:Packages:Irena_desmearing:CsrMoveInfo
@@ -1685,7 +1685,7 @@ End
 //		string/g root:Packages:SubtrBckgWorkFldr:CsrMoveInfo
 //		SVAR CsrMoveInfo=root:Packages:SubtrBckgWorkFldr:CsrMoveInfo
 //		CsrMoveInfo=info
-//		Execute("IN2Q_CursorMoved()")
+//		Execute("EG_N2Q_CursorMoved()")
 //	endif
 //	if (cmpstr(StringByKey("Graph", info), "HES_PorodGraphWindow")==0)
 //	//	string/g root:CsrMoveInfo
@@ -1701,7 +1701,7 @@ End
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_IntegrateXY(xWave, yWave)
+Function EG_N2G_IntegrateXY(xWave, yWave)
 	Wave xWave, yWave						// input/output X, Y waves
 	
 	variable yp,ypm1,sum=0
@@ -1719,7 +1719,7 @@ End
 
 //**********************************************************************************************
 //**********************************************************************************************
-Function IN2G_CreateItem(TheSwitch,NewName)
+Function EG_N2G_CreateItem(TheSwitch,NewName)
 	string TheSwitch, NewName
 //this function creates strings or variables with the name passed
 	if (cmpstr(TheSwitch,"string")==0)
@@ -1741,7 +1741,7 @@ Function IN2G_CreateItem(TheSwitch,NewName)
 end
 //**********************************************************************************************
 //**********************************************************************************************
-Function IN2G_ErrorsForDivision(A1,S1,A2,S2)
+Function EG_N2G_ErrorsForDivision(A1,S1,A2,S2)
 	variable A1, S1, A2, S2	//this function divides A1 by A2 with errors
 	
 	variable Error=(sqrt((A1^2*S2^4)+(S1^2*A2^4)+((A1^2+S1^2)*A2^2*S2^2))) / (A2*(A2^2-S2^2))
@@ -1749,7 +1749,7 @@ Function IN2G_ErrorsForDivision(A1,S1,A2,S2)
 	return Error
 end	
 
-Function IN2G_ErrorsForMultiplication(A1,S1,A2,S2)
+Function EG_N2G_ErrorsForMultiplication(A1,S1,A2,S2)
 	variable A1, S1, A2, S2	//this function multiplies two numbers with errors
 	
 	variable Error=sqrt((A1*S2)^2+(A2*S1)^2+(S1*S2)^2)
@@ -1757,7 +1757,7 @@ Function IN2G_ErrorsForMultiplication(A1,S1,A2,S2)
 	return Error
 end	
 
-Function IN2G_ErrorsForSubAndAdd(A1,S1,A2,S2)
+Function EG_N2G_ErrorsForSubAndAdd(A1,S1,A2,S2)
 	variable A1, S1, A2, S2	//this function subtracts A2 from A1 with errors
 	
 	variable Error=sqrt(S1^2+S2^2)
@@ -1766,7 +1766,7 @@ Function IN2G_ErrorsForSubAndAdd(A1,S1,A2,S2)
 end	
 
 
-Function/T IN2G_DivideWithErrors(A1,S1,A2,S2)
+Function/T EG_N2G_DivideWithErrors(A1,S1,A2,S2)
 	variable A1, S1, A2, S2	//this function divides A1 by A2 with errors
 	
 	variable Result=A1/A2
@@ -1776,7 +1776,7 @@ Function/T IN2G_DivideWithErrors(A1,S1,A2,S2)
 end	
 
 
-Function/T IN2G_MulitplyWithErrors(A1,S1,A2,S2)
+Function/T EG_N2G_MulitplyWithErrors(A1,S1,A2,S2)
 	variable A1, S1, A2, S2	//this function multiplies two numbers with errors
 	
 	variable Result=A1*A2
@@ -1786,7 +1786,7 @@ Function/T IN2G_MulitplyWithErrors(A1,S1,A2,S2)
 end	
 
 
-Function/T IN2G_SubtractWithErrors(A1,S1,A2,S2)
+Function/T EG_N2G_SubtractWithErrors(A1,S1,A2,S2)
 	variable A1, S1, A2, S2	//this function subtracts A2 from A1 with errors
 	
 	variable Result=A1-A2
@@ -1795,7 +1795,7 @@ Function/T IN2G_SubtractWithErrors(A1,S1,A2,S2)
 	return num2str(Result)+";"+num2str(Error)
 end	
 
-Function/T IN2G_SumWithErrors(A1,S1,A2,S2)
+Function/T EG_N2G_SumWithErrors(A1,S1,A2,S2)
 	variable A1, S1, A2, S2	//this function sums two numbers with errors
 	
 	variable Result=A1+A2
@@ -1809,7 +1809,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_AppendSizeTopWave(GraphName,BotWave, LeftWave,AxisPos,LabelX,LabelY)
+Function EG_N2G_AppendSizeTopWave(GraphName,BotWave, LeftWave,AxisPos,LabelX,LabelY)
 	Wave BotWave, LeftWave
 	String GraphName
 	Variable AxisPos,LabelX,LabelY
@@ -1839,7 +1839,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_AppendGuinierTopWave(GraphName,BotWave, LeftWave,AxisPos,LabelX,LabelY)
+Function EG_N2G_AppendGuinierTopWave(GraphName,BotWave, LeftWave,AxisPos,LabelX,LabelY)
 	Wave BotWave, LeftWave
 	String GraphName
 	Variable AxisPos,LabelX,LabelY
@@ -1870,7 +1870,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_KillPanel(ctrlName) : ButtonControl
+Function EG_N2G_KillPanel(ctrlName) : ButtonControl
 	String ctrlName
 
 	//this procedure kills panel which it is called from, so I can continue in
@@ -1883,7 +1883,7 @@ End
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_AutoscaleAxisFromZero(WindowName,which,where)		//this function autoscales axis from 0
+Function EG_N2G_AutoscaleAxisFromZero(WindowName,which,where)		//this function autoscales axis from 0
 	string WindowName, which, where
 	
 	if (cmpstr(where,"up")==0)
@@ -1900,7 +1900,7 @@ Function IN2G_AutoscaleAxisFromZero(WindowName,which,where)		//this function aut
 end
 
 
-Function/S IN2G_CheckFldrNmSemicolon(FldrName,Include)	//this function returns string - probably path
+Function/S EG_N2G_CheckFldrNmSemicolon(FldrName,Include)	//this function returns string - probably path
 	string FldrName		//with ending semicolon included or not, depending on Include being 1 (include) 
 	variable Include		//and 0 (do not include)
 	
@@ -1920,7 +1920,7 @@ Function/S IN2G_CheckFldrNmSemicolon(FldrName,Include)	//this function returns s
 end 
 
 
-Function IN2G_CleanupFolderOfGenWaves(fldrname)		//cleans waves from waves created by generic plot
+Function EG_N2G_CleanupFolderOfGenWaves(fldrname)		//cleans waves from waves created by generic plot
 	string fldrname
 	string dfold=GetDataFolder(1)
 	setDataFolder fldrname
@@ -1937,7 +1937,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 	
-Function IN2G_AppendAnyText(TextToBeInserted)	//this function checks for existance of notebook
+Function EG_N2G_AppendAnyText(TextToBeInserted)	//this function checks for existance of notebook
 	string TextToBeInserted						//and appends text to the end of the notebook
 	Silent 1
 	TextToBeInserted=TextToBeInserted+"\r"
@@ -1953,7 +1953,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function/S IN2G_WindowTitle(WindowName)		//this function returns the title of the Window 
+Function/S EG_N2G_WindowTitle(WindowName)		//this function returns the title of the Window 
              String WindowName						//wwith WindowName
       
 	Silent 1
@@ -1986,7 +1986,7 @@ Function/S IN2G_WindowTitle(WindowName)		//this function returns the title of th
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function/T IN2G_ConvertDataDirToList(Str)		//converts   FOLDERS:spec1,spec2,spec3,spec4; type fo strring into list
+Function/T EG_N2G_ConvertDataDirToList(Str)		//converts   FOLDERS:spec1,spec2,spec3,spec4; type fo strring into list
 	string str
 	
 	str=RemoveListItem(0, Str , ":")					//remove the "FOLDERS"
@@ -2022,7 +2022,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-//Function/T IN2G_CreateListOfItemsInFolder(df,item)			//Generates list of items in given folder
+//Function/T EG_N2G_CreateListOfItemsInFolder(df,item)			//Generates list of items in given folder
 //	String df
 //	variable item										//1-directories, 2-waves, 4 - variables, 8- strings
 //	
@@ -2032,7 +2032,7 @@ end
 //	
 //	if (DataFolderExists(df))
 //		SetDataFolder $df
-//		MyList= IN2G_ConvertDataDirToList(DataFolderDir(item))	//here we convert the WAVES:wave1;wave2;wave3 into list
+//		MyList= EG_N2G_ConvertDataDirToList(DataFolderDir(item))	//here we convert the WAVES:wave1;wave2;wave3 into list
 //		SetDataFolder $dfSave
 //	else
 //		MyList=""
@@ -2042,7 +2042,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function/T IN2G_CreateListOfItemsInFolder(df,item)			//Generates list of items in given folder
+Function/T EG_N2G_CreateListOfItemsInFolder(df,item)			//Generates list of items in given folder
 	String df
 	variable item										//1-directories, 2-waves, 4 - variables, 8- strings
 	
@@ -2053,7 +2053,7 @@ Function/T IN2G_CreateListOfItemsInFolder(df,item)			//Generates list of items i
 	if (DataFolderRefStatus(TestDFR))
 	//	SetDataFolder $df
 		//DataFolderDir(mode [, dfr ] )
-		MyList= IN2G_ConvertDataDirToList(DataFolderDir(item, TestDFR))	//here we convert the WAVES:wave1;wave2;wave3 into list
+		MyList= EG_N2G_ConvertDataDirToList(DataFolderDir(item, TestDFR))	//here we convert the WAVES:wave1;wave2;wave3 into list
 		return MyList
 	//	SetDataFolder $dfSave
 	else
@@ -2064,7 +2064,7 @@ end
 
 ////**********************************************************************************************
 ////**********************************************************************************************
-//Function/T IN2G_CreateListOfItemsInFldrDFR(dfDFR,item)			//Generates list of items in given folder
+//Function/T EG_N2G_CreateListOfItemsInFldrDFR(dfDFR,item)			//Generates list of items in given folder
 //	DFREF dfDFR
 //	variable item										//1-directories, 2-waves, 4 - variables, 8- strings
 //	
@@ -2075,7 +2075,7 @@ end
 //	if (DataFolderRefStatus(TestDFR))
 //	//	SetDataFolder $df
 //		//DataFolderDir(mode [, dfr ] )
-//		MyList= IN2G_ConvertDataDirToList(DataFolderDir(item, TestDFR))	//here we convert the WAVES:wave1;wave2;wave3 into list
+//		MyList= EG_N2G_ConvertDataDirToList(DataFolderDir(item, TestDFR))	//here we convert the WAVES:wave1;wave2;wave3 into list
 //		return MyList
 //	//	SetDataFolder $dfSave
 //	else
@@ -2087,7 +2087,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function/T IN2G_GetMeListOfEPICSKeys()		//returns list of useful keywords for UPD table panel
+Function/T EG_N2G_GetMeListOfEPICSKeys()		//returns list of useful keywords for UPD table panel
 		
 	String dfSave, result="", tempstring="", KeyWordResult=""
 	dfSave=GetDataFolder(1)
@@ -2111,13 +2111,13 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function/T IN2G_GetMeMostLikelyEPICSKey(str)		//this returns the most likely EPICS key - closest to str
+Function/T EG_N2G_GetMeMostLikelyEPICSKey(str)		//this returns the most likely EPICS key - closest to str
 	string str
 	
 	str="*"+str+"*"
 	String result="", tempstring=""
 	Variable pos=0, i=0
-	tempstring=IN2G_GetMeListOfEPICSKeys()	
+	tempstring=EG_N2G_GetMeListOfEPICSKeys()	
 	For (i=0;i<ItemsInList(tempstring);i+=1)
 		if (stringmatch(StringFromList(i,tempstring), str ))
 			result+=StringFromList(i,tempstring)+";"
@@ -2129,7 +2129,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-//Function/T IN2G_ReplaceColons(str)	//replaces colons in the string with _
+//Function/T EG_N2G_ReplaceColons(str)	//replaces colons in the string with _
 //	string str
 //	
 //	variable i=0, imax=ItemsInList(str,":")
@@ -2144,18 +2144,18 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_AppendListToAllWavesNotes(notetext)	//this function appends or replaces note (key/note) 
+Function EG_N2G_AppendListToAllWavesNotes(notetext)	//this function appends or replaces note (key/note) 
 	string notetext							//to all waves in the folder
 	
 	string ListOfWaves=WaveList("*",";",""), temp
 	variable i=0, imax=ItemsInList(ListOfWaves)
 	For(i=0;i<imax;i+=1)
 		temp=stringFromList(i,listOfWaves)
-		IN2G_AppendListToWaveNote(temp,Notetext)
+		EG_N2G_AppendListToWaveNote(temp,Notetext)
 	endfor
 end
 
-Function IN2G_AppendListToWaveNote(WaveNm,NewValue)		//this will replace or append new Keyword-list note to wave
+Function EG_N2G_AppendListToWaveNote(WaveNm,NewValue)		//this will replace or append new Keyword-list note to wave
 	string WaveNm, NewValue
 	
 	Wave Wv=$WaveNm
@@ -2166,7 +2166,7 @@ Function IN2G_AppendListToWaveNote(WaveNm,NewValue)		//this will replace or appe
 end
 
 
-Function IN2G_AddListToWaveNote(WaveNm,NewValue)		//this will replace or append new Keyword-list note to wave
+Function EG_N2G_AddListToWaveNote(WaveNm,NewValue)		//this will replace or append new Keyword-list note to wave
 	string WaveNm, NewValue
 	
 	Wave Wv=$WaveNm
@@ -2179,35 +2179,35 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_AppendNoteToListOfWaves(ListOfWaveNames, Key,notetext)	//this function appends or replaces note (key/note) 
+Function EG_N2G_AppendNoteToListOfWaves(ListOfWaveNames, Key,notetext)	//this function appends or replaces note (key/note) 
 	string ListOfWaveNames, Key, notetext							//to ListOfWaveNames waves in the folder
 	
 	string ListOfWaves=ListOfWaveNames, temp
 	variable i=0, imax=ItemsInList(ListOfWaves)
 	For(i=0;i<imax;i+=1)
 		temp=stringFromList(i,listOfWaves)
-		IN2G_AppendorReplaceWaveNote(temp,Key,Notetext)
+		EG_N2G_AppendorReplaceWaveNote(temp,Key,Notetext)
 	endfor
 end
 
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_AppendNoteToAllWaves(Key,notetext)	//this function appends or replaces note (key/note) 
+Function EG_N2G_AppendNoteToAllWaves(Key,notetext)	//this function appends or replaces note (key/note) 
 	string Key, notetext							//to all waves in the folder
 	
 	string ListOfWaves=WaveList("*",";",""), temp
 	variable i=0, imax=ItemsInList(ListOfWaves)
 	For(i=0;i<imax;i+=1)
 		temp=stringFromList(i,listOfWaves)
-		IN2G_AppendorReplaceWaveNote(temp,Key,Notetext)
+		EG_N2G_AppendorReplaceWaveNote(temp,Key,Notetext)
 	endfor
 end
 
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_AppendorReplaceWaveNote(WaveNm,KeyWrd,NewValue)		//this will replace or append new Keyword-list note to wave
+Function EG_N2G_AppendorReplaceWaveNote(WaveNm,KeyWrd,NewValue)		//this will replace or append new Keyword-list note to wave
 	string WaveNm, KeyWrd, NewValue
 	
 	Wave/Z Wv=$WaveNm
@@ -2222,7 +2222,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_AppendStringToWaveNote(WaveNm,Str)		//this will append new string with Keyword-list note to wave
+Function EG_N2G_AppendStringToWaveNote(WaveNm,Str)		//this will append new string with Keyword-list note to wave
 	string WaveNm, Str
 	
 	Wave Wv=$WaveNm
@@ -2244,7 +2244,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_AutoAlignGraphAndPanel()
+Function EG_N2G_AutoAlignGraphAndPanel()
 	string GraphName=Winname(0,1)
 	string PanelName=WinName(0,64)
 	AutopositionWindow/M=0 /R=$GraphName $PanelName
@@ -2253,7 +2253,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_AutoAlignPanelAndGraph()
+Function EG_N2G_AutoAlignPanelAndGraph()
 	string GraphName=Winname(0,1)
 	string PanelName=WinName(0,64)
 	AutopositionWindow/M=0 /R=$PanelName $GraphName 
@@ -2263,7 +2263,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_CleanupFolderOfWaves()		//cleans waves from fit_ and W_ waves
+Function EG_N2G_CleanupFolderOfWaves()		//cleans waves from fit_ and W_ waves
 
 	string ListOfWaves=WaveList("W_*",";","")+WaveList("fit_*",";",""), temp
 	variable i=0, imax=ItemsInList(ListOfWaves)
@@ -2277,7 +2277,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function/S IN2G_FixTheFileName()		//this will not work so simple, we need to remove symbols not allowed in operating systems
+Function/S EG_N2G_FixTheFileName()		//this will not work so simple, we need to remove symbols not allowed in operating systems
 	string filename=GetDataFolder(1)
 	SVAR SourceSPECDataFile=SpecSourceFileName
 	SVAR specDefaultFile=root:specDefaultFile
@@ -2294,7 +2294,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_KillAllGraphsAndTables(ctrlname) :Buttoncontrol
+Function EG_N2G_KillAllGraphsAndTables(ctrlname) :Buttoncontrol
 //      this function kills (without saving) all existing
 //      graphs, tables, and layouts.  It returns the number
 //      of windows that were killed (if you are interested).
@@ -2324,24 +2324,24 @@ End
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_KillGraphsAndTables(ctrlname) :Buttoncontrol
+Function EG_N2G_KillGraphsAndTables(ctrlname) :Buttoncontrol
 	string ctrlname
 	
       String wName=WinName(0, 1)              // 1=graphs, 2=tables,4=layouts
                 dowindow /K $wName
-	if (strlen(WinList("IN2A_UPDControlPanel",";","WIN:64"))>0)	//Kills the controls when not needed anymore
-			DoWindow/K  IN2A_UPDControlPanel
+	if (strlen(WinList("EG_N2A_UPDControlPanel",";","WIN:64"))>0)	//Kills the controls when not needed anymore
+			DoWindow/K  EG_N2A_UPDControlPanel
 	endif
 End
 
 
-Function IN2G_KillGraphsTablesEnd(ctrlname) :Buttoncontrol
+Function EG_N2G_KillGraphsTablesEnd(ctrlname) :Buttoncontrol
 	string ctrlname
 	
       String wName=WinName(0, 1)              // 1=graphs, 2=tables,4=layouts
                 dowindow /K $wName
-	if (strlen(WinList("IN2A_UPDControlPanel",";","WIN:64"))>0)	//Kills the controls when not needed anymore
-			DoWindow/K  IN2A_UPDControlPanel
+	if (strlen(WinList("EG_N2A_UPDControlPanel",";","WIN:64"))>0)	//Kills the controls when not needed anymore
+			DoWindow/K  EG_N2A_UPDControlPanel
 	endif
        abort
 End
@@ -2349,7 +2349,7 @@ End
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_KillTopGraph(ctrlname) :Buttoncontrol
+Function EG_N2G_KillTopGraph(ctrlname) :Buttoncontrol
 	string ctrlname
        String wName=WinName(0, 1)              // 1=graphs, 2=tables,4=layouts
 
@@ -2359,7 +2359,7 @@ End
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_KillWavesFromList(WvList)
+Function EG_N2G_KillWavesFromList(WvList)
 	string WvList
 	
 	variable items=ItemsInList(WvList), i
@@ -2370,7 +2370,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Proc IN2G_BasicGraphStyle()
+Proc EG_N2G_BasicGraphStyle()
 	PauseUpdate; Silent 1		// modifying window...
 	ModifyGraph/Z margin(top)=100
 	ModifyGraph/Z mode=4, gaps=0
@@ -2382,19 +2382,19 @@ Proc IN2G_BasicGraphStyle()
 	Label/Z left "Intensity"
 	Label/Z bottom "Ar encoder"
 	Duplicate/O PD_range, root:Packages:USAXS:MyColorWave							//creates new color wave
-	IN2A_MakeMyColors(PD_range,root:Packages:USAXS:MyColorWave)						//creates colors in it
+	EG_N2A_MakeMyColors(PD_range,root:Packages:USAXS:MyColorWave)						//creates colors in it
  	ModifyGraph mode=4, zColor={root:Packages:USAXS:MyColorWave,0,10,Rainbow}, margin(top)=100, mirror=1, minor=1
 	showinfo												//shows info
 	ShowTools/A											//show tools
-	Button KillThisWindow pos={10,10}, size={100,25}, title="Kill window", proc=IN2G_KillGraphsTablesEnd
-	Button ResetWindow pos={10,40}, size={100,25}, title="Reset window", proc=IN2G_ResetGraph
-	Button Reverseaxis pos={10,70}, size={100,25}, title="Reverse X axis", proc=IN2G_ReversXAxis
+	Button KillThisWindow pos={10,10}, size={100,25}, title="Kill window", proc=EG_N2G_KillGraphsTablesEnd
+	Button ResetWindow pos={10,40}, size={100,25}, title="Reset window", proc=EG_N2G_ResetGraph
+	Button Reverseaxis pos={10,70}, size={100,25}, title="Reverse X axis", proc=EG_N2G_ReversXAxis
 EndMacro
 
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_ScreenWidthHeight(what)			//keeps graphs the same size on all screens
+Function EG_N2G_ScreenWidthHeight(what)			//keeps graphs the same size on all screens
 	string what
 	string temp
 
@@ -2414,7 +2414,7 @@ end
 
 //**********************************************************************************************
 //**********************************************************************************************
-Function IN2G_SetPointWithCsrAToNaN(ctrlname) : Buttoncontrol			// Removes point in wave
+Function EG_N2G_SetPointWithCsrAToNaN(ctrlname) : Buttoncontrol			// Removes point in wave
 	string ctrlname
 	
 	variable pointNumberToBeRemoved=xcsr(A)				//this part should be done always
@@ -2424,7 +2424,7 @@ Function IN2G_SetPointWithCsrAToNaN(ctrlname) : Buttoncontrol			// Removes point
 		cursor/P A, $CsrWave(A), pointNumberToBeRemoved+1		//set the cursor to the right so we do not scare user
 End
 
-Function IN2G_SetPointsBetweenCsrsToNaN(ctrlname) : Buttoncontrol			// Removes point in wave
+Function EG_N2G_SetPointsBetweenCsrsToNaN(ctrlname) : Buttoncontrol			// Removes point in wave
 	string ctrlname
 	
 	variable pointNumberStart=xcsr(A)				//this part should be done always
@@ -2439,7 +2439,7 @@ Function IN2G_SetPointsBetweenCsrsToNaN(ctrlname) : Buttoncontrol			// Removes p
 		cursor/P A, $CsrWave(A), pointNumberStart-1		//set the cursor to the right so we do not scare user
 End
 
-Function IN2G_SetPointsSmallerCsrAToNaN(ctrlname) : Buttoncontrol			// Removes point in wave
+Function EG_N2G_SetPointsSmallerCsrAToNaN(ctrlname) : Buttoncontrol			// Removes point in wave
 	string ctrlname
 	
 	variable pointNumberToBeRemoved=xcsr(A)				//this part should be done always
@@ -2449,7 +2449,7 @@ Function IN2G_SetPointsSmallerCsrAToNaN(ctrlname) : Buttoncontrol			// Removes p
 		cursor/P A, $CsrWave(A), pointNumberToBeRemoved+1		//set the cursor to the right so we do not scare user
 End
 
-Function IN2G_SetPointsLargerCsrBToNaN(ctrlname) : Buttoncontrol			// Removes point in wave
+Function EG_N2G_SetPointsLargerCsrBToNaN(ctrlname) : Buttoncontrol			// Removes point in wave
 	string ctrlname
 	
 	variable pointNumberToBeRemoved=xcsr(B)				//this part should be done always
@@ -2460,7 +2460,7 @@ Function IN2G_SetPointsLargerCsrBToNaN(ctrlname) : Buttoncontrol			// Removes po
 End
 
 
-Function IN2G_RemovePointWithCursorA(ctrlname) : Buttoncontrol			// Removes point in wave
+Function EG_N2G_RemovePointWithCursorA(ctrlname) : Buttoncontrol			// Removes point in wave
 	string ctrlname
 	
 	if (strlen(CsrWave(A))==0)
@@ -2489,7 +2489,7 @@ End
 //**********************************************************************************************
 //**********************************************************************************************
 
-//Function/T IN2G_ReplaceOrChangeList(MyList,KeyWrd,NewValue)		//this will replace or append new Keyword-list combo to MyList
+//Function/T EG_N2G_ReplaceOrChangeList(MyList,KeyWrd,NewValue)		//this will replace or append new Keyword-list combo to MyList
 //	string MyList, KeyWrd, NewValue
 //	if (stringmatch(MyList, "*;"+KeyWrd+":*" ))
 //		MyList=ReplaceStringByKey(KeyWrd, MyList, Newvalue  , ":"  , "=")	//key exists, replace
@@ -2502,7 +2502,7 @@ End
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_ResetGraph(ctrlname) : Buttoncontrol
+Function EG_N2G_ResetGraph(ctrlname) : Buttoncontrol
 	string ctrlname
 		SetAxis/A										//rescales graph to automatic scaling
 End
@@ -2510,7 +2510,7 @@ End
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_ReversXAxis(ctrlname) : Buttoncontrol
+Function EG_N2G_ReversXAxis(ctrlname) : Buttoncontrol
 	string ctrlname
 	SetAxis/A/R bottom									//reverse X axis
 End
@@ -2518,7 +2518,7 @@ End
 //**********************************************************************************************
 //**********************************************************************************************
 
-//Function/T IN2G_AppendOrReplaceList(List,Key,Value,sep)	//replace or append to list
+//Function/T EG_N2G_AppendOrReplaceList(List,Key,Value,sep)	//replace or append to list
 //	string List, Key, Value,sep
 //	if (stringmatch(List, "*"+Key+"*" ))		//Lets fix the ASBParameters in Packages/USAXS 
 //		List=ReplaceStringByKey(Key, List, Value, sep, ";")		//key exists, replace
@@ -2532,7 +2532,7 @@ End
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function/S IN2G_FindFolderWithWvTpsList(startDF, levels, WaveTypes, LongShortType)
+Function/S EG_N2G_FindFolderWithWvTpsList(startDF, levels, WaveTypes, LongShortType)
         String startDF, WaveTypes                  // startDF requires trailing colon.
         Variable levels, LongShortType		//set 1 for long type and 0 for short type return
         			//returns the list of folders with specCommand with "uascan" in it - may not work yet for sbuascan 
@@ -2586,7 +2586,7 @@ Function/S IN2G_FindFolderWithWvTpsList(startDF, levels, WaveTypes, LongShortTyp
                         break                                                                           			// No more data folders.
                 endif
      	              subDF = startDF + temp + ":"
-            		 list += IN2G_FindFolderWithWvTpsList(subDF, levels, WaveTypes, LongShortType)       	// Recurse.
+            		 list += EG_N2G_FindFolderWithWvTpsList(subDF, levels, WaveTypes, LongShortType)       	// Recurse.
                 index += 1
         while(1)
         
@@ -2596,7 +2596,7 @@ End
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function/S IN2G_FindFolderWithWaveTypes(startDF, levels, WaveTypes, LongShortType)
+Function/S EG_N2G_FindFolderWithWaveTypes(startDF, levels, WaveTypes, LongShortType)
         String startDF, WaveTypes                  // startDF requires trailing colon.
         Variable levels, LongShortType		//set 1 for long type and 0 for short type return
         //12/18/2010, JIL, trying to speed this up and fix this... 
@@ -2661,7 +2661,7 @@ Function/S IN2G_FindFolderWithWaveTypes(startDF, levels, WaveTypes, LongShortTyp
                         break                                                                           			// No more data folders.
                 endif
      	              subDF = startDF + temp + ":"
-            		 list += IN2G_FindFolderWithWaveTypes(subDF, levels, WaveTypes, LongShortType)       	// Recurse.
+            		 list += EG_N2G_FindFolderWithWaveTypes(subDF, levels, WaveTypes, LongShortType)       	// Recurse.
                 index += 1
         while(1)
         
@@ -2671,7 +2671,7 @@ End
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function/S IN2G_NewFindFolderWithWaveTypes(startDF, levels, WaveTypes, LongShortType)
+Function/S EG_N2G_NewFindFolderWithWaveTypes(startDF, levels, WaveTypes, LongShortType)
         String startDF, WaveTypes                  // startDF requires trailing colon.
         Variable levels, LongShortType		//set 1 for long type and 0 for short type return
         			 
@@ -2713,7 +2713,7 @@ Function/S IN2G_NewFindFolderWithWaveTypes(startDF, levels, WaveTypes, LongShort
                         break                                                                           			// No more data folders.
                 endif
      	              subDF = startDF + temp + ":"
-            		 list += IN2G_NewFindFolderWithWaveTypes(subDF, levels, WaveTypes, LongShortType)       	// Recurse.
+            		 list += EG_N2G_NewFindFolderWithWaveTypes(subDF, levels, WaveTypes, LongShortType)       	// Recurse.
                 index += 1
         while(1)
         
@@ -2723,7 +2723,7 @@ End
 
 //**********************************************************************************************
 //**********************************************************************************************
-Function IN2G_RemoveNaNsFrom3Waves(Wv1,wv2,wv3)							//removes NaNs from 3 waves
+Function EG_N2G_RemoveNaNsFrom3Waves(Wv1,wv2,wv3)							//removes NaNs from 3 waves
 	Wave Wv1, Wv2, Wv3					//assume same number of points in the waves
 	
 	variable i=0, imax=numpnts(Wv1)-1
@@ -2735,7 +2735,7 @@ Function IN2G_RemoveNaNsFrom3Waves(Wv1,wv2,wv3)							//removes NaNs from 3 wave
 end
 //**********************************************************************************************
 //**********************************************************************************************
-Function IN2G_RemoveNaNsFrom2Waves(Wv1,wv2)							//removes NaNs from 3 waves
+Function EG_N2G_RemoveNaNsFrom2Waves(Wv1,wv2)							//removes NaNs from 3 waves
 	Wave Wv1, Wv2					//assume same number of points in the waves
 	
 	variable i=0, imax=numpnts(Wv1)-1
@@ -2747,7 +2747,7 @@ Function IN2G_RemoveNaNsFrom2Waves(Wv1,wv2)							//removes NaNs from 3 waves
 end
 //**********************************************************************************************
 //**********************************************************************************************
-Function IN2G_RemoveNaNsFrom5Waves(Wv1,wv2,wv3,wv4,wv5)		//removes NaNs from 5 waves
+Function EG_N2G_RemoveNaNsFrom5Waves(Wv1,wv2,wv3,wv4,wv5)		//removes NaNs from 5 waves
 	Wave Wv1, Wv2, Wv3, wv4,wv5					//assume same number of points in the waves
 	
 	variable i=0, imax=numpnts(Wv1)-1
@@ -2759,7 +2759,7 @@ Function IN2G_RemoveNaNsFrom5Waves(Wv1,wv2,wv3,wv4,wv5)		//removes NaNs from 5 w
 end
 //**********************************************************************************************
 //**********************************************************************************************
-Function IN2G_RemoveNaNsFrom6Waves(Wv1,wv2,wv3,wv4,wv5,wv6)		//removes NaNs from 6 waves
+Function EG_N2G_RemoveNaNsFrom6Waves(Wv1,wv2,wv3,wv4,wv5,wv6)		//removes NaNs from 6 waves
 	Wave Wv1, Wv2, Wv3, wv4,wv5, wv6					//assume same number of points in the waves
 	
 	variable i=0, imax=numpnts(Wv1)-1
@@ -2771,7 +2771,7 @@ Function IN2G_RemoveNaNsFrom6Waves(Wv1,wv2,wv3,wv4,wv5,wv6)		//removes NaNs from
 end
 //**********************************************************************************************
 //**********************************************************************************************
-Function IN2G_RemoveNaNsFrom7Waves(Wv1,wv2,wv3,wv4,wv5,wv6, wv7)		//removes NaNs from 6 waves
+Function EG_N2G_RemoveNaNsFrom7Waves(Wv1,wv2,wv3,wv4,wv5,wv6, wv7)		//removes NaNs from 6 waves
 	Wave Wv1, Wv2, Wv3, wv4,wv5, wv6	, wv7				//assume same number of points in the waves
 	
 	variable i=0, imax=numpnts(Wv1)-1
@@ -2783,7 +2783,7 @@ Function IN2G_RemoveNaNsFrom7Waves(Wv1,wv2,wv3,wv4,wv5,wv6, wv7)		//removes NaNs
 end
 //**********************************************************************************************
 //**********************************************************************************************
-Function IN2G_RemoveNaNsFrom4Waves(Wv1,wv2,wv3,wv4)		//removes NaNs from 4 waves
+Function EG_N2G_RemoveNaNsFrom4Waves(Wv1,wv2,wv3,wv4)		//removes NaNs from 4 waves
 	Wave Wv1, Wv2, Wv3, wv4				//assume same number of points in the waves
 	
 	variable i=0, imax=numpnts(Wv1)-1
@@ -2795,7 +2795,7 @@ Function IN2G_RemoveNaNsFrom4Waves(Wv1,wv2,wv3,wv4)		//removes NaNs from 4 waves
 end
 //**********************************************************************************************
 //**********************************************************************************************
-Function IN2G_RemNaNsFromAWave(Wv1)	//removes NaNs from 1 wave
+Function EG_N2G_RemNaNsFromAWave(Wv1)	//removes NaNs from 1 wave
 	Wave Wv1			//assume same number of points in the waves
 	
 	variable i=0, imax=numpnts(Wv1)-1
@@ -2809,7 +2809,7 @@ end
 //**********************************************************************************************
 //**********************************************************************************************
 
-Function IN2G_ReplaceNegValsByNaNWaves(Wv1,wv2,wv3)			//replaces Negative values in 3 waves by NaNs 
+Function EG_N2G_ReplaceNegValsByNaNWaves(Wv1,wv2,wv3)			//replaces Negative values in 3 waves by NaNs 
 	Wave Wv1, Wv2, Wv3					//assume same number of points in the waves
 	
 	variable i=0, imax=numpnts(Wv1)-1
@@ -2823,7 +2823,7 @@ end
 //************************************************************************************************************************
 //************************************************************************************************************************
 
-Function IN2G_GenerateLegendForGraph(fntsize,WNoteName,RemoveRepeated)  //generates legend for graphs and kills the old one, fntsize is font size
+Function EG_N2G_GenerateLegendForGraph(fntsize,WNoteName,RemoveRepeated)  //generates legend for graphs and kills the old one, fntsize is font size
 	variable fntsize, WNoteName, RemoveRepeated							//WNoteName=1 use name from Wname  key in Wave Note
 			//finds name of the old legend and generates new one with the same name, if the legend does not exists
 			//it cretaes new one with name legend1
@@ -2887,7 +2887,7 @@ end
 //*************************************************************************************************
 
 
-Function IN2G_WriteSetOfData(which)		//this procedure saves selected data from current folder
+Function EG_N2G_WriteSetOfData(which)		//this procedure saves selected data from current folder
 	string which
 	
 	PathInfo ExportDatapath
@@ -2905,13 +2905,13 @@ Function IN2G_WriteSetOfData(which)		//this procedure saves selected data from c
 	endif
 
 	
-	string filename=IN2G_FixTheFileName2()
+	string filename=EG_N2G_FixTheFileName2()
 	if (cmpstr(IgorInfo(2),"P")>0) 										// for Windows this cmpstr (IgorInfo(2)...)=1
 		filename=filename[0,30]										//30 letter should be more than enough...
 	else																//running on Mac, need shorter name
 		filename=filename[0,20]										//lets see if 20 letters will not cause problems...
 	endif	
-	filename=IN2G_GetUniqueFileName(filename)
+	filename=EG_N2G_GetUniqueFileName(filename)
 	if (cmpstr(filename,"noname")==0)
 		return 1
 	endif
@@ -2928,9 +2928,9 @@ Function IN2G_WriteSetOfData(which)		//this procedure saves selected data from c
 				Duplicate/O DSM_Qvec, Exp_Qvec
 				Duplicate/O DSM_Int, Exp_Int
 				Duplicate/O DSM_Error, Exp_Error
-				IN2G_TrimExportWaves(Exp_Qvec,Exp_Int, Exp_Error)
+				EG_N2G_TrimExportWaves(Exp_Qvec,Exp_Int, Exp_Error)
 			
-			IN2G_PasteWnoteToWave("DSM_Int", WaveNoteWave,"#   ")
+			EG_N2G_PasteWnoteToWave("DSM_Int", WaveNoteWave,"#   ")
 			if (cmpstr(IncludeData,"within")==0)
 				Save/I/G/M="\r\n"/P=ExportDatapath WaveNoteWave,Exp_Qvec,Exp_Int, Exp_Error as filename1
 //				Save/A/G/M="\r\n"/P=ExportDatapath Exp_Qvec,Exp_Int, Exp_Error as filename1				///P=Datapath
@@ -2951,9 +2951,9 @@ Function IN2G_WriteSetOfData(which)		//this procedure saves selected data from c
 				Duplicate/O BKG_Qvec, Exp_Qvec
 				Duplicate/O BKG_Int, Exp_Int
 				Duplicate/O BKG_Error, Exp_Error
-				IN2G_TrimExportWaves(Exp_Qvec,Exp_Int, Exp_Error)
+				EG_N2G_TrimExportWaves(Exp_Qvec,Exp_Int, Exp_Error)
 			
-			IN2G_PasteWnoteToWave("BKG_Int", WaveNoteWave,"#   ")
+			EG_N2G_PasteWnoteToWave("BKG_Int", WaveNoteWave,"#   ")
 			if (cmpstr(IncludeData,"within")==0)
 				Save/I/G/M="\r\n"/P=ExportDatapath WaveNoteWave,Exp_Qvec,Exp_Int, Exp_Error as filename1
 			else
@@ -2973,9 +2973,9 @@ Function IN2G_WriteSetOfData(which)		//this procedure saves selected data from c
 				Duplicate/O M_BKG_Qvec, Exp_Qvec
 				Duplicate/O M_BKG_Int, Exp_Int
 				Duplicate/O M_BKG_Error, Exp_Error
-				IN2G_TrimExportWaves(Exp_Qvec,Exp_Int, Exp_Error)
+				EG_N2G_TrimExportWaves(Exp_Qvec,Exp_Int, Exp_Error)
 			
-			IN2G_PasteWnoteToWave("M_BKG_Int", WaveNoteWave,"#   ")
+			EG_N2G_PasteWnoteToWave("M_BKG_Int", WaveNoteWave,"#   ")
 			if (cmpstr(IncludeData,"within")==0)
 				Save/I/G/M="\r\n"/P=ExportDatapath WaveNoteWave,Exp_Qvec,Exp_Int, Exp_Error as filename1
 			else
@@ -2996,9 +2996,9 @@ Function IN2G_WriteSetOfData(which)		//this procedure saves selected data from c
 				Duplicate/O SMR_Qvec, Exp_Qvec
 				Duplicate/O SMR_Int, Exp_Int
 				Duplicate/O SMR_Error, Exp_Error
-				IN2G_TrimExportWaves(Exp_Qvec,Exp_Int, Exp_Error)
+				EG_N2G_TrimExportWaves(Exp_Qvec,Exp_Int, Exp_Error)
 		
-			IN2G_PasteWnoteToWave("SMR_Int", WaveNoteWave,"#   ")
+			EG_N2G_PasteWnoteToWave("SMR_Int", WaveNoteWave,"#   ")
 			if (cmpstr(IncludeData,"within")==0)
 				Save/I/G/M="\r\n" /P=ExportDatapath WaveNoteWave,Exp_Qvec,Exp_Int, Exp_Error as filename1
 //				Save/A/G/M="\r\n"/P=ExportDatapath Exp_Qvec,Exp_Int, Exp_Error as filename1				///P=Datapath
@@ -3020,9 +3020,9 @@ Function IN2G_WriteSetOfData(which)		//this procedure saves selected data from c
 				Duplicate/O SMR_Qvec, Exp_Qvec
 				Duplicate/O M_SMR_Int, Exp_Int
 				Duplicate/O M_SMR_Error, Exp_Error
-				IN2G_TrimExportWaves(Exp_Qvec,Exp_Int, Exp_Error)
+				EG_N2G_TrimExportWaves(Exp_Qvec,Exp_Int, Exp_Error)
 
-			IN2G_PasteWnoteToWave("M_SMR_Int", WaveNoteWave,"#   ")
+			EG_N2G_PasteWnoteToWave("M_SMR_Int", WaveNoteWave,"#   ")
 			if (cmpstr(IncludeData,"within")==0)
 				Save/I/G/M="\r\n"/P=ExportDatapath WaveNoteWave,Exp_Qvec,Exp_Int, Exp_Error  as filename1
 //				Save/A/G/M="\r\n"/P=ExportDatapath Exp_Qvec,Exp_Int, Exp_Error as filename1				///P=Datapath		
@@ -3044,9 +3044,9 @@ Function IN2G_WriteSetOfData(which)		//this procedure saves selected data from c
 				Duplicate/O M_DSM_Qvec, Exp_Qvec
 				Duplicate/O M_DSM_Int, Exp_Int
 				Duplicate/O M_DSM_Error, Exp_Error
-				IN2G_TrimExportWaves(Exp_Qvec,Exp_Int, Exp_Error)
+				EG_N2G_TrimExportWaves(Exp_Qvec,Exp_Int, Exp_Error)
 
-			IN2G_PasteWnoteToWave("M_DSM_Int", WaveNoteWave,"#   ")
+			EG_N2G_PasteWnoteToWave("M_DSM_Int", WaveNoteWave,"#   ")
 			if (cmpstr(IncludeData,"within")==0)
 				Save/I/G/M="\r\n"/P=ExportDatapath WaveNoteWave,Exp_Qvec,Exp_Int, Exp_Error  as filename1
 //				Save/G/M="\r\n"/P=ExportDatapath Exp_Qvec,Exp_Int, Exp_Error as filename1				///P=Datapath	
@@ -3066,7 +3066,7 @@ Function IN2G_WriteSetOfData(which)		//this procedure saves selected data from c
 			Wave Qvec
 			Wave R_Int
 			Wave R_Error
-			IN2G_PasteWnoteToWave("R_Int", WaveNoteWave,"#   ")
+			EG_N2G_PasteWnoteToWave("R_Int", WaveNoteWave,"#   ")
 			if (cmpstr(IncludeData,"within")==0)
 				Save/I/G/M="\r\n"/P=ExportDatapath WaveNoteWave, Qvec, R_Int, R_Error  as filename1
 //				Save/A/G/M="\r\n"/P=ExportDatapath Qvec,R_Int,R_error as filename1			///P=Datapath
@@ -3081,18 +3081,18 @@ Function IN2G_WriteSetOfData(which)		//this procedure saves selected data from c
 	KillWaves/Z WaveNoteWave, Exp_Qvec, Exp_Int, Exp_Error
 end
 
-Function/S IN2G_FixTheFileName2()
+Function/S EG_N2G_FixTheFileName2()
 	WAVE USAXS_PD
 	if (WaveExists(USAXS_PD))
 		string SourceSPECDataFile=stringByKey("DATAFILE",Note(USAXS_PD),"=")
 		string intermediatename=StringFromList (0, SourceSPECDataFile, ".")+"_"+GetDataFolder(0)
-		return IN2G_ZapControlCodes(intermediatename)
+		return EG_N2G_ZapControlCodes(intermediatename)
 	else
 		return "noname"
 	endif
 end
 
-Function/T IN2G_ZapControlCodes(str)
+Function/T EG_N2G_ZapControlCodes(str)
 	String str
 	Variable i = 0
 	do
@@ -3111,7 +3111,7 @@ Function/T IN2G_ZapControlCodes(str)
 	return str
 End
 
-Function/T ZapNonLetterNumStart(strIN)
+Function/T EGN_ZapNonLetterNumStart(strIN)
 	string strIN
 	
 	Variable i = 0
@@ -3133,7 +3133,7 @@ end
 //***********************************************************************************************
 //************************************************************************************************
 
-Function/S IN2G_CreateUniqueFolderName(InFolderName)	//takes folder name and returns unique version if needed
+Function/S EG_N2G_CreateUniqueFolderName(InFolderName)	//takes folder name and returns unique version if needed
 	string InFolderName			//thsi is root:Packages:SomethingHere, will make SomethingHere unique. 
 	
 	string OutFoldername, tmpFldr
@@ -3145,7 +3145,7 @@ Function/S IN2G_CreateUniqueFolderName(InFolderName)	//takes folder name and ret
 		NumParts = ItemsInList(InFolderName  , ":")
 		setDataFolder root:
 		for(i=1;i<NumParts-1;i+=1)
-			tmpFldr = IN2G_RemoveExtraQuote(StringFromList(i, InFolderName,":"),1,1)
+			tmpFldr = EG_N2G_RemoveExtraQuote(StringFromList(i, InFolderName,":"),1,1)
 			SetDataFolder tmpFldr
 		endfor
 		OutFoldername = GetDataFolder(1)
@@ -3157,7 +3157,7 @@ end
 //***********************************************************************************************
 //************************************************************************************************
 
-Function/S IN2G_GetUniqueFileName(filename)
+Function/S EG_N2G_GetUniqueFileName(filename)
 	string filename
 	string FileList= IndexedFile(ExportDatapath,-1,"????" )
 	variable i
@@ -3175,7 +3175,7 @@ end
 //***********************************************************************************************
 //************************************************************************************************
 
-Function IN2G_TrimExportWaves(Q,I,E)	//this function trims export I, Q, E waves as required
+Function EG_N2G_TrimExportWaves(Q,I,E)	//this function trims export I, Q, E waves as required
 	Wave Q
 	Wave I
 	Wave E
@@ -3198,7 +3198,7 @@ Function IN2G_TrimExportWaves(Q,I,E)	//this function trims export I, Q, E waves 
 end
 //************************************************************************************************
 //************************************************************************************************
-Function IN2G_PasteWnoteToWave(waveNm, textWv,separator)	
+Function EG_N2G_PasteWnoteToWave(waveNm, textWv,separator)	
 	string waveNm, separator
 	Wave/T TextWv
 	//this function pastes the content of Wave note from waveNm to textWv
@@ -3218,7 +3218,7 @@ end
 //************************************************************************************************
 
 
-Function IN2G_UniversalFolderScan(startDF, levels, FunctionName)
+Function EG_N2G_UniversalFolderScan(startDF, levels, FunctionName)
         String startDF, FunctionName                  	// startDF requires trailing colon.
         Variable levels							//set 1 for long type and 0 for short type return
         			 
@@ -3256,7 +3256,7 @@ Function IN2G_UniversalFolderScan(startDF, levels, FunctionName)
                         break                                                                           			// No more data folders.
                 endif
      	              subDF = startDF + temp + ":"
-            		 IN2G_UniversalFolderScan(subDF, levels, FunctionName)		      	// Recurse.
+            		 EG_N2G_UniversalFolderScan(subDF, levels, FunctionName)		      	// Recurse.
                 index += 1
         while(1)
         
@@ -3267,7 +3267,7 @@ End
 //************************************************************************************************
 //************************************************************************************************
 
-Function IN2G_CheckTheFolderName()
+Function EG_N2G_CheckTheFolderName()
 
 	SVAR/Z FolderName
 	if (!SVAR_Exists(FolderName))	
@@ -3281,21 +3281,21 @@ Function IN2G_CheckTheFolderName()
 	//	print "Short name changed :"+CurrentFldrNameShort
 		FolderName=RemoveListItem(0,FolderName)
 		FolderName=CurrentFldrNameShort+";"+FolderName
-		IN2G_AppendNoteToAllWaves("UserSampleName",CurrentFldrNameShort)
+		EG_N2G_AppendNoteToAllWaves("UserSampleName",CurrentFldrNameShort)
 	endif
 	if (cmpstr(CurrentFldrNameLong,stringFromList(1,FolderName))!=0)
 	//	print "Long name changed :"+CurrentFldrNameLong
-		IN2G_AppendAnyText("Folder name change. \rOld: "+stringFromList(1,FolderName)+"   , new:  "+CurrentFldrNameLong)
+		EG_N2G_AppendAnyText("Folder name change. \rOld: "+stringFromList(1,FolderName)+"   , new:  "+CurrentFldrNameLong)
 		FolderName=RemoveListItem(1,FolderName)
 		FolderName=FolderName+CurrentFldrNameLong
-		IN2G_AppendNoteToAllWaves("USAXSDataFolder",CurrentFldrNameLong) 
+		EG_N2G_AppendNoteToAllWaves("USAXSDataFolder",CurrentFldrNameLong) 
 	endif
 end
 
 //***********************************************************************************************
 //***********************************************************************************************
 
-Function/T IN2G_CreateListOfScans(df)			//Generates list of items in given folder
+Function/T EG_N2G_CreateListOfScans(df)			//Generates list of items in given folder
 	String df
 //	String Type
 	
@@ -3306,7 +3306,7 @@ Function/T IN2G_CreateListOfScans(df)			//Generates list of items in given folde
 	
 	if (DataFolderExists(df))
 		SetDataFolder $df
-		IN2G_UniversalFolderScan(GetDataFolder(1), 5, "IN2G_AppendScanNumAndComment()")	//here we convert the WAVES:wave1;wave2;wave3 into list
+		EG_N2G_UniversalFolderScan(GetDataFolder(1), 5, "EG_N2G_AppendScanNumAndComment()")	//here we convert the WAVES:wave1;wave2;wave3 into list
 		SetDataFolder $dfSave
 	else
 		MyList=""
@@ -3315,7 +3315,7 @@ Function/T IN2G_CreateListOfScans(df)			//Generates list of items in given folde
 end
 //***********************************************************************************************
 //***********************************************************************************************
-Function IN2G_AppendScanNumAndComment()
+Function EG_N2G_AppendScanNumAndComment()
 
 	SVAR List=root:Packages:USAXS:MyList
 	SVAR/Z SpecComment
@@ -3330,7 +3330,7 @@ end
 //Little math for the SAS results
 
 //Volume Fraction Result is dimensionless
-Function IN2G_VolumeFraction(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+Function EG_N2G_VolumeFraction(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 	Wave FD, Ddist
 	Variable MinPoint, MaxPoint, removeNegs
 	
@@ -3383,7 +3383,7 @@ end
 //*******************************************************************
 
 //Number density Result is in 1/A3
-Function IN2G_NumberDensity(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+Function EG_N2G_NumberDensity(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 	Wave FD, Ddist
 	Variable MinPoint, MaxPoint, removeNegs
 	
@@ -3437,7 +3437,7 @@ end
 //*******************************************************************
 
 //Specific Surface Result is in A2/A3
-Function IN2G_SpecificSurface(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+Function EG_N2G_SpecificSurface(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 	Wave FD, Ddist
 	Variable MinPoint, MaxPoint, removeNegs
 	
@@ -3491,7 +3491,7 @@ end
 
 
 //Volume weighted mean diameter
-Function IN2G_VWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+Function EG_N2G_VWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 	Wave FD, Ddist
 	Variable MinPoint, MaxPoint, removeNegs
 	
@@ -3536,7 +3536,7 @@ Function IN2G_VWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 		endif
 	endfor
 
-	VWMeanDiameter/=IN2G_VolumeFraction(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+	VWMeanDiameter/=EG_N2G_VolumeFraction(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 
 	return VWMeanDiameter
 end
@@ -3546,7 +3546,7 @@ end
 //*******************************************************************
 
 //Number weighted mean diameter
-Function IN2G_NWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+Function EG_N2G_NWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 	Wave FD, Ddist
 	Variable MinPoint, MaxPoint, removeNegs
 	
@@ -3591,7 +3591,7 @@ Function IN2G_NWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 		endif
 	endfor
 
-	NWMeanDiameter/=IN2G_NumberDensity(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+	NWMeanDiameter/=EG_N2G_NumberDensity(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 
 	return NWMeanDiameter
 end
@@ -3601,7 +3601,7 @@ end
 //*******************************************************************
 
 //Volume weighted Standard deviation
-Function IN2G_VWStandardDeviation(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+Function EG_N2G_VWStandardDeviation(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 	Wave FD, Ddist
 	Variable MinPoint, MaxPoint, removeNegs
 	
@@ -3646,8 +3646,8 @@ Function IN2G_VWStandardDeviation(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 		endif
 	endfor
 
-	VWStandardDeviation/=IN2G_VolumeFraction(FD,Ddist,MinPoint,MaxPoint, removeNegs)
-	VWStandardDeviation-=(IN2G_VWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs))^2
+	VWStandardDeviation/=EG_N2G_VolumeFraction(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+	VWStandardDeviation-=(EG_N2G_VWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs))^2
 	VWStandardDeviation=sqrt(VWStandardDeviation)
 
 	return VWStandardDeviation
@@ -3659,7 +3659,7 @@ end
 //*******************************************************************
 
 //Number weighted Standard deviation
-Function IN2G_NWStandardDeviation(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+Function EG_N2G_NWStandardDeviation(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 	Wave FD, Ddist
 	Variable MinPoint, MaxPoint, removeNegs
 	
@@ -3704,8 +3704,8 @@ Function IN2G_NWStandardDeviation(FD,Ddist,MinPoint,MaxPoint, removeNegs)
 		endif
 	endfor
 
-	NWStandardDeviation/=IN2G_NumberDensity(FD,Ddist,MinPoint,MaxPoint, removeNegs)
-	NWStandardDeviation-=(IN2G_NWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs))^2
+	NWStandardDeviation/=EG_N2G_NumberDensity(FD,Ddist,MinPoint,MaxPoint, removeNegs)
+	NWStandardDeviation-=(EG_N2G_NWMeanDiameter(FD,Ddist,MinPoint,MaxPoint, removeNegs))^2
 	NWStandardDeviation=sqrt(NWStandardDeviation)
 
 	return NWStandardDeviation
@@ -3715,7 +3715,7 @@ end
 //*******************************************************************************************************
 //*******************************************************************************************************
 //*******************************************************************************************************
-Function IN2G_CheckScreenSize(which,MinVal)
+Function EG_N2G_CheckScreenSize(which,MinVal)
 	string which
 	variable MinVal
 	//this checks for screen size and if the screen is smaller, aborts and returns error message
@@ -3723,9 +3723,9 @@ Function IN2G_CheckScreenSize(which,MinVal)
 	//MinVal is in pixles
 	
 	if (cmpstr(which,"width")!=0 && cmpstr(which,"height")!=0)
-		Abort "Error in IN2G_CheckScreenSize procedure. Major bug. Contact me: ilavsky@aps.anl.gov, please)"
+		Abort "Error in EG_N2G_CheckScreenSize procedure. Major bug. Contact me: ilavsky@aps.anl.gov, please)"
 	endif
-	variable currentSizeInPixles=IN2G_ScreenWidthHeight(which)*100*ScreenResolution/72
+	variable currentSizeInPixles=EG_N2G_ScreenWidthHeight(which)*100*ScreenResolution/72
 	
 	if (currentSizeInPixles<MinVal)
 		if (cmpstr(which,"height")==0)
@@ -3742,7 +3742,7 @@ end
 //*******************************************************************************************************
 //*******************************************************************************************************
 
-Function IN2G_InputPeriodicTable(ButonFunctionName, NewWindowName, NewWindowTitleStr, PositionLeft,PositionTop)
+Function EG_N2G_InputPeriodicTable(ButonFunctionName, NewWindowName, NewWindowTitleStr, PositionLeft,PositionTop)
 	string ButonFunctionName, NewWindowName, NewWindowTitleStr
 	variable PositionLeft,PositionTop
 	//PauseUpdate; Silent 1		// building window...
@@ -3906,13 +3906,13 @@ End
 //	DSM_Int_log+= scaleMe
 //	DSM_Error_log= DSM_Int_log*( 1/(DSM_Int_Log) - 1/(log(DSM_Int+DSM_Error)))
 //	
-//	IN2G_SplineSmooth(0,113,DSM_Qvec_log,DSM_Int_Log,DSM_Error_Log,param,DSM_Int_Smooth,$"")
+//	EG_N2G_SplineSmooth(0,113,DSM_Qvec_log,DSM_Int_Log,DSM_Error_Log,param,DSM_Int_Smooth,$"")
 //	
 //	DSM_Int_smooth-=scaleMe
 //	DSM_Int_smooth = 10^DSM_Int_smooth
 //end
 //**********************************************************************	*/
-Function IN2G_SplineSmooth(n1,n2,xWv,yWv,dyWv,S,AWv,CWv)
+Function EG_N2G_SplineSmooth(n1,n2,xWv,yWv,dyWv,S,AWv,CWv)
 	variable n1,n2,S
 	Wave/Z xWv,yWv,dyWv,AWv,CWv
 		// CWv is optional parameter, if not needed use $"" as input and the function will not complain
@@ -3923,7 +3923,7 @@ Function IN2G_SplineSmooth(n1,n2,xWv,yWv,dyWv,S,AWv,CWv)
 		//	AWv,CWv	output waves. AWv contains values for points from yWv, CWv contains values needed for interpolation
 		// 	AWv and CWv are redimensioned to length of yWv and converted to real double precision
 		if((numpnts(xWv) != numpnts(yWv)) || (numpnts(xWv) !=numpnts(dyWv)))
-			abort "Input waves in IN2G_SplineSmooth require same length"
+			abort "Input waves in EG_N2G_SplineSmooth require same length"
 		endif 
 		if((n1>n2)) 
 			variable tempn=n1
@@ -3931,7 +3931,7 @@ Function IN2G_SplineSmooth(n1,n2,xWv,yWv,dyWv,S,AWv,CWv)
 			n2=tempn
 		endif
 		if((n1>n2) || (n1<0) || (n2>=numpnts(xWv)))
-			abort "Data range selection in IN2G_SplineSmooth is wrong, input range out of input wave length"
+			abort "Data range selection in EG_N2G_SplineSmooth is wrong, input range out of input wave length"
 		endif
 		string OldDf=GetDataFolder(1)
 		NewDataFolder/O/S root:Packages
@@ -4056,17 +4056,17 @@ end
 //*******************************************************************
 //*******************************************************************
 
-Function IN2G_ScrollButtonProc(ba) : ButtonControl
+Function EG_N2G_ScrollButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
 		case 2: // mouse up
 			// click code here
 			if(stringmatch(ba.ctrlName,"ScrollButtonUp"))
-				IN2G_MoveControlsPerRequest(ba.win,60)
+				EG_N2G_MoveControlsPerRequest(ba.win,60)
 			endif
 			if(stringmatch(ba.ctrlName,"ScrollButtonDown"))
-				IN2G_MoveControlsPerRequest(ba.win, -60)
+				EG_N2G_MoveControlsPerRequest(ba.win, -60)
 			endif			
 			break
 		case -1: // control being killed

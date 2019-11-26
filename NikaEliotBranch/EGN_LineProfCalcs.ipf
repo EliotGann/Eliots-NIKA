@@ -14,7 +14,7 @@
 //*******************************************************************************************************************************************
 
 
-Function NI1A_LineProf_CreateLP()
+Function EGNA_LineProf_CreateLP()
 
 	string oldDf=GetDataFOlder(1)
 	setDataFolder root:Packages:Convert2Dto1D
@@ -111,7 +111,7 @@ Function NI1A_LineProf_CreateLP()
 			MatrixOp/O MaskedQ2DWave = CCDImageToConvert
 		endif
 		//Need to create 2d q waves for dataset
-		//NI1A_Create2DQWave(CCDImageToConvert)
+		//EGNA_Create2DQWave(CCDImageToConvert)
 		
 		NVAR UseGrazingIncidence=root:Packages:Convert2Dto1D:UseGrazingIncidence
 		//wave q2dwave
@@ -119,7 +119,7 @@ Function NI1A_LineProf_CreateLP()
 			if(UseGrazingIncidence)
 				GI_ReHistImage()
 			else
-				NI1A_Create2DQWave(CCDImageToConvert)
+				EGNA_Create2DQWave(CCDImageToConvert)
 			endif
 		//endif
 		wave q2dwave
@@ -139,7 +139,7 @@ Function NI1A_LineProf_CreateLP()
 		elseif(stringMatch(LineProf_CurveType,"Ellipse"))
 			make/O/N=(1440) xwave, ywave			//every 0.25 degrees should be enough...
 		endif	
-		//here we create paths as needed... This should be the same as in the NI1A_DrawLinesIn2DGraph function
+		//here we create paths as needed... This should be the same as in the EGNA_DrawLinesEG_N2DGraph function
 		if(stringMatch(LineProf_CurveType,"Horizontal Line")||stringMatch(LineProf_CurveType,"GI_Horizontal Line"))
 			xwave=BeamCenterY-LineProf_DistanceFromCenter
 			ywave=p
@@ -147,19 +147,19 @@ Function NI1A_LineProf_CreateLP()
 			xwave=p
 			ywave=BeamCenterX+LineProf_DistanceFromCenter
 		elseif(stringMatch(LineProf_CurveType,"Angle Line"))
-			NI1A_GenerAngleLine(Dimsize(CCDImageToConvert, 0),Dimsize(CCDImageToConvert, 1),BeamCenterX,BeamCenterY,LineProf_LineAzAngle,LineProf_DistanceFromCenter,yWave,xWave)
+			EGNA_GenerAngleLine(Dimsize(CCDImageToConvert, 0),Dimsize(CCDImageToConvert, 1),BeamCenterX,BeamCenterY,LineProf_LineAzAngle,LineProf_DistanceFromCenter,yWave,xWave)
 		endif
 		if(stringMatch(LineProf_CurveType,"Ellipse")) // altered by eliot to automatically subtract background levels
 			if(LineProf_SubtractBackground)
-				NI1A_GenerEllipseLine(BeamCenterX,BeamCenterY,LineProf_EllipseAR,LineProf_DistanceFromCenter-LineProf_Width,yWave,xWave)
+				EGNA_GenerEllipseLine(BeamCenterX,BeamCenterY,LineProf_EllipseAR,LineProf_DistanceFromCenter-LineProf_Width,yWave,xWave)
 				ImageLineProfile/S xWave=ywave, yWave=xwave, srcwave=MaskedQ2DWave , width= LineProf_Width
 				Wave W_ImageLineProfile = root:Packages:Convert2Dto1D:W_ImageLineProfile
 				duplicate /o W_ImageLineProfile, lo_imagelineprofile
-				NI1A_GenerEllipseLine(BeamCenterX,BeamCenterY,LineProf_EllipseAR,LineProf_DistanceFromCenter+LineProf_Width,yWave,xWave)
+				EGNA_GenerEllipseLine(BeamCenterX,BeamCenterY,LineProf_EllipseAR,LineProf_DistanceFromCenter+LineProf_Width,yWave,xWave)
 				ImageLineProfile/S xWave=ywave, yWave=xwave, srcwave=MaskedQ2DWave , width= LineProf_Width
 				Wave W_ImageLineProfile = root:Packages:Convert2Dto1D:W_ImageLineProfile
 				duplicate /o W_ImageLineProfile, hi_imagelineprofile
-				NI1A_GenerEllipseLine(BeamCenterX,BeamCenterY,LineProf_EllipseAR,LineProf_DistanceFromCenter,yWave,xWave)
+				EGNA_GenerEllipseLine(BeamCenterX,BeamCenterY,LineProf_EllipseAR,LineProf_DistanceFromCenter,yWave,xWave)
 				ImageLineProfile/S xWave=ywave, yWave=xwave, srcwave=MaskedQ2DWave , width= LineProf_Width
 				Wave W_ImageLineProfile = root:Packages:Convert2Dto1D:W_ImageLineProfile
 				Wave W_LineProfileX = root:Packages:Convert2Dto1D:W_LineProfileX
@@ -168,7 +168,7 @@ Function NI1A_LineProf_CreateLP()
 				W_ImageLineProfile -= (lo_imagelineprofile + hi_imagelineprofile)/2
 				Wave W_LineProfileStdv=root:Packages:Convert2Dto1D:W_LineProfileStdv
 			else
-				NI1A_GenerEllipseLine(BeamCenterX,BeamCenterY,LineProf_EllipseAR,LineProf_DistanceFromCenter,yWave,xWave)
+				EGNA_GenerEllipseLine(BeamCenterX,BeamCenterY,LineProf_EllipseAR,LineProf_DistanceFromCenter,yWave,xWave)
 				ImageLineProfile/S xWave=ywave, yWave=xwave, srcwave=MaskedQ2DWave , width= LineProf_Width
 				Wave W_LineProfileX = root:Packages:Convert2Dto1D:W_LineProfileX
 				Wave W_LineProfileY = root:Packages:Convert2Dto1D:W_LineProfileY
@@ -217,7 +217,7 @@ Function NI1A_LineProf_CreateLP()
 		ImageLineProfile/S xWave=ywave, yWave=xwave, srcwave=thwave , width= LineProf_Width
 		Duplicate/O W_ImageLineProfile, LineProfileTh
 		//LineprofileTh *=sign(lineprofileqxy)
-		
+	
 		//add notes...
 		note LineProfileIntensity,  OldNote
 		note  LineProfileQvalues, OldNote
@@ -261,8 +261,8 @@ Function NI1A_LineProf_CreateLP()
 					Duplicate/O W_ImageLineProfile, LineProfileIntensity2
 					Duplicate/O W_LineProfileStdv, LineProfileIntSdev2
 					
-					NI1_SumTwoIntensitiesWithNaNs(LineProfileIntensity,LineProfileIntensity2)
-					NI1_SumTwoErrorsWithNaNs(LineProfileIntSdev,LineProfileIntSdev2)
+					EGN_SumTwoIntensitiesWithNaNs(LineProfileIntensity,LineProfileIntensity2)
+					EGN_SumTwoErrorsWithNaNs(LineProfileIntSdev,LineProfileIntSdev2)
 					KillWaves LineProfileIntSdev2,LineProfileIntensity2
 				endif
 		endif
@@ -280,8 +280,8 @@ Function NI1A_LineProf_CreateLP()
 //			LineProfileQy=NI1T_TiltedToCorrectedR( LineProfileQy[p] ,SampleToCCDDistance,HorizontalTilt) 	//in mm 
 //			LineProfileQz=NI1T_TiltedToCorrectedR( LineProfileQz[p] ,SampleToCCDDistance,VerticalTilt) 	//in mm 
 //
-//			LineProfileQy = NI1A_LP_ConvertPosToQ(LineProfileQy[p], SampleToCCDDistance, Wavelength)
-//			LineProfileQz = NI1A_LP_ConvertPosToQ(LineProfileQz[p], SampleToCCDDistance, Wavelength)
+//			LineProfileQy = EGNA_LP_ConvertPosToQ(LineProfileQy[p], SampleToCCDDistance, Wavelength)
+//			LineProfileQz = EGNA_LP_ConvertPosToQ(LineProfileQz[p], SampleToCCDDistance, Wavelength)
 //
 //		//	LineProfileQvalues=sign(LineProfileQy[p])*sign(LineProfileQz[p])*sqrt((LineProfileQy[p])^2+(LineProfileQz[p])^2)
 //			LineProfileQvalues=sign(LineProfileQz[p])*sqrt((LineProfileQy[p])^2+(LineProfileQz[p])^2)
@@ -333,12 +333,12 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1_SumTwoIntensitiesWithNaNs(wave1,wave2)
+Function EGN_SumTwoIntensitiesWithNaNs(wave1,wave2)
 	Wave wave1,wave2
 	//returns average of the two waves if both exists or if one in NaN, returns just the single value
 	variable i
 	if(numpnts(wave1)!=numpnts(wave2))
-		abort  "Error in NI1_SumTwoIntensitiesWithNaNs"
+		abort  "Error in EGN_SumTwoIntensitiesWithNaNs"
 	endif
 	For(i=0;i<numpnts(wave1);i+=1)
 		if(numtype(Wave1[i])==0 && numtype(wave2[i])==0)
@@ -352,12 +352,12 @@ Function NI1_SumTwoIntensitiesWithNaNs(wave1,wave2)
 		endif 
 	endfor
 end
-Function NI1_SumTwoErrorsWithNaNs(wave1,wave2)
+Function EGN_SumTwoErrorsWithNaNs(wave1,wave2)
 	Wave wave1,wave2
 	//returns average of the two waves if both exists or if one in NaN, returns just the single value
 	variable i
 	if(numpnts(wave1)!=numpnts(wave2))
-		abort  "Error in NI1_SumTwoErrorsWithNaNs"
+		abort  "Error in EGN_SumTwoErrorsWithNaNs"
 	endif
 	For(i=0;i<numpnts(wave1);i+=1)
 		if(numtype(Wave1[i])==0 && numtype(wave2[i])==0)
@@ -378,7 +378,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1A_LP_ConvertPosToQ(distance, SampleToCCDDistance, Wavelength)
+Function EGNA_LP_ConvertPosToQ(distance, SampleToCCDDistance, Wavelength)
 		variable distance, SampleToCCDDistance, Wavelength
 		
 		variable theta=atan(abs(distance)/SampleToCCDDistance)/2
@@ -392,7 +392,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1A_LineProf_DisplayLP()
+Function EGNA_LineProf_DisplayLP()
 	string oldDf=GetDataFOlder(1)
 	setDataFolder root:Packages:Convert2Dto1D
 
@@ -409,25 +409,25 @@ Function NI1A_LineProf_DisplayLP()
 		Display/W=(400,600,1000,788)/K=1 as "Line Profile Preview"
 		DoWindow/C LineProfile_Preview
 		ControlBar /T/W=LineProfile_Preview 25
-		CheckBox DisplayQ,pos={5,5},size={10,14},proc=NI1_LineProf_CheckProc,title="Use Q?"
+		CheckBox DisplayQ,pos={5,5},size={10,14},proc=EGN_LineProf_CheckProc,title="Use Q?"
 		CheckBox DisplayQ,help={"Use Q as x axis for the graph?"}, mode=1
 		CheckBox DisplayQ,variable= root:Packages:Convert2Dto1D:LineProfileDisplayWithQ
-		CheckBox DisplayQy,pos={70,5},size={10,14},proc=NI1_LineProf_CheckProc,title=" Qy?"
+		CheckBox DisplayQy,pos={70,5},size={10,14},proc=EGN_LineProf_CheckProc,title=" Qy?"
 		CheckBox DisplayQy,help={"Use Qy as x axis for the graph?"}, mode=1
 		CheckBox DisplayQy,variable= root:Packages:Convert2Dto1D:LineProfileDisplayWithQy
-		CheckBox DisplayQz,pos={145,5},size={10,14},proc=NI1_LineProf_CheckProc,title=" Qz?"
+		CheckBox DisplayQz,pos={145,5},size={10,14},proc=EGN_LineProf_CheckProc,title=" Qz?"
 		CheckBox DisplayQz,help={"Use Qz as x axis for the graph?"}, mode=1
 		CheckBox DisplayQz,variable= root:Packages:Convert2Dto1D:LineProfileDisplayWithQz
 
-		CheckBox LineProfileDisplayLogX,pos={220,5},size={10,14},proc=NI1_LineProf_CheckProc,title=" Log X Axis?"
+		CheckBox LineProfileDisplayLogX,pos={220,5},size={10,14},proc=EGN_LineProf_CheckProc,title=" Log X Axis?"
 		CheckBox LineProfileDisplayLogX,help={"Use log x axis for the graph?"}, mode=0
 		CheckBox LineProfileDisplayLogX,variable= root:Packages:Convert2Dto1D:LineProfileDisplayLogX
 
-		CheckBox LineProfileDisplayLogY,pos={325,5},size={10,14},proc=NI1_LineProf_CheckProc,title=" Log Y axis?"
+		CheckBox LineProfileDisplayLogY,pos={325,5},size={10,14},proc=EGN_LineProf_CheckProc,title=" Log Y axis?"
 		CheckBox LineProfileDisplayLogY,help={"Use log y axis for the graph?"}, mode=0
 		CheckBox LineProfileDisplayLogY,variable= root:Packages:Convert2Dto1D:LineProfileDisplayLogY
 		
-		Button SaveDataNow, pos={420,5}, size={100,15}, title="Save Data",proc=NI1_LineProf_ButtonProc
+		Button SaveDataNow, pos={420,5}, size={100,15}, title="Save Data",proc=EGN_LineProf_ButtonProc
 		AutoPositionWindow/E/M=1/R=CCDImageToConvertFig
 	endif
 	CheckDisplayed /W=LineProfile_Preview  LineProfileIntensity 
@@ -468,7 +468,7 @@ end
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
-Function NI1_LineProf_ButtonProc(ba) : ButtonControl
+Function EGN_LineProf_ButtonProc(ba) : ButtonControl
 	STRUCT WMButtonAction &ba
 
 	switch( ba.eventCode )
@@ -502,11 +502,11 @@ Function NI1_LineProf_ButtonProc(ba) : ButtonControl
 					tempStr1="ALp_"
 					sprintf tempStr, "%1.2g" LineProf_LineAzAngle
 				endif
-//				nvar supexchar = root:Packages:Nika1101:SupExChar
+//				nvar supexchar = root:Packages:EGNika101:SupExChar
 //				if(supexchar)
-//					NI1A_SaveDataPerUserReq(tempStr1,wavelengths)
+//					EGNA_SaveDataPerUserReq(tempStr1,wavelengths)
 //				else
-					NI1A_SaveDataPerUserReq(tempStr1+tempStr,wavelengths)
+					EGNA_SaveDataPerUserReq(tempStr1+tempStr,wavelengths)
 //				endif
 			break
 	endswitch
@@ -518,7 +518,7 @@ End
 //*******************************************************************************************************************************************
 //*******************************************************************************************************************************************
 
-Function NI1_LineProf_CheckProc(cba) : CheckBoxControl
+Function EGN_LineProf_CheckProc(cba) : CheckBoxControl
 	STRUCT WMCheckboxAction &cba
 
 	switch( cba.eventCode )
@@ -530,17 +530,17 @@ Function NI1_LineProf_CheckProc(cba) : CheckBoxControl
 			if(stringmatch(cba.ctrlName,"DisplayQ")&&LineProfileDisplayWithQ)
 				LineProfileDisplayWithQz=0
 				LineProfileDisplayWithQy=0
-				NI1A_LineProf_DisplayLP()
+				EGNA_LineProf_DisplayLP()
 			endif
 			if(stringmatch(cba.ctrlName,"DisplayQz")&&LineProfileDisplayWithQz)
 				LineProfileDisplayWithQ=0
 				LineProfileDisplayWithQy=0
-				NI1A_LineProf_DisplayLP()
+				EGNA_LineProf_DisplayLP()
 			endif
 			if(stringmatch(cba.ctrlName,"DisplayQy")&&LineProfileDisplayWithQy)
 				LineProfileDisplayWithQz=0
 				LineProfileDisplayWithQ=0
-				NI1A_LineProf_DisplayLP()
+				EGNA_LineProf_DisplayLP()
 			endif
 			NVAR LineProfileDisplayLogX=root:Packages:Convert2Dto1D:LineProfileDisplayLogX
 			NVAR LineProfileDisplayLogY=root:Packages:Convert2Dto1D:LineProfileDisplayLogY

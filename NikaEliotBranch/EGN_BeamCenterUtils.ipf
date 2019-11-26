@@ -14,9 +14,9 @@
 // 8/2/2010 fixed fitting when I was checking on presence of infs in lineout but not nan. Added chgeck for nan (when mask is used)
 //2.0 updated for Nika 1.42
 
-Function NI1_CreateBmCntrFile()
+Function EGN_CreateBmCntrFile()
 	
-	NI1A_Initialize2Dto1DConversion()
+	EGNA_Initialize2Dto1DConversion()
 	NI1BC_InitCreateBmCntrFile()
 	NI1BC_CreateBmCntrField()
 	NI1BC_TabProc("",0)
@@ -35,9 +35,9 @@ Function NI1BC_CreateBmCntrField()
 	string oldDf=GetDataFOlder(1)
 	setDataFolder root:Packages:Convert2Dto1D
 
-	DoWindow NI1_CreateBmCntrFieldPanel
+	DoWindow EGN_CreateBmCntrFieldPanel
 	if( V_Flag==1 )
-		DoWindow/K NI1_CreateBmCntrFieldPanel
+		DoWindow/K EGN_CreateBmCntrFieldPanel
 	endif
 //BmCntrFileName
 	SVAR BmCntrFileType=root:Packages:Convert2Dto1D:BmCntrFileType
@@ -55,7 +55,7 @@ Function NI1BC_CreateBmCntrField()
 	
 	PauseUpdate; Silent 1		// building window...
 	NewPanel /K=1 /W=(22,58,450,630) as "Beam center and calibration panel"
-	Dowindow/C NI1_CreateBmCntrFieldPanel
+	Dowindow/C EGN_CreateBmCntrFieldPanel
 	SetDrawLayer UserBack
 	SetDrawEnv fsize= 19,fstyle= 1,textrgb= (0,0,65280)
 	DrawText 10,25,"Refinement of Beam Center & Calibration"
@@ -279,23 +279,23 @@ Function NI1BC_TabProc(ctrlName,tabNum)
 	setDataFolder root:Packages:Convert2Dto1D
 
 	NVAR BMDisplayHelpCircle=root:Packages:Convert2Dto1D:BMDisplayHelpCircle
-	Button Fit2DGauss, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=0)
-	Button ReadCursors, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=0)
-	SetVariable BeamCenterX,win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=0)
-	SetVariable BeamCenterY, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=0)
-	SetVariable BMBeamCenterXStep, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=0)
-	SetVariable BMBeamCenterYStep, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=0)
-	CheckBox BMDisplayHelpCircle, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=0)
-	Slider BMHelpCircleRadius, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=0 || BMDisplayHelpCircle==0)
-	SetVariable BMHelpCircleRadiusV, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=0 || BMDisplayHelpCircle==0)
+	Button Fit2DGauss, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=0)
+	Button ReadCursors, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=0)
+	SetVariable BeamCenterX,win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=0)
+	SetVariable BeamCenterY, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=0)
+	SetVariable BMBeamCenterXStep, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=0)
+	SetVariable BMBeamCenterYStep, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=0)
+	CheckBox BMDisplayHelpCircle, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=0)
+	Slider BMHelpCircleRadius, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=0 || BMDisplayHelpCircle==0)
+	SetVariable BMHelpCircleRadiusV, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=0 || BMDisplayHelpCircle==0)
 	if(tabNum==0)
-		TitleBox UserSuggestion, win=NI1_CreateBmCntrFieldPanel, title=" Zoom to area of attn. beam & fit 2DGauss or Manually guess "
+		TitleBox UserSuggestion, win=EGN_CreateBmCntrFieldPanel, title=" Zoom to area of attn. beam & fit 2DGauss or Manually guess "
 	elseif(tabNum==1)
-		TitleBox UserSuggestion, win=NI1_CreateBmCntrFieldPanel, title=" Pick calibrant / own param, border lines "
+		TitleBox UserSuggestion, win=EGN_CreateBmCntrFieldPanel, title=" Pick calibrant / own param, border lines "
 	elseif(tabNum==2)
-		TitleBox UserSuggestion, win=NI1_CreateBmCntrFieldPanel, title=" Select what to refine and run "
+		TitleBox UserSuggestion, win=EGN_CreateBmCntrFieldPanel, title=" Select what to refine and run "
 	else
-		TitleBox UserSuggestion, win=NI1_CreateBmCntrFieldPanel, title="  help text here   "
+		TitleBox UserSuggestion, win=EGN_CreateBmCntrFieldPanel, title="  help text here   "
 	endif
 //	SetVariable PixleSizeY,disable=(tabNum!=0)
 	NVAR  BMUseCalibrantD1=root:Packages:Convert2Dto1D:BMUseCalibrantD1
@@ -304,43 +304,43 @@ Function NI1BC_TabProc(ctrlName,tabNum)
 	NVAR  BMUseCalibrantD4=root:Packages:Convert2Dto1D:BMUseCalibrantD4
 	NVAR  BMUseCalibrantD5=root:Packages:Convert2Dto1D:BMUseCalibrantD5
 	
-	SetVariable BMPathWidth, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1)
-	PopupMenu BmCalibrantName, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1)
-	CheckBox BMCalibrantDisplayCircles win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1)
-	CheckBox BMUseCalibrantD1 win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1)
-	SetVariable BMCalibrantD1,win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD1==0)
-	SetVariable BMCalibrantD1LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD1==0)
-	CheckBox BMUseCalibrantD2 win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1)
-	SetVariable BMCalibrantD2,win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD2==0)
-	SetVariable BMCalibrantD2LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD2==0)
-	CheckBox BMUseCalibrantD3 win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1)
-	SetVariable BMCalibrantD3,win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD3==0)
-	SetVariable BMCalibrantD3LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD3==0)
-	CheckBox BMUseCalibrantD4 win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1)
-	SetVariable BMCalibrantD4,win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD4==0)
-	SetVariable BMCalibrantD4LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD4==0)
-	CheckBox BMUseCalibrantD5 win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1)
-	SetVariable BMCalibrantD5,win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD5==0)
-	SetVariable BMCalibrantD5LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD5==0)
+	SetVariable BMPathWidth, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1)
+	PopupMenu BmCalibrantName, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1)
+	CheckBox BMCalibrantDisplayCircles win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1)
+	CheckBox BMUseCalibrantD1 win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1)
+	SetVariable BMCalibrantD1,win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD1==0)
+	SetVariable BMCalibrantD1LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD1==0)
+	CheckBox BMUseCalibrantD2 win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1)
+	SetVariable BMCalibrantD2,win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD2==0)
+	SetVariable BMCalibrantD2LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD2==0)
+	CheckBox BMUseCalibrantD3 win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1)
+	SetVariable BMCalibrantD3,win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD3==0)
+	SetVariable BMCalibrantD3LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD3==0)
+	CheckBox BMUseCalibrantD4 win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1)
+	SetVariable BMCalibrantD4,win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD4==0)
+	SetVariable BMCalibrantD4LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD4==0)
+	CheckBox BMUseCalibrantD5 win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1)
+	SetVariable BMCalibrantD5,win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD5==0)
+	SetVariable BMCalibrantD5LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=1 || BMUseCalibrantD5==0)
 
 
 
-	PopupMenu BMFunctionName, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	CheckBox BMFitBeamCenter, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	CheckBox BMFitSDD, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	CheckBox BMFitWavelength, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	Button RefineParameters, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	Button RecoverParameters, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	SetVariable BMRefNumberOfSectors, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	CheckBox BMDisplayInImage, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	SetVariable SampleToDetectorDistance, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	SetVariable Wavelength, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-//	SetVariable XrayEnergy, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	SetVariable HorizontalTilt, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	SetVariable VerticalTilt, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	SetVariable BeamCenterX2, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	SetVariable BeamCenterY2, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
-	CheckBox BMFitTilts, win=NI1_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	PopupMenu BMFunctionName, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	CheckBox BMFitBeamCenter, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	CheckBox BMFitSDD, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	CheckBox BMFitWavelength, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	Button RefineParameters, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	Button RecoverParameters, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	SetVariable BMRefNumberOfSectors, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	CheckBox BMDisplayInImage, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	SetVariable SampleToDetectorDistance, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	SetVariable Wavelength, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+//	SetVariable XrayEnergy, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	SetVariable HorizontalTilt, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	SetVariable VerticalTilt, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	SetVariable BeamCenterX2, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	SetVariable BeamCenterY2, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
+	CheckBox BMFitTilts, win=EGN_CreateBmCntrFieldPanel, disable=(tabNum!=2)
 
 	if(tabNum==0)
 		NI1BC_DisplayHelpCircle()	
@@ -366,11 +366,11 @@ Function NI1BC_SetVarProc(ctrlName,varNum,varStr,varName) : SetVariableControl
 
 	IF(cmpstr(ctrlName,"BMBeamCenterXStep")==0)
 		NVAR BMBeamCenterXStep=root:Packages:Convert2Dto1D:BMBeamCenterXStep
-		SetVariable BeamCenterX,limits={-Inf,Inf,BMBeamCenterXStep}, win=NI1_CreateBmCntrFieldPanel
+		SetVariable BeamCenterX,limits={-Inf,Inf,BMBeamCenterXStep}, win=EGN_CreateBmCntrFieldPanel
 	endif
 	IF(cmpstr(ctrlName,"BMBeamCenterYStep")==0)
 		NVAR BMBeamCenterYStep=root:Packages:Convert2Dto1D:BMBeamCenterYStep
-		SetVariable BeamCenterY,limits={-Inf,Inf,BMBeamCenterYStep}, win=NI1_CreateBmCntrFieldPanel
+		SetVariable BeamCenterY,limits={-Inf,Inf,BMBeamCenterYStep}, win=EGN_CreateBmCntrFieldPanel
 	endif
 	IF(cmpstr(ctrlName,"BeamCenterX")==0)
 		NI1BC_DisplayHelpCircle()
@@ -485,7 +485,7 @@ Function NI1BC_DisplayCalibrantCircles()
 	      setDrawLayer/W=CCDImageForBmCntr/K ProgFront
 	      setDrawLayer/W=CCDImageForBmCntr UserFront
 		//and now new drawing
-		//this calculates the right radius NI1_GetPixelFromDSpacing(dspacing, direction)
+		//this calculates the right radius EGN_GetPixelFromDSpacing(dspacing, direction)
 		variable i, radX, radY
 		if(BMCalibrantDisplayCircles)
 			For(i=1;i<=5;i+=1)
@@ -876,11 +876,11 @@ Function NI1BC_TopCCDImageUpdateColors(updateRanges)
 		ImageRangeMinLimit=V_min
 		ImageRangeMax=V_max
 		ImageRangeMaxLimit=V_max
-		Slider ImageRangeMin,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}, win=NI1_CreateBmCntrFieldPanel
-		Slider ImageRangeMax,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}, win=NI1_CreateBmCntrFieldPanel
+		Slider ImageRangeMin,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}, win=EGN_CreateBmCntrFieldPanel
+		Slider ImageRangeMax,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}, win=EGN_CreateBmCntrFieldPanel
 	endif
 	ModifyImage $(s) ctab= {ImageRangeMin,ImageRangeMax,$ColorTableName,0}
-	PopupMenu BMImageColor,win=NI1_CreateBmCntrFieldPanel, popvalue=ColorTableName
+	PopupMenu BMImageColor,win=EGN_CreateBmCntrFieldPanel, popvalue=ColorTableName
 	setDataFolder OldDf
 end
 
@@ -1114,15 +1114,15 @@ Function NI1BC_BmCntrCheckProc(ctrlName,checked) : CheckBoxControl
 			ImageRangeMinLimit=V_min
 			ImageRangeMax=V_max
 			ImageRangeMaxLimit=V_max
-			Slider ImageRangeMin,win=NI1_CreateBmCntrFieldPanel ,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}
-			Slider ImageRangeMax,win=NI1_CreateBmCntrFieldPanel,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}
+			Slider ImageRangeMin,win=EGN_CreateBmCntrFieldPanel ,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}
+			Slider ImageRangeMax,win=EGN_CreateBmCntrFieldPanel,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}
 		
 			ModifyImage/W=CCDImageForBmCntr BmCntrDisplayImage, ctab= {ImageRangeMin,ImageRangeMax,$BMColorTableName,0}
 		endif
 	endif
 	if(cmpstr(ctrlName,"BMDisplayHelpCircle")==0)
-		Slider BMHelpCircleRadius, win=NI1_CreateBmCntrFieldPanel, disable=(checked==0)
-		SetVariable BMHelpCircleRadiusV, win=NI1_CreateBmCntrFieldPanel, disable=(checked==0)
+		Slider BMHelpCircleRadius, win=EGN_CreateBmCntrFieldPanel, disable=(checked==0)
+		SetVariable BMHelpCircleRadiusV, win=EGN_CreateBmCntrFieldPanel, disable=(checked==0)
 		NI1BC_DisplayHelpCircle()
 	endif
 
@@ -1135,7 +1135,7 @@ Function NI1BC_BmCntrCheckProc(ctrlName,checked) : CheckBoxControl
 	endif
 	IF(cmpstr(ctrlName,"BMDezinger")==0)
 		NVAR BMDezinger=root:Packages:Convert2Dto1D:BMDezinger
-		SetVariable BMDezinerTimes,win=NI1_CreateBmCntrFieldPanel, disable=!(BMDezinger)
+		SetVariable BMDezinerTimes,win=EGN_CreateBmCntrFieldPanel, disable=!(BMDezinger)
 	endif
 	IF(cmpstr(ctrlName,"BMSubtractBlank")==0)
 		Wave/Z EmptyData = root:Packages:Convert2Dto1D:EmptyData
@@ -1144,7 +1144,7 @@ Function NI1BC_BmCntrCheckProc(ctrlName,checked) : CheckBoxControl
 			DoAlert 0, "No Empty data found, please load them through main panel. You may need to select \"Use Empty filed\" on the 1st tab and then load empty on 4th tab. Only then this function will work."		
 			BMSubtractBlank=0
 		endif
-		SetVariable BMStandardTransmission,win=NI1_CreateBmCntrFieldPanel, disable=!(BMSubtractBlank)
+		SetVariable BMStandardTransmission,win=EGN_CreateBmCntrFieldPanel, disable=!(BMSubtractBlank)
 		NVAR BMStandardTransmission=root:Packages:Convert2Dto1D:BMStandardTransmission
 		if((BMStandardTransmission<0.1 || BMStandardTransmission>1) && checked)
 			DoAlert 0, "Please set or guess right standard transmission" 
@@ -1158,16 +1158,16 @@ Function NI1BC_BmCntrCheckProc(ctrlName,checked) : CheckBoxControl
 		NVAR  BMUseCalibrantD4=root:Packages:Convert2Dto1D:BMUseCalibrantD4
 		NVAR  BMUseCalibrantD5=root:Packages:Convert2Dto1D:BMUseCalibrantD5
 		
-		SetVariable BMCalibrantD1,win=NI1_CreateBmCntrFieldPanel, disable=(BMUseCalibrantD1==0)
-		SetVariable BMCalibrantD1LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=(BMUseCalibrantD1==0)
-		SetVariable BMCalibrantD2,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD2==0)
-		SetVariable BMCalibrantD2LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD2==0)
-		SetVariable BMCalibrantD3,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD3==0)
-		SetVariable BMCalibrantD3LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD3==0)
-		SetVariable BMCalibrantD4,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD4==0)
-		SetVariable BMCalibrantD4LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD4==0)
-		SetVariable BMCalibrantD5,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD5==0)
-		SetVariable BMCalibrantD5LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD5==0)
+		SetVariable BMCalibrantD1,win=EGN_CreateBmCntrFieldPanel, disable=(BMUseCalibrantD1==0)
+		SetVariable BMCalibrantD1LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=(BMUseCalibrantD1==0)
+		SetVariable BMCalibrantD2,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD2==0)
+		SetVariable BMCalibrantD2LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD2==0)
+		SetVariable BMCalibrantD3,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD3==0)
+		SetVariable BMCalibrantD3LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD3==0)
+		SetVariable BMCalibrantD4,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD4==0)
+		SetVariable BMCalibrantD4LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD4==0)
+		SetVariable BMCalibrantD5,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD5==0)
+		SetVariable BMCalibrantD5LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD5==0)
 		NI1BC_DisplayCalibrantCircles()
 	endif
 	
@@ -1197,10 +1197,10 @@ Function NI1BC_BmCntrPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 		SVAR BmCntrFileType=root:Packages:Convert2Dto1D:BmCntrFileType
 		BmCntrFileType = popStr
 		if(cmpstr(popStr,"GeneralBinary")==0)
-			NI1_GBLoaderPanelFnct()
+			EGN_GBLoaderPanelFnct()
 		endif
 		if(cmpstr(popStr,"Pilatus")==0)
-			NI1_PilatusLoaderPanelFnct()
+			EGN_PilatusLoaderPanelFnct()
 		endif
 		NI1BC_UpdateBmCntrListBox()
 	endif
@@ -1334,16 +1334,16 @@ Function NI1BC_BmCntrPopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 			BMUseCalibrantD4=1
 			BMUseCalibrantD5=1
 		endif
-		SetVariable BMCalibrantD1,win=NI1_CreateBmCntrFieldPanel, disable=(BMUseCalibrantD1==0)
-		SetVariable BMCalibrantD1LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=(BMUseCalibrantD1==0)
-		SetVariable BMCalibrantD2,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD2==0)
-		SetVariable BMCalibrantD2LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD2==0)
-		SetVariable BMCalibrantD3,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD3==0)
-		SetVariable BMCalibrantD3LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD3==0)
-		SetVariable BMCalibrantD4,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD4==0)
-		SetVariable BMCalibrantD4LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD4==0)
-		SetVariable BMCalibrantD5,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD5==0)
-		SetVariable BMCalibrantD5LineWidth,win=NI1_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD5==0)
+		SetVariable BMCalibrantD1,win=EGN_CreateBmCntrFieldPanel, disable=(BMUseCalibrantD1==0)
+		SetVariable BMCalibrantD1LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=(BMUseCalibrantD1==0)
+		SetVariable BMCalibrantD2,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD2==0)
+		SetVariable BMCalibrantD2LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD2==0)
+		SetVariable BMCalibrantD3,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD3==0)
+		SetVariable BMCalibrantD3LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD3==0)
+		SetVariable BMCalibrantD4,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD4==0)
+		SetVariable BMCalibrantD4LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD4==0)
+		SetVariable BMCalibrantD5,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD5==0)
+		SetVariable BMCalibrantD5LineWidth,win=EGN_CreateBmCntrFieldPanel, disable=( BMUseCalibrantD5==0)
 		NI1BC_DisplayCalibrantCircles()
 	endif
 	
@@ -1408,15 +1408,15 @@ Function NI1BC_UpdateBmCntrListBox()
 		redimension/N=(ItemsInList(ListOfAvailableCompounds)) ListOfCCDDataInBmCntrPath
 		redimension/N=(ItemsInList(ListOfAvailableCompounds)) SelofCCDDataInBmCntrDPath
 		variable i
-		ListOfCCDDataInBmCntrPath=NI1A_CleanListOfFilesForTypes(ListOfCCDDataInBmCntrPath,BmCntrFileType,"" )
+		ListOfCCDDataInBmCntrPath=EGNA_CleanListOfFilesForTypes(ListOfCCDDataInBmCntrPath,BmCntrFileType,"" )
 		For(i=0;i<ItemsInList(ListOfAvailableCompounds);i+=1)
 			ListOfCCDDataInBmCntrPath[i]=StringFromList(i, ListOfAvailableCompounds)
 		endfor
 		sort ListOfCCDDataInBmCntrPath, ListOfCCDDataInBmCntrPath, SelofCCDDataInBmCntrDPath		//, NumbersOfCompoundsOutsideIgor
 		SelofCCDDataInBmCntrDPath=0
 
-		ListBox CCDDataSelection win=NI1_CreateBmCntrFieldPanel,listWave=root:Packages:Convert2Dto1D:ListOfCCDDataInBmCntrPath
-		ListBox CCDDataSelection win=NI1_CreateBmCntrFieldPanel ,row= 0,mode= 1,selRow= 0
+		ListBox CCDDataSelection win=EGN_CreateBmCntrFieldPanel,listWave=root:Packages:Convert2Dto1D:ListOfCCDDataInBmCntrPath
+		ListBox CCDDataSelection win=EGN_CreateBmCntrFieldPanel ,row= 0,mode= 1,selRow= 0
 		DoUpdate
 	setDataFolder OldDf
 end	
@@ -1441,15 +1441,15 @@ Function NI1BC_BmCntrButtonProc(ctrlName) : ButtonControl
 		NVAR BMMaxCircleRadius=root:Packages:Convert2Dto1D:BMMaxCircleRadius
 		Wave BmCntrFieldImg=root:Packages:Convert2Dto1D:BmCntrCCDImg 
 		BMMaxCircleRadius=sqrt(DimSize(BmCntrFieldImg, 0 )^2 + DimSize(BmCntrFieldImg, 1 )^2)
-		Slider BMHelpCircleRadius,limits={1,BMMaxCircleRadius,0}, win=NI1_CreateBmCntrFieldPanel
-		SetVariable BMHelpCircleRadiusV,limits={1,BMMaxCircleRadius,0}, win=NI1_CreateBmCntrFieldPanel
+		Slider BMHelpCircleRadius,limits={1,BMMaxCircleRadius,0}, win=EGN_CreateBmCntrFieldPanel
+		SetVariable BMHelpCircleRadiusV,limits={1,BMMaxCircleRadius,0}, win=EGN_CreateBmCntrFieldPanel
 		NVAR BMImageRangeMinLimit= root:Packages:Convert2Dto1D:BMImageRangeMinLimit
 		NVAR BMImageRangeMaxLimit = root:Packages:Convert2Dto1D:BMImageRangeMaxLimit
-		Slider ImageRangeMin,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=NI1_CreateBmCntrFieldPanel
-		Slider ImageRangeMax,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=NI1_CreateBmCntrFieldPanel
+		Slider ImageRangeMin,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=EGN_CreateBmCntrFieldPanel
+		Slider ImageRangeMax,limits={BMImageRangeMinLimit,BMImageRangeMaxLimit,0}, win=EGN_CreateBmCntrFieldPanel
 		NI1BC_DisplayHelpCircle()
 		NI1BC_DisplayMask()
-		TabControl BmCntrTab, value=0, win=NI1_CreateBmCntrFieldPanel
+		TabControl BmCntrTab, value=0, win=EGN_CreateBmCntrFieldPanel
 		NI1BC_TabProc("",0)
 		ShowInfo /W=CCDImageForBmCntr
 	endif
@@ -1482,7 +1482,7 @@ Function NI1BC_BmCntrCreateImage()
 	string OldDf=GetDataFOlder(1)
 	setDataFOlder root:Packages:Convert2Dto1D
 	Wave/T  ListOfCCDDataInBmCntrPath=root:Packages:Convert2Dto1D:ListOfCCDDataInBmCntrPath
-	controlInfo /W=NI1_CreateBmCntrFieldPanel CCDDataSelection
+	controlInfo /W=EGN_CreateBmCntrFieldPanel CCDDataSelection
 	variable selection = V_Value
 	if(selection<0)
 		setDataFolder OldDf
@@ -1495,7 +1495,7 @@ Function NI1BC_BmCntrCreateImage()
 	SVAR FileNameToLoad=root:Packages:Convert2Dto1D:FileNameToLoad
 	FileNameToLoad=ListOfCCDDataInBmCntrPath[selection]
 	SVAR BmCntrFileType=root:Packages:Convert2Dto1D:BmCntrFileType
-	NI1A_UniversalLoader("Convert2Dto1DBmCntrPath",FileNameToLoad,BmCntrFileType,"BmCntrCCDImg")
+	EGNA_UniversalLoader("Convert2Dto1DBmCntrPath",FileNameToLoad,BmCntrFileType,"BmCntrCCDImg")
 	NVAR BmCntrDisplayLogImage=root:Packages:Convert2Dto1D:BmCntrDisplayLogImage
 	wave BmCntrCCDImg
 	//allow user function modification to the image through hook function...
@@ -1509,7 +1509,7 @@ Function NI1BC_BmCntrCreateImage()
 	if(BMDezinger)
 		NVAR BMDezinerTimes=root:Packages:Convert2Dto1D:BMDezinerTimes
 		For(i=0;i<BMDezinerTimes;i+=1)
-			NI1A_DezingerImage(BmCntrCCDImg)
+			EGNA_DezingerImage(BmCntrCCDImg)
 		endfor
 	endif
 	duplicate/O BmCntrCCDImg, BmCntrDisplayImage
@@ -1533,7 +1533,7 @@ Function NI1BC_BmCntrCreateImage()
 		NewImage/K=1 BmCntrDisplayImage
 	endif
 	DoWindow/C CCDImageForBmCntr
-	AutoPositionWindow/E/M=0/R=NI1_CreateBmCntrFieldPanel CCDImageForBmCntr
+	AutoPositionWindow/E/M=0/R=EGN_CreateBmCntrFieldPanel CCDImageForBmCntr
 	
 	NVAR ImageRangeMin= root:Packages:Convert2Dto1D:BMImageRangeMin
 	NVAR ImageRangeMax = root:Packages:Convert2Dto1D:BMImageRangeMax
@@ -1545,8 +1545,8 @@ Function NI1BC_BmCntrCreateImage()
 	ImageRangeMinLimit=V_min
 	ImageRangeMax=V_max
 	ImageRangeMaxLimit=V_max
-	Slider ImageRangeMin,win=NI1_CreateBmCntrFieldPanel ,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}
-	Slider ImageRangeMax,win=NI1_CreateBmCntrFieldPanel,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}
+	Slider ImageRangeMin,win=EGN_CreateBmCntrFieldPanel ,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}
+	Slider ImageRangeMax,win=EGN_CreateBmCntrFieldPanel,limits={ImageRangeMinLimit,ImageRangeMaxLimit,0}
 	
 	ModifyImage/W=CCDImageForBmCntr BmCntrDisplayImage, ctab= {ImageRangeMin,ImageRangeMax,$BMColorTableName,0}
 	
@@ -1593,11 +1593,11 @@ Function NI1BC_InitCreateBmCntrFile()
 	variable i
 	//and here we create them
 	for(i=0;i<itemsInList(ListOfVariablesBC);i+=1)	
-		IN2G_CreateItem("variable",StringFromList(i,ListOfVariablesBC))
+		EG_N2G_CreateItem("variable",StringFromList(i,ListOfVariablesBC))
 	endfor		
 										
 	for(i=0;i<itemsInList(ListOfStringsBC);i+=1)	
-		IN2G_CreateItem("string",StringFromList(i,ListOfStringsBC))
+		EG_N2G_CreateItem("string",StringFromList(i,ListOfStringsBC))
 	endfor	
 
 	string ListOfVariablesL
