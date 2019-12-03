@@ -212,10 +212,12 @@ function NRB_loadprimary([update,row])
 		
 		wave mdwave = $stringfromlist(0,s_wavenames)
 		wave newchannelwave = NRB_splitsignal(mdwave,times, rises, falls, goodpulse)
-		insertpoints /M=0 0,1, channellist, channellistsel
-		channellist[0][1] = nameofwave(newchannelwave)
-		channellist[0][0] = ""
-		channellistsel[0][0] = 32
+		if(waveexists(newchannelwave))
+			insertpoints /M=0 0,1, channellist, channellistsel
+			channellist[0][1] = nameofwave(newchannelwave)
+			channellist[0][0] = ""
+			channellistsel[0][0] = 32
+		endif
 	endfor
 	
 	
@@ -698,16 +700,22 @@ function NRB_loadimages(listofsteps,[autoscale])
 	
 	string primeordark
 	if(darkview)
-		primeordark = "*dark-Synced_"
+		primeordark = "*dark-"
 	else
-		primeordark = "*primary-Synced_"
+		primeordark = "*primary-"
 	endif
 	for(i=0;i<itemsinlist(listofsteps);i+=1)
 
 		if(saxsorwaxs)
-			tifffilename = stringfromlist(0,listMatch(matchingtiffs,primeordark + "saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			tifffilename = stringfromlist(0,listMatch(matchingtiffs,primeordark + "*saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			if(strlen(tifffilename)<3)
+				tifffilename = stringfromlist(0,listMatch(matchingtiffs,primeordark + "*Small*-"+stringfromlist(i,listofsteps)+".tiff"))
+			endif
 		else
-			tifffilename = stringfromlist(0,listMatch(matchingtiffs,primeordark + "waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			tifffilename = stringfromlist(0,listMatch(matchingtiffs,primeordark + "*waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			if(strlen(tifffilename)<3)
+				tifffilename = stringfromlist(0,listMatch(matchingtiffs,primeordark + "*Wide*-"+stringfromlist(i,listofsteps)+".tiff"))
+			endif
 		endif
 		if(strlen(tifffilename)<4)
 			success[i] = 0 
@@ -1007,7 +1015,7 @@ function NRB_plotchannels([fresh])
 			continue
 		endif
 		wave channel = root:Packages:NikaNISTRSoXS:channels:$channeltoplot
-		wave /z errorwave = root:Packages:NikaNISTRSoXS:channels:$replacestring("m_",channeltoplot,"s_")
+		wave /z errorwave = root:Packages:NikaNISTRSoXS:channels:$replacestring("m_",channeltoplot,"s_",1,1)
 		appendtograph /w=NISTRSoXSBrowser#Graph1D channel vs xwave
 		if(waveexists(errorwave) && stringmatch(channeltoplot,"m_*"))
 			ErrorBars /w=NISTRSoXSBrowser#Graph1D $nameofwave(channel) SHADE= {0,0,(0,0,0,0),(0,0,0,0)},wave=(errorwave,errorwave)
@@ -1124,15 +1132,15 @@ function /t NRB_getfilenames()
 	
 	string primeordark
 	if(darkview)
-		primeordark = "*dark-Synced_"
+		primeordark = "*dark-"
 	else
-		primeordark = "*primary-Synced_"
+		primeordark = "*primary-"
 	endif
 	for(i=0;i<itemsinlist(listofsteps);i+=1)
 		if(saxsorwaxs)
-			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark +"saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark +"*saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
 		else
-			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark +"waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark +"*waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
 		endif
 		filenames = addlistitem(tifffilename,filenames)
 	endfor
@@ -1336,13 +1344,15 @@ function /wave NRB_splitsignal(wavein,times, rises, falls, goodpulse)
 	pntupper = pntupper[p]==-2 ? numpnts(timesin)-1 : pntupper[p]
 	duplicate /o /free pntupper, pntlower, pntlower1
 	pntlower1 = binarysearch(timesin,times[p]-1.5)
-	
 	insertpoints /v=0 0,1,pntlower
 	make /free temprises, tempfalls
 	waveout = mean(datain,pntlower1[p]+2,pntupper[p]-0)
 	stdwave = sqrt(variance(datain,pntlower1[p]+2,pntupper[p]-0))
 	variable i, meanvalue, alreadygood, err
 	for(i=0;i<dimsize(times,0);i+=1)
+		if(pntupper[i] - pntlower[i] < 3)
+			continue
+		endif
 		//meanvalue = mean(datain,pntlower[i],pntupper[i])
 		meanvalue = (9/10) *(wavemin(datain,pntlower[i],pntupper[i]) + wavemax(datain,pntlower[i],pntupper[i]))
 		try
