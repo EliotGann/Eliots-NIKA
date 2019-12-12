@@ -80,7 +80,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		else //just use the image dir
 			NEWPATH /O /Q/Z BS_metadata, S_Path
 		endif
-
+		
 		string teststring= indexedfile($PathName,-1,".csv")
 		string baselinestring = greplist(teststring,"^"+FileNametoLoad[0,6]+".*baseline")
 
@@ -120,7 +120,14 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		endif
 		teststring= indexedfile(BS_metadata,-1,".csv")
 		teststring = greplist(teststring,"^"+FileNametoLoad[0,6]+".*primary")
-		LoadWave/Q/O/J/D/A/K=0/P=BS_metadata/W  stringfromlist(0,teststring)
+		if(strlen(teststring)<3) // no primary in this directory
+			NEWPATH /O /Q/Z BS_primary, parsefilepath(1,S_Path,":",1,0)
+			teststring= indexedfile(BS_primary,-1,".csv")
+			teststring = greplist(teststring,"^"+FileNametoLoad[0,6]+".*primary")
+			LoadWave/Q/O/J/D/A/K=0/P=BS_primary/W  stringfromlist(0,teststring)
+		else
+			LoadWave/Q/O/J/D/A/K=0/P=BS_metadata/W  stringfromlist(0,teststring)
+		endif
 		wave /z datawave = $(stringfromlist(0,S_waveNames))
 		if(waveexists(datawave))
 			nvar SampleI0=root:Packages:Convert2Dto1D:samplei0
@@ -185,6 +192,14 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			metadata = addmetadatafromjson(PathName,"chemical_formula",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"density",metadatafilename,metadata)
 			metadata = addmetadatafromjson(PathName,"project_desc",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"RSoXS_config",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"RSoXS_Main_DET",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"RSoXS_WAXS_SDD",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"RSoXS_WAXS_BCX",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"RSoXS_WAXS_BCY",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"RSoXS_SAXS_SDD",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"RSoXS_SAXS_BCX",metadatafilename,metadata)
+			metadata = addmetadatafromjson(PathName,"RSoXS_SAXS_BCY",metadatafilename,metadata)
 		else
 			print "Currently can't load metadata json or jsonl file"
 		endif	
@@ -200,6 +215,26 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		Redimension/N=(-1,-1,0)/i 	LoadedWvHere			//this is fix for 3 layer tiff files...
 		NewNote+="DataFileName="+FileNameToLoad+";"
 		NewNote+="DataFileType="+".tif"+";.tiff"+";"
+		
+		nvar bcx = root:Packages:Convert2Dto1D:BeamCenterX
+		nvar bcy = root:Packages:Convert2Dto1D:BeamCenterY
+		nvar sdd = root:Packages:Convert2Dto1D:SampleToCCDDistance
+		variable msdd = nan
+		variable mbcx = nan
+		variable mbcy = nan
+		if(stringmatch(detectortype,"Wide Angle CCD Detector_"))
+			msdd = numberByKey("RSoXS_WAXS_SDD",metadata)
+			mbcx = numberByKey("RSoXS_WAXS_BCX",metadata)
+			mbcy = numberByKey("RSoXS_WAXS_BCY",metadata)
+		elseif(stringmatch(detectortype,"Small Angle CCD Detector_"))
+			msdd = numberByKey("RSoXS_SAXS_SDD",metadata)
+			mbcx = numberByKey("RSoXS_SAXS_BCX",metadata)
+			mbcy = numberByKey("RSoXS_SAXS_BCY",metadata)
+		endif
+		//if the metadata has beam center and distance locations, then use them!
+		sdd = msdd*0==0 ? msdd : sdd
+		bcx = mbcx*0==0 ? mbcx : bcx
+		bcy = mbcy*0==0 ? mbcy : bcy
 		
 		nvar /z autopickq = root:Packages:SwitchNIKA:AutopickQ
 		if(nvar_exists(autopickq))

@@ -63,6 +63,7 @@ function NRB_loadprimary([update,row])
 // when choosing a primary.csv file, populates a list of promary values, a scrollable list of baseline values
 // and displays a list of datapoints with their primary motors defining the name
 	variable update, row
+	Execute "SetIgorOption Str2DoubleMode=0"
 	update = paramisdefault(update)? 0 : update
 	variable /g scanrow
 	if(paramisdefault(row))
@@ -259,6 +260,14 @@ function NRB_loadprimary([update,row])
 		metadata = addmetadatafromjson(pnamemd,"chemical_formula",metadatafilename,metadata)
 		metadata = addmetadatafromjson(pnamemd,"density",metadatafilename,metadata)
 		metadata = addmetadatafromjson(pnamemd,"project_desc",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"RSoXS_config",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"RSoXS_Main_DET",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"RSoXS_WAXS_SDD",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"RSoXS_WAXS_BCX",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"RSoXS_WAXS_BCY",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"RSoXS_SAXS_SDD",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"RSoXS_SAXS_BCX",metadatafilename,metadata)
+		metadata = addmetadatafromjson(pnamemd,"RSoXS_SAXS_BCY",metadatafilename,metadata)
 		metadata = replacestring(":",metadata,"  -  ")
 		redimension /n=(itemsinlist(metadata)) mdlist
 		mdlist[] = stringfromlist(p,metadata)
@@ -305,11 +314,22 @@ function NRB_loadprimary([update,row])
 	
 	
 	
+	string det = stringByKey("RSoXS_Main_DET",metadata,"  -  ")
 	
+	nvar saxsorwaxs = root:Packages:NIKANISTRSoXS:saxsorwaxs
+	
+	if(stringmatch(det,"SAXS"))
+		saxsorwaxs = 1
+		button NRB_SAXSWAXSbut fColor=(0,0,20000),title="SAXS images\r(click to toggle)",valueColor=(65535,65535,65535)
+	elseif(stringmatch(det,"WAXS"))
+		saxsorwaxs = 0
+		button NRB_SAXSWAXSbut fColor=(1,26214,0),title="WAXS images\r(click to toggle)",valueColor=(0,0,0)
+	endif
 	
 	NRB_updateimageplot()
-	
 	setdatafolder currentfolder
+	
+	Execute "SetIgorOption Str2DoubleMode=1"
 end
 
 
@@ -1259,6 +1279,8 @@ function NRB_convertnikafilelistsel(filenamelist)
 	string filenamelist
 	NRB_convertpathtonika(main=1)
 	doupdate
+	nvar invert = root:Packages:Convert2Dto1D:InvertImages
+	invert = 1
 	Wave/T  ListOf2DSampleData=root:Packages:Convert2Dto1D:ListOf2DSampleData
 	Wave ListOf2DSampleDataNumbers=root:Packages:Convert2Dto1D:ListOf2DSampleDataNumbers
 	ListOf2DSampleDataNumbers = 0
