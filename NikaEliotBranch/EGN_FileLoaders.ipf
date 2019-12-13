@@ -73,7 +73,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		string imagepathdir = indexedfile($PathName,-1,".csv")
 		string baselinefile = greplist(imagepathdir,"^"+FileNametoLoad[0,6]+".*baseline")
 		
-		print "Baseline CSV seems to be in"
+		//print "Baseline CSV seems to be in"
 		print stringfromlist(0,baselinefile)
 		if(strlen(stringfromlist(0,baselinefile))==0)  // if it's not in the image dir, use the parent dir.
 			NEWPATH /O /Q/Z BS_metadata, parsefilepath(1,S_Path,":",1,0)
@@ -81,7 +81,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			NEWPATH /O /Q/Z BS_metadata, S_Path
 		endif
 		
-		string teststring= indexedfile($PathName,-1,".csv")
+		string teststring= indexedfile(BS_metadata,-1,".csv")
 		string baselinestring = greplist(teststring,"^"+FileNametoLoad[0,6]+".*baseline")
 
 		newdatafolder /o/s importdata
@@ -3163,8 +3163,8 @@ end
 function /s addmetadatafromjson(path, key, filename, metadatalist)
 	string path, key, filename, metadatalist
 	string kvalue
-	grep /LIST/q/e="\"" + key+ "\": \"([^\"]*)\""/P=$(path) filename
-	splitstring /e="\"" + key+ "\": \"([^\"]*)\"" s_value, kvalue
+	grep /LIST/q/e="\"" + key+ "\": \"?([^\",]*)\"?"/P=$(path) filename
+	splitstring /e="\"" + key+ "\": \"?([^\",]*)\"?" s_value, kvalue
 	metadatalist = addlistitem(key+":"+kvalue,metadatalist)
 	return metadatalist
 end

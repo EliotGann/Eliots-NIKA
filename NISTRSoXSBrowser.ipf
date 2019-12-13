@@ -1597,6 +1597,11 @@ end
 
 function /wave NRB_findscan(variable scan_id, variable num)
 	dfref foldersave = getdatafolderdfr()
+	if(!datafolderExists("root:SAS"))
+		wave /z nothing
+		print "No Conversion have been done yet"
+		return nothing
+	endif
 	setdatafolder root:SAS
 	variable i = 0
 	string foldername = getindexedobjnamedfr(getdatafolderdfr(),4,i)
