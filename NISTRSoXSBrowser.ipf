@@ -138,27 +138,29 @@ function NRB_loadprimary([update,row])
 	variable oldnum = dimsize(steplist,0)
 	steplist=""
 	variable foundloc = 0
+	redimension /n=(dimsize(seq_num,0)) steplist, steplistsel
+	steplist[] = num2str(seq_num[p])
 	if(whichlistitem("RSoXS_Sample_Outboard_Inboard",s_wavenames)>=0 && whichlistitem("RSoXS_Sample_Up_Down",s_wavenames)>=0)
-		redimension /n=(dimsize(RSoXS_Sample_Up_Down,0)) steplist, steplistsel
-		steplist[] = num2str(seq_num[p]) + " - (" + num2str(round(RSoXS_Sample_Outboard_Inboard[p]*100)/100) + " , " + num2str(round(RSoXS_Sample_Up_Down[p]*100)/100) + ")"
+		//redimension /n=(dimsize(RSoXS_Sample_Up_Down,0)) steplist, steplistsel
+		steplist[] += " - ( " + num2str(round(RSoXS_Sample_Outboard_Inboard[p]*100)/100) + " , " + num2str(round(RSoXS_Sample_Up_Down[p]*100)/100) + " )"
 		foundloc = 1
-	endif
-	if(whichlistitem("timeW",s_wavenames)>=0)
-		wave /z times = timeW
-	else
-		wave /z times
-	endif
-	if(whichlistitem("en_energy",s_wavenames)>=0)
+	elseif(whichlistitem("en_energy",s_wavenames)>=0)
 		
-		redimension /n=(dimsize(en_energy,0)) steplist, steplistsel
-		steplist[] += num2str(seq_num[p]) + " - " + num2str(round(en_energy[p]*100)/100) + "eV"
+		//redimension /n=(dimsize(en_energy,0)) steplist, steplistsel
+		steplist[] += " - " + num2str(round(en_energy[p]*100)/100) + "eV"
 	else 
 	
 		//not an energy scan, need to read something else .. what??
 		
 		//print "can't find energy"
-		redimension /n=(dimsize(seq_num,0)) steplist, steplistsel
-		steplist[] = "step " + num2str(seq_num[p])
+		//redimension /n=(dimsize(seq_num,0)) steplist, steplistsel
+		steplist[] = "image " + num2str(seq_num[p])
+	endif
+	
+	if(whichlistitem("timeW",s_wavenames)>=0)
+		wave /z times = timeW
+	else
+		wave /z times
 	endif
 
 	variable i
@@ -182,6 +184,7 @@ function NRB_loadprimary([update,row])
 		redimension /n=(1) steplist, steplistsel
 		steplist = "no images"
 		steplistsel = 0x80
+		Button NRBCopyPos,disable=1
 	else
 		if(steplistsel[0] == 0x80)
 			steplistsel = 0
@@ -243,6 +246,7 @@ function NRB_loadprimary([update,row])
 	else
 		jsonfound = 1
 		metadatafilename = stringfromlist(0,greplist(jsonfiles,"^"+basename+".*jsonl"))
+		metadata = addmetadatafromjson(pnamemd,"scan_id",metadatafilename,metadata)
 		metadata = addmetadatafromjson(pnamemd,"institution",metadatafilename,metadata)
 		metadata = addmetadatafromjson(pnamemd,"project_name",metadatafilename,metadata)
 		metadata = addmetadatafromjson(pnamemd,"proposal_id",metadatafilename,metadata)
@@ -268,6 +272,8 @@ function NRB_loadprimary([update,row])
 		metadata = addmetadatafromjson(pnamemd,"RSoXS_SAXS_SDD",metadatafilename,metadata)
 		metadata = addmetadatafromjson(pnamemd,"RSoXS_SAXS_BCX",metadatafilename,metadata)
 		metadata = addmetadatafromjson(pnamemd,"RSoXS_SAXS_BCY",metadatafilename,metadata)
+		variable /g scan_id = numberByKey("scan_id",metadata)
+		string det = stringByKey("RSoXS_Main_DET",metadata)
 		metadata = replacestring(":",metadata,"  -  ")
 		redimension /n=(itemsinlist(metadata)) mdlist
 		mdlist[] = stringfromlist(p,metadata)
@@ -312,9 +318,6 @@ function NRB_loadprimary([update,row])
 	endif
 	
 	
-	
-	
-	string det = stringByKey("RSoXS_Main_DET",metadata,"  -  ")
 	
 	nvar saxsorwaxs = root:Packages:NIKANISTRSoXS:saxsorwaxs
 	
@@ -361,6 +364,7 @@ Function NRB_datadispProc(tca) : TabControl
 			Variable tab = tca.tab
 			if(tab==0)
 				setwindow NISTRSoXSBrowser#Graph2D,HIDE=1
+				setwindow NISTRSoXSBrowser#Profiles,HIDE=1
 				setwindow NISTRSoXSBrowser#Graph1D,HIDE=0
 				SetVariable NRB_Mindisp,disable=1
 				SetVariable NRB_Maxdisp,disable=1
@@ -369,12 +373,22 @@ Function NRB_datadispProc(tca) : TabControl
 				Button NRB_Autoscale,disable=1
 			elseif(tab==1)
 				setwindow NISTRSoXSBrowser#Graph2D,HIDE=0
+				setwindow NISTRSoXSBrowser#Profiles,HIDE=1
 				setwindow NISTRSoXSBrowser#Graph1D,HIDE=1
 				SetVariable NRB_Mindisp,disable=0
 				SetVariable NRB_Maxdisp,disable=0
 				PopupMenu NRB_Colorpop,disable=0
 				CheckBox NRB_logimg,disable=0
 				Button NRB_Autoscale,disable=0
+			elseif(tab==2)
+				setwindow NISTRSoXSBrowser#Graph2D,HIDE=1
+				setwindow NISTRSoXSBrowser#Profiles,HIDE=0
+				setwindow NISTRSoXSBrowser#Graph1D,HIDE=1
+				SetVariable NRB_Mindisp,disable=1
+				SetVariable NRB_Maxdisp,disable=1
+				PopupMenu NRB_Colorpop,disable=1
+				CheckBox NRB_logimg,disable=1
+				Button NRB_Autoscale,disable=1
 			endif
 			break
 		case -1: // control being killed
@@ -440,10 +454,10 @@ function NRB_InitNISTRSoXS()
 	ListBox ScansLB,pos={1.00,67.00},size={208.00,519.00},proc=NRB_ScanListBoxProc
 	ListBox ScansLB,listWave=root:Packages:NikaNISTRSoXS:scanlist,row= 7,mode= 1
 	ListBox ScansLB,selRow= 28,widths={124,60},userColumnResize= 1
-	ListBox ChannelLB,pos={217.00,67.00},size={251.00,139.00}
+	ListBox ChannelLB,pos={217.00,114.00},size={251.00,139.00}
 	ListBox ChannelLB,listWave=root:Packages:NikaNISTRSoXS:channellist,widths={15,250}
 	ListBox ChannelLB,selWave=root:Packages:NikaNISTRSoXS:channellistsel,mode= 4,proc=NRB_ChannelLBproc
-	ListBox ScanStepLB,pos={217.00,272.00},size={251.00,377.00},proc=NRB_ScanStepLBproc
+	ListBox ScanStepLB,pos={217.00,272.00},size={251.00,340.00},proc=NRB_ScanStepLBproc
 	ListBox ScanStepLB,listWave=root:Packages:NikaNISTRSoXS:steplist
 	ListBox ScanStepLB,selWave=root:Packages:NikaNISTRSoXS:steplistsel,row=scanrow
 	ListBox ScanStepLB,mode= 9
@@ -462,36 +476,40 @@ function NRB_InitNISTRSoXS()
 	TitleBox Pathdisp,pos={64.00,11.00},size={400.00,20.00},fSize=10,frame=5
 	TitleBox Pathdisp,variable= root:Packages:NikaNISTRSoXS:pathtodata,fixedSize=1
 	TabControl datadisp,pos={474.00,4.00},size={875.00,860.00},proc=NRB_datadispProc
-	TabControl datadisp,tabLabel(0)="1D data",tabLabel(1)="Images",value= 1
+	TabControl datadisp,tabLabel(0)="1D data",tabLabel(1)="Images",tabLabel(2)="Profiles",value= 1
 	Button LoadDarkBut,pos={216.00,720.00},size={125.00,34.00},proc=NRB_NIKADarkbut,title="Load as Dark(s)"
 	Button OpenMaskBut,pos={216.00,682.00},size={125.00,34.00},proc=NRB_NIKAMaskbut,title="Open for Mask"
 	Button BeamCenterBu,pos={344.00,682.00},size={125.00,34.00},proc=NRB_NIKABCbut,title="Open for\rBeam Geometry"
 	Button ConvSelBut,pos={344.00,721.00},size={125.00,34.00},proc=NRB_NIKAbut,title="Convert Selection"
-	Button QANTimportbut,pos={217.00,209.00},size={246.00,42.00},title="Import channels to\r QANT for analysis"
+	Button QANTimportbut,pos={217.00,69.00},size={246.00,42.00},title="Import channels to\r QANT for analysis"
 	GroupBox NIKAgroup,pos={214.00,662.00},size={259.00,98.00},title="NIKA Integration"
 	Button NRB_SAXSWAXSbut,pos={235.00,767.00},size={206.00,39.00},proc=NRB_SWbutproc,title="SAXS images\r(click to toggle)"
 	Button NRB_SAXSWAXSbut,labelBack=(65535,65535,65535),fStyle=1,fColor=(0,0,20000)
 	Button NRB_SAXSWAXSbut,valueColor=(65535,65535,65535)
-	SetVariable NRB_Mindisp,pos={620.00,5.00},size={80.00,18.00},bodyWidth=60,proc=NRB_ImageRangeChange,title="Min"
+	SetVariable NRB_Mindisp,pos={704.00,5.00},size={80.00,18.00},bodyWidth=60,proc=NRB_ImageRangeChange,title="Min"
 	SetVariable NRB_Mindisp,limits={-5000,500000,1},value=minval
-	SetVariable NRB_Maxdisp,pos={720.00,5.00},size={80.00,18.00},bodyWidth=60,proc=NRB_ImageRangeChange,title="Max"
+	SetVariable NRB_Maxdisp,pos={803.00,5.00},size={80.00,18.00},bodyWidth=60,proc=NRB_ImageRangeChange,title="Max"
 	SetVariable NRB_Maxdisp,limits={-5000,500000,1},value=maxval
-	PopupMenu NRB_Colorpop,pos={802.00,6.00},size={200.00,19.00},proc=NRB_colorpopproc
+	PopupMenu NRB_Colorpop,pos={891.00,6.00},size={200.00,19.00},proc=NRB_colorpopproc
 	PopupMenu NRB_Colorpop,mode=8,value= #"\"*COLORTABLEPOPNONAMES*\""	
-	CheckBox NRB_logimg,pos={1012.00,6.00},size={33.00,15.00},title="log",value=logimage,proc=NRB_logimagebutproc,variable=logimage
-	Button NRB_Autoscale,pos={1069.00,6.00},size={68.00,15.00},proc=NRB_autoscalebut,title="Autoscale"
+	CheckBox NRB_logimg,pos={1101.00,6.00},size={33.00,15.00},title="log",value=logimage,proc=NRB_logimagebutproc,variable=logimage
+	Button NRB_Autoscale,pos={1158.00,6.00},size={68.00,15.00},proc=NRB_autoscalebut,title="Autoscale"
 	CheckBox NRB_autocheck,pos={67.00,34.00},size={130.00,15.00},proc=NRB_autocheckproc,title="Refresh automatically"
 	CheckBox NRB_autocheck,value= 0
 	CheckBox NRB_Darkscheck,pos={292.00,816.00},size={73.00,15.00},proc=NRP_Viewdarks_butproc,title="View Darks"
 	CheckBox NRB_Darkscheck,value= 1
-	TitleBox Location,pos={1150.00,1.00},size={254.00,23.00}
+	TitleBox Location,pos={1236.00,1.00},size={254.00,23.00}
 	TitleBox Location,variable= root:Packages:NikaNISTRSoXS:location
+	Button NRBCopyPos,pos={220.00,619.00},size={226.00,24.00},title="Copy Location for Spreadsheet"
 	
 	Display/W=(481,28,1344,860)/HOST=# /HIDE=1 
 	RenameWindow #,Graph1D
 	SetActiveSubwindow ##
 	Display/W=(481,28,1344,860)/HOST=# 
 	RenameWindow #,Graph2D
+	SetActiveSubwindow ##
+	Display/W=(481,28,1344,860)/HOST=# /HIDE=1
+	RenameWindow #,Profiles
 	SetActiveSubwindow ##
 	
 	
@@ -597,15 +615,21 @@ function NRB_updateimageplot([autoscale])
 	wave selwave = root:Packages:NikaNISTRSoXS:steplistsel
 	variable i, num 
 	duplicate /free selwave, tempwave
-	tempwave = selwave[p]? 1 : 0
+	tempwave = selwave[p]&1? 1 : 0
 	num = sum(tempwave)
 	NRB_MakeImagePlots(num)
 	string listofsteps = ""
 	for(i=0;i<dimsize(selwave,0);i+=1)
-		if(selwave[i])
+		if(selwave[i]&1)
 			listofsteps = addlistitem(num2str(i),listofsteps)
 		endif
 	endfor
+	if(num==1)
+		Button NRBCopyPos,disable=0
+	else
+		Button NRBCopyPos,disable=1
+	endif
+	NRB_loadprofiles(listofsteps)
 	NRB_loadimages(listofsteps, autoscale=autoscale)
 end
 
@@ -752,7 +776,7 @@ function NRB_loadimages(listofsteps,[autoscale])
 			appendimage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] imagesm
 			ModifyGraph /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] margin=1,nticks=0,standoff=0
 			ModifyImage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] ''#0 log=logimage,ctab= {minval,maxval,$colortab,0}
-			TextBox /w=NISTRSoXSBrowser#Graph2D#$imagenames[i]/S=0/F=0 steplist[str2num(stringfromlist(i,listofsteps))]
+			TextBox /w=NISTRSoXSBrowser#Graph2D#$imagenames[i]/S=0/F=0/A=LT steplist[str2num(stringfromlist(i,listofsteps))]
 			minv = wavemin(imagesm)
 			maxv = wavemax(imagesm)
 			if(minv<totminv)
@@ -776,12 +800,7 @@ function NRB_loadimages(listofsteps,[autoscale])
 		minval = totminv
 		maxval = totmaxv
 	else
-	//	if(totminv > minval)
-	//		minval = totminv
-	//	endif
-	//	if(totmaxv < maxval)
-	//		maxval = totmaxv
-	//	endif
+
 	endif
 	for(i=0;i<itemsinlist(listofsteps);i+=1)
 		if(success[i])
@@ -789,7 +808,7 @@ function NRB_loadimages(listofsteps,[autoscale])
 			ModifyImage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] ''#0 log=logimage,ctab= {realminval,maxval,$colortab,0}
 		endif
 	endfor
-	
+	setwindow NISTRSoXSBrowser,hook(syncaxes)=NRB_axishook
 	
 	
 	setdatafolder currentfolder
@@ -1090,6 +1109,8 @@ function NRB_convertpathtonika([main,mask,dark,beamcenter])
 		SVAR MainPathInfoStr=root:Packages:Convert2Dto1D:MainPathInfoStr
 		MainPathInfoStr=S_path
 		TitleBox PathInfoStrt, win =EGNA_Convert2Dto1DPanel, variable=MainPathInfoStr
+		SVAR DataFileExtension=root:Packages:Convert2Dto1D:DataFileExtension
+		DataFileExtension = "BS_Suitcase_Tiff"
 		EGNA_UpdateDataListBox()	
 	endif
 	if(mask)
@@ -1273,10 +1294,12 @@ function NRB_loadforbeamcenteringinNIKA(filename)
 		TabControl BmCntrTab, value=0, win=EGN_CreateBmCntrFieldPanel
 		showinfo /w=CCDImageForBmCntr
 	endif
+	
 end
 
 function NRB_convertnikafilelistsel(filenamelist)
 	string filenamelist
+	setup_NIKA_sectors()
 	NRB_convertpathtonika(main=1)
 	doupdate
 	nvar invert = root:Packages:Convert2Dto1D:InvertImages
@@ -1405,4 +1428,297 @@ function /wave NRB_splitsignal(wavein,times, rises, falls, goodpulse)
 	
 	//curvefit
 	return waveout
+end
+
+function setup_NIKA_sectors()
+
+	nvar UseSectors = root:Packages:Convert2Dto1D:UseSectors
+	nvar QbinningLogarithmic = root:Packages:Convert2Dto1D:QbinningLogarithmic
+	nvar DoCircularAverage = root:Packages:Convert2Dto1D:DoCircularAverage
+	nvar UseQvector = root:Packages:Convert2Dto1D:UseQvector
+	nvar QvectorNumberPoints = root:Packages:Convert2Dto1D:QvectorNumberPoints
+	nvar DoSectorAverages = root:Packages:Convert2Dto1D:DoSectorAverages
+	nvar DisplayDataAfterProcessing = root:Packages:Convert2Dto1D:DisplayDataAfterProcessing
+	nvar StoreDataInIgor = root:Packages:Convert2Dto1D:StoreDataInIgor
+	nvar OverwriteDataIfExists = root:Packages:Convert2Dto1D:OverwriteDataIfExists
+	nvar Use2DdataName = root:Packages:Convert2Dto1D:Use2DdataName
+	nvar NumberOfSectors = root:Packages:Convert2Dto1D:NumberOfSectors
+	nvar SectorsHalfWidth = root:Packages:Convert2Dto1D:SectorsHalfWidth
+	nvar SectorsStartAngle = root:Packages:Convert2Dto1D:SectorsStartAngle
+	nvar SectorsStepInAngle = root:Packages:Convert2Dto1D:SectorsStepInAngle
+	nvar DisplaySectorsEG_N2DGraph = root:Packages:Convert2Dto1D:DisplaySectorsEG_N2DGraph
+	nvar DisplayBeamCenterEG_N2DGraph = root:Packages:Convert2Dto1D:DisplayBeamCenterEG_N2DGraph
+	nvar SilentMode = root:Packages:Convert2Dto1D:SilentMode
+	svar commandstr = root:Packages:Convert2Dto1D:CnvCommandStr
+	
+	UseSectors = 1
+	QbinningLogarithmic = 1
+	DoCircularAverage = 1
+	UseQvector = 1
+	QvectorNumberPoints = 200
+	DoSectorAverages = 1
+	DisplayDataAfterProcessing = 0
+	StoreDataInIgor = 1
+	OverwriteDataIfExists = 1
+	Use2DdataName = 0
+	NumberOfSectors = 4
+	SectorsHalfWidth = 10
+	SectorsStartAngle = 0
+	SectorsStepInAngle = 90
+	DisplaySectorsEG_N2DGraph = 1
+	DisplayBeamCenterEG_N2DGraph = 1
+	silentmode = 1
+	commandstr = "NRB_updateimageplot()"
+end
+
+
+
+Function NRB_LoadQANT(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			Execute/P "INSERTINCLUDE \"QANT\""
+			Execute/P "COMPILEPROCEDURES "
+			Execute/P/Q/Z "QANT_Loaderfunc()"
+			svar /z directory = root:NEXAFS:directory
+			if(!svar_exists(directory))
+				print "QANT failed to load"
+				break
+			endif
+			svar /z pathtodata = root:Packages:NikaNISTRSoXS:pathtodata
+			directory = pathtodata
+			newpath/o/q/z NEXAFSPath, pathtodata
+			svar /z FileType = root:NEXAFS:FileType
+			fileType = "bluesky"
+			Execute/P/Q "QANT_CheckFulldir()"
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+Function NRB_Copylocbut(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			NRB_Copyloc()
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+function NRB_Copyloc()
+	wave selwave = root:Packages:NikaNISTRSoXS:steplistsel
+	variable i, num 
+	duplicate /free selwave, tempwave
+	tempwave = selwave[p]&1? 1 : 0
+	num = sum(tempwave)
+	NRB_MakeImagePlots(num)
+	variable step = -1
+	if(num==1)
+		for(i=0;i<dimsize(selwave,0);i+=1)
+			if(selwave[i]&1)	
+				step = i
+				break
+			endif
+		endfor
+	endif
+	if(step>=0)
+		string foldersave = getdatafolder(1)
+		setdatafolder root:Packages:NikaNISTRSoXS:Channels
+		variable x = nan
+		variable y = nan
+		variable z = nan
+		variable th = nan
+		// try to use the waves!
+		wave /z rsoxsx = RSoXS_Sample_Outboard_Inboard
+		if(waveexists(rsoxsx))
+			x = rsoxsx[step]
+		endif
+		wave /z rsoxsy = RSoXS_Sample_Up_Down
+		if(waveexists(rsoxsy))
+			y = rsoxsy[step]
+		endif
+		wave /z rsoxsz = RSoXS_Sample_Downstream_Upstream
+		if(waveexists(rsoxsz))
+			z = rsoxsz[step]
+		endif
+		wave /z rsoxsth = RSoXS_Sample_Rotation
+		if(waveexists(rsoxsth))
+			th = rsoxsth[step]
+		endif
+	
+	
+	
+		// use baseline instead
+		wave/z /t baseline0
+		if(!waveexists(baseline0))
+			setdatafolder foldersave
+			return 0
+		endif
+		findvalue /text="RSoXS Sample Outboard-Inboard" baseline0
+		x =x*0!=0? round(100*str2num(baseline0[V_value][1]))/100 : x
+		findvalue /text="RSoXS Sample Up-Down" baseline0
+		y =y*0!=0?  round(100*str2num(baseline0[V_value][1]))/100 : y
+		findvalue /text="RSoXS Sample Downstream-Upstream" baseline0
+		z =z*0!=0?  round(100*str2num(baseline0[V_value][1]))/100 : z
+		findvalue /text="RSoXS Sample Rotation" baseline0
+		th =th*0!=0?  round(100*str2num(baseline0[V_value][1]))/100 : th
+		
+		string output = "[{'motor': 'x', 'position': " + num2str(x)
+		output +="}, {'motor': 'y', 'position': " + num2str(y)
+		output +="}, {'motor': 'z', 'position': " + num2str(z)
+		output +="}, {'motor': 'th', 'position': " + num2str(th) + "}]"
+		putscrapText output
+				
+		setdatafolder foldersave
+	endif
+end
+
+function NRB_find_and_aniso_scan(variable scan_id, variable num)
+	
+	wave waves = NRB_findscan(scan_id , num)
+	if(waveexists(waves))
+		wave anisowaves = NRB_calc_aniso(waves, scan_id, num)
+		NRB_graph_aniso(anisowaves)
+	endif
+
+end
+
+
+function /wave NRB_findscan(variable scan_id, variable num)
+	dfref foldersave = getdatafolderdfr()
+	setdatafolder root:SAS
+	variable i = 0
+	string foldername = getindexedobjnamedfr(getdatafolderdfr(),4,i)
+	string matchstr = "DataFileName=" + num2str(scan_id) + ".*-" + num2str(num) + ".tiff"
+	string match
+	do
+		setdatafolder foldername
+		wave rwave = $stringfromlist(0,wavelist("r_*_C",";",""))
+		wave qwave = $stringfromlist(0,wavelist("q_*_C",";",""))
+		if(waveexists(rwave) && waveexists(qwave))
+			match = greplist(note(rwave),matchstr,0,";")
+			if(strlen(match)>2)
+				setdatafolder ::
+				setdatafolder replacestring("_C", foldername, "_0_10")
+				wave rwave0 = $stringfromlist(0,wavelist("r_*",";",""))
+				wave qwave0 = $stringfromlist(0,wavelist("q_*",";",""))
+				setdatafolder ::
+				setdatafolder replacestring("_C", foldername, "_90_10")
+				wave rwave90 = $stringfromlist(0,wavelist("r_*",";",""))
+				wave qwave90 = $stringfromlist(0,wavelist("q_*",";",""))
+				setdatafolder ::
+				setdatafolder replacestring("_C", foldername, "_180_10")
+				wave rwave180 = $stringfromlist(0,wavelist("r_*",";",""))
+				wave qwave180 = $stringfromlist(0,wavelist("q_*",";",""))
+				setdatafolder ::
+				setdatafolder replacestring("_C", foldername, "_270_10")
+				wave rwave270 = $stringfromlist(0,wavelist("r_*",";",""))
+				wave qwave270 = $stringfromlist(0,wavelist("q_*",";",""))
+				break
+			endif
+		endif
+		i++
+		setdatafolder root:SAS
+		foldername =  getindexedobjnamedfr(getdatafolderdfr(),4,i)
+	while(strlen(foldername)>0)
+	if(strlen(match)>2)
+		make /wave /n=10 /free wavewave
+		wavewave[0] = rwave
+		wavewave[1] = qwave
+		wavewave[2] = rwave0
+		wavewave[3] = qwave0
+		wavewave[4] = rwave90
+		wavewave[5] = qwave90
+		wavewave[6] = rwave180
+		wavewave[7] = qwave180
+		wavewave[8] = rwave270
+		wavewave[9] = qwave270
+		setdatafolder foldersave
+		return wavewave
+	else
+		//		no conversion
+		print("can't find conversion")
+		wave /z nullwave
+		setdatafolder foldersave
+		return nullwave
+	endif	
+end
+
+function /wave NRB_calc_aniso(wave /wave wavewave, variable scan_id, variable num)
+	wave rwave = wavewave[0]
+	wave qwave = wavewave[1]
+	wave rwave0 = wavewave[2]
+	wave qwave0 = wavewave[3]
+	wave rwave90 = wavewave[4]
+	wave qwave90 = wavewave[5]
+	wave rwave180 = wavewave[6]
+	wave qwave180 = wavewave[7]
+	wave rwave270 = wavewave[8]
+	wave qwave270 = wavewave[9]
+	dfref foldersave = getdatafolderdfr()
+	setdatafolder root:SAS
+	
+	setdatafolder root:
+	newdatafolder /o/s NRBdata
+	newdatafolder /o/s $("scan"+num2str(scan_id))
+	newdatafolder /o/s $("img"+num2str(num))
+	duplicate /o rwave, $nameofwave(rwave)
+	duplicate /o qwave, $nameofwave(qwave)
+	wave newrwave = $nameofwave(rwave)
+	wave newqwave = $nameofwave(qwave)
+	variable minq = min(min(wavemin(qwave0),wavemin(qwave90)),min(wavemin(qwave180),wavemin(qwave270)))
+	variable maxq = max(max(wavemax(qwave0),wavemax(qwave90)),max(wavemax(qwave180),wavemax(qwave270)))
+	make /o/n=200 anisoq, anisor, parar, perpr
+	setscale /i x,ln(minq),ln(maxq), anisoq
+	anisoq = exp(x)
+	parar = ( interp(anisoq,qwave0,rwave0) + interp(anisoq,qwave180,rwave180) )/2
+	perpr = ( interp(anisoq,qwave90,rwave90) + interp(anisoq,qwave270,rwave270) )/2
+	anisor = (parar-perpr) / (parar + perpr)
+	make /free/wave/n=6 aniso_waves
+	aniso_waves[0] = parar
+	aniso_waves[1] = perpr
+	aniso_waves[2] = anisor
+	aniso_waves[3] = anisoq
+	aniso_waves[4] = rwave
+	aniso_waves[5] = qwave
+	setdatafolder foldersave
+	return aniso_waves
+end
+
+function NRB_graph_aniso(wave /wave anisowaves)
+	wave parar = anisowaves[0]
+	wave perpr = anisowaves[1]
+	wave anisor = anisowaves[2]
+	wave anisoq = anisowaves[3]
+	wave rwave = anisowaves[4]
+	wave qwave = anisowaves[5]
+	
+	appendtograph /w=NISTRSoXSBrowser#profiles parar, perpr vs anisoq
+	appendtograph /w=NISTRSoXSBrowser#profiles rwave vs qwave
+	ModifyGraph /w=NISTRSoXSBrowser#profiles log=1
+	ModifyGraph /w=NISTRSoXSBrowser#profiles mode(parar)=7,hbFill(parar)=5,useNegPat(parar)=1,hBarNegFill(parar)=3,toMode(parar)=1
+end
+
+function NRB_loadprofiles(string list)
+	nvar scan_id =  root:Packages:NikaNISTRSoXS:channels:scan_id
+	variable i
+	string traces = traceNameList("NISTRSoXSBrowser#profiles",";",1)
+	for(i=itemsinlist(traces)-1;i>=0;i--)
+		RemoveFromGraph /W=NISTRSoXSBrowser#profiles /Z $stringfromlist(i,traces)
+	endfor
+	for(i=0;i<itemsinlist(list);i++)
+		NRB_find_and_aniso_scan(scan_id, str2num(stringfromlist(i,list)))
+	endfor
+	
 end
