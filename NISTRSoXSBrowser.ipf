@@ -1457,7 +1457,7 @@ function setup_NIKA_sectors()
 	UseQvector = 1
 	QvectorNumberPoints = 200
 	DoSectorAverages = 1
-	DisplayDataAfterProcessing = 0
+	//DisplayDataAfterProcessing = 0
 	StoreDataInIgor = 1
 	OverwriteDataIfExists = 1
 	Use2DdataName = 0
