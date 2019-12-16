@@ -115,7 +115,7 @@ function NRB_loadprimary([update,row])
 	getfilefolderinfo /q/z /p=tempfolder tempfilename
 	copyfile /o/p=$(pname) basename+"-primary.csv" as getenvironmentVariable("TMP")+"\\"+ tempfilename
 	LoadWave/q/O/J/D/A/K=0/P=tempfolder/W tempfilename
-	deletefile /p=tempfolder tempfilename
+	deletefile/z /p=tempfolder tempfilename
 
 
 	wave /z datawave = $(stringfromlist(0,S_waveNames))
@@ -371,6 +371,9 @@ Function NRB_datadispProc(tca) : TabControl
 				PopupMenu NRB_Colorpop,disable=1
 				CheckBox NRB_logimg,disable=1
 				Button NRB_Autoscale,disable=1
+				Slider NRB_OffsetSLRD, disable=1
+				Button NRB_popprofilebut, disable=1
+				TitleBox NRB_Offset_Slider_Text, disable=1
 			elseif(tab==1)
 				setwindow NISTRSoXSBrowser#Graph2D,HIDE=0
 				setwindow NISTRSoXSBrowser#Profiles,HIDE=1
@@ -380,6 +383,9 @@ Function NRB_datadispProc(tca) : TabControl
 				PopupMenu NRB_Colorpop,disable=0
 				CheckBox NRB_logimg,disable=0
 				Button NRB_Autoscale,disable=0
+				Slider NRB_OffsetSLRD, disable=1
+				Button NRB_popprofilebut, disable=1
+				TitleBox NRB_Offset_Slider_Text, disable=1
 			elseif(tab==2)
 				setwindow NISTRSoXSBrowser#Graph2D,HIDE=1
 				setwindow NISTRSoXSBrowser#Profiles,HIDE=0
@@ -389,6 +395,9 @@ Function NRB_datadispProc(tca) : TabControl
 				PopupMenu NRB_Colorpop,disable=1
 				CheckBox NRB_logimg,disable=1
 				Button NRB_Autoscale,disable=1
+				Slider NRB_OffsetSLRD, disable=0
+				Button NRB_popprofilebut, disable=0
+				TitleBox NRB_Offset_Slider_Text, disable=0
 			endif
 			break
 		case -1: // control being killed
@@ -411,7 +420,7 @@ function NRB_InitNISTRSoXS()
 		colortab = "Terrain"
 	endif
 	variable /g minval = -500, maxval = 20000, logimage =0, leftmin=0, leftmax=1000, botmin=0, botmax=1000, darkview=0, saxsorwaxs=1
-	
+	variable /g profileoffset = 0
 	
 	
 	variable /g bkgrunning = 1
@@ -472,9 +481,9 @@ function NRB_InitNISTRSoXS()
 	ListBox baselineLB,pos={4.00,617.00},size={198.00,239.00}
 	ListBox baselineLB,listWave=root:Packages:NikaNISTRSoXS:bllist
 	ListBox baselineLB,widths={124,60,60},userColumnResize= 1
-	Button Browsebut,pos={6.00,9.00},size={54.00,37.00},proc=NRB_Browsebutfunc,title="Browse"
-	TitleBox Pathdisp,pos={64.00,11.00},size={400.00,20.00},fSize=10,frame=5
-	TitleBox Pathdisp,variable= root:Packages:NikaNISTRSoXS:pathtodata,fixedSize=1
+	Button Browsebut,pos={3.00,4.00},size={54.00,37.00},proc=NRB_Browsebutfunc,title="Browse"
+	TitleBox Pathdisp,pos={63.00,4.00},size={387.00,20.00},fSize=10,frame=5
+	TitleBox Pathdisp,variable= root:Packages:NikaNISTRSoXS:pathtodata
 	TabControl datadisp,pos={474.00,4.00},size={875.00,860.00},proc=NRB_datadispProc
 	TabControl datadisp,tabLabel(0)="1D data",tabLabel(1)="Images",tabLabel(2)="Profiles",value= 1
 	Button LoadDarkBut,pos={216.00,720.00},size={125.00,34.00},proc=NRB_NIKADarkbut,title="Load as Dark(s)"
@@ -486,34 +495,41 @@ function NRB_InitNISTRSoXS()
 	Button NRB_SAXSWAXSbut,pos={235.00,767.00},size={206.00,39.00},proc=NRB_SWbutproc,title="SAXS images\r(click to toggle)"
 	Button NRB_SAXSWAXSbut,labelBack=(65535,65535,65535),fStyle=1,fColor=(0,0,20000)
 	Button NRB_SAXSWAXSbut,valueColor=(65535,65535,65535)
-	SetVariable NRB_Mindisp,pos={704.00,5.00},size={80.00,18.00},bodyWidth=60,proc=NRB_ImageRangeChange,title="Min"
+	SetVariable NRB_Mindisp,pos={639.00,41.00},size={80.00,18.00},bodyWidth=60,proc=NRB_ImageRangeChange,title="Min"
 	SetVariable NRB_Mindisp,limits={-5000,500000,1},value=minval
-	SetVariable NRB_Maxdisp,pos={803.00,5.00},size={80.00,18.00},bodyWidth=60,proc=NRB_ImageRangeChange,title="Max"
+	SetVariable NRB_Maxdisp,pos={737.00,41.00},size={80.00,18.00},bodyWidth=60,proc=NRB_ImageRangeChange,title="Max"
 	SetVariable NRB_Maxdisp,limits={-5000,500000,1},value=maxval
-	PopupMenu NRB_Colorpop,pos={891.00,6.00},size={200.00,19.00},proc=NRB_colorpopproc
+	PopupMenu NRB_Colorpop,pos={831.00,42.00},size={200.00,19.00},proc=NRB_colorpopproc
 	PopupMenu NRB_Colorpop,mode=8,value= #"\"*COLORTABLEPOPNONAMES*\""	
-	CheckBox NRB_logimg,pos={1101.00,6.00},size={33.00,15.00},title="log",value=logimage,proc=NRB_logimagebutproc,variable=logimage
-	Button NRB_Autoscale,pos={1158.00,6.00},size={68.00,15.00},proc=NRB_autoscalebut,title="Autoscale"
+	CheckBox NRB_logimg,pos={1041.00,42.00},size={33.00,15.00},title="log",value=logimage,proc=NRB_logimagebutproc,variable=logimage
+	Button NRB_Autoscale,pos={1098.00,42.00},size={68.00,15.00},proc=NRB_autoscalebut,title="Autoscale"
 	CheckBox NRB_autocheck,pos={67.00,34.00},size={130.00,15.00},proc=NRB_autocheckproc,title="Refresh automatically"
 	CheckBox NRB_autocheck,value= 0
 	CheckBox NRB_Darkscheck,pos={292.00,816.00},size={73.00,15.00},proc=NRP_Viewdarks_butproc,title="View Darks"
-	CheckBox NRB_Darkscheck,value= 1
+	CheckBox NRB_Darkscheck,value= 0
 	TitleBox Location,pos={1236.00,1.00},size={254.00,23.00}
 	TitleBox Location,variable= root:Packages:NikaNISTRSoXS:location
 	Button NRBCopyPos,pos={220.00,619.00},size={226.00,24.00},title="Copy Location for Spreadsheet"
+	Slider NRB_OffsetSLRD,pos={506.00,52.00},size={200.00,22.00},proc=NRB_profileslider
+	Slider NRB_OffsetSLRD,help={"Change the offset between profiels"}
+	Slider NRB_OffsetSLRD,limits={0,100,1},value= 26,vert= 0,ticks= 0,disable=1,variable= root:Packages:NikaNISTRSoXS:profileoffset
+	Button NRB_popprofilebut,pos={1152.00,47.00},size={156.00,33.00},proc=NRB_pop_Profilebut,title="Pop out for comparison",disable=1
+	TitleBox NRB_Offset_Slider_Text,pos={557.00,39.00},size={74.00,15.00},title="Offset Profiles"
+	TitleBox NRB_Offset_Slider_Text,frame=0,disable=1
+	CheckBox NRB_autoconvert,pos={250.00,30.00},size={133.00,15.00},proc=NRB_autoConvert_chk,title="Convert automatically"
+	CheckBox NRB_autoconvert,value= 0,disable=0
 	
+	
+	SetWindow kwTopWin,hook(syncaxes)=NRB_axishook
 	Display/W=(481,28,1344,860)/HOST=# /HIDE=1 
 	RenameWindow #,Graph1D
 	SetActiveSubwindow ##
-	Display/W=(481,28,1344,860)/HOST=# 
+	Display/W=(481,74,1344,860)/HOST=# 
 	RenameWindow #,Graph2D
 	SetActiveSubwindow ##
-	Display/W=(481,28,1344,860)/HOST=# /HIDE=1
+	Display/W=(481,98,1344,857)/HOST=# /HIDE=1 
 	RenameWindow #,Profiles
 	SetActiveSubwindow ##
-	
-	
-	
 	
 End
 
@@ -561,7 +577,10 @@ function NRB_browse()
 		PathInfo Path_NISTRSoXS
 		pathtodata = s_path
 	endif
+	make/n=0/t/o conwave
 	SetDataFolder $CurrentFolder
+	
+	
 end
 
 
@@ -629,8 +648,9 @@ function NRB_updateimageplot([autoscale])
 	else
 		Button NRBCopyPos,disable=1
 	endif
-	NRB_loadprofiles(listofsteps)
+	
 	NRB_loadimages(listofsteps, autoscale=autoscale)
+	NRB_loadprofiles(listofsteps)
 end
 
 function NRB_MakeImagePlots(num)
@@ -1584,12 +1604,12 @@ function NRB_Copyloc()
 	endif
 end
 
-function NRB_find_and_aniso_scan(variable scan_id, variable num)
+function NRB_find_and_aniso_scan(variable scan_id, variable num, string name,variable color_red,variable color_green,variable color_blue, variable offset)
 	
 	wave waves = NRB_findscan(scan_id , num)
 	if(waveexists(waves))
 		wave anisowaves = NRB_calc_aniso(waves, scan_id, num)
-		NRB_graph_aniso(anisowaves)
+		NRB_graph_aniso(anisowaves,name,color_red,color_green,color_blue, offset)
 	endif
 
 end
@@ -1701,7 +1721,7 @@ function /wave NRB_calc_aniso(wave /wave wavewave, variable scan_id, variable nu
 	return aniso_waves
 end
 
-function NRB_graph_aniso(wave /wave anisowaves)
+function NRB_graph_aniso(wave /wave anisowaves,string name,variable color_red,variable color_green,variable color_blue,variable offset)
 	wave parar = anisowaves[0]
 	wave perpr = anisowaves[1]
 	wave anisor = anisowaves[2]
@@ -1709,21 +1729,106 @@ function NRB_graph_aniso(wave /wave anisowaves)
 	wave rwave = anisowaves[4]
 	wave qwave = anisowaves[5]
 	
-	appendtograph /w=NISTRSoXSBrowser#profiles parar, perpr vs anisoq
-	appendtograph /w=NISTRSoXSBrowser#profiles rwave vs qwave
+	appendtograph /w=NISTRSoXSBrowser#profiles parar /TN=$(Name+"pe"), perpr /TN=$(Name+"pa") vs anisoq
+	appendtograph /w=NISTRSoXSBrowser#profiles rwave /TN=$(Name+"r") vs qwave
 	ModifyGraph /w=NISTRSoXSBrowser#profiles log=1
-	ModifyGraph /w=NISTRSoXSBrowser#profiles mode(parar)=7,hbFill(parar)=5,useNegPat(parar)=1,hBarNegFill(parar)=3,toMode(parar)=1
+	ModifyGraph /w=NISTRSoXSBrowser#profiles mode($(Name+"pe"))=7,hbFill($(Name+"pe"))=5,useNegPat($(Name+"pe"))=1,hBarNegFill($(Name+"pe"))=3,toMode($(Name+"pe"))=1
+	modifygraph /w=NISTRSoXSBrowser#profiles rgb($(Name+"pa")) = (color_red,color_green,color_blue)
+	modifygraph /w=NISTRSoXSBrowser#profiles rgb($(Name+"pe")) = (color_red,color_green,color_blue)
+	modifygraph /w=NISTRSoXSBrowser#profiles rgb($(Name+"r")) = (color_red,color_green,color_blue)
+	modifygraph /w=NISTRSoXSBrowser#profiles muloffset($(Name+"pa"))={0,offset}
+	modifygraph /w=NISTRSoXSBrowser#profiles muloffset($(Name+"pe"))={0,offset}
+	modifygraph /w=NISTRSoXSBrowser#profiles muloffset($(Name+"r"))={0,offset}
 end
 
 function NRB_loadprofiles(string list)
 	nvar scan_id =  root:Packages:NikaNISTRSoXS:channels:scan_id
 	variable i
+	string stepbase, name
 	string traces = traceNameList("NISTRSoXSBrowser#profiles",";",1)
 	for(i=itemsinlist(traces)-1;i>=0;i--)
 		RemoveFromGraph /W=NISTRSoXSBrowser#profiles /Z $stringfromlist(i,traces)
 	endfor
-	for(i=0;i<itemsinlist(list);i++)
-		NRB_find_and_aniso_scan(scan_id, str2num(stringfromlist(i,list)))
+	wave /t scans = root:Packages:NikaNISTRSoXS:scanlist
+	wave /t steps = root:Packages:NikaNISTRSoXS:steplist
+	
+	nvar offsetnum = root:Packages:NikaNISTRSoXS:profileoffset
+	
+	variable offset = 1
+	variable offsetstep = offsetnum * .1
+	
+	
+	Variable numTraces =itemsinlist(list)
+	if (numTraces <= 0)
+		return -1
+	endif
+	variable numtracesden=numtraces
+	if( numTraces < 2 )
+		numTracesden= 2	// avoid divide by zero, use just the first color for 1 trace
+	endif
+	ColorTab2Wave YellowHot
+	wave RGB = M_colors
+	Variable numRows= DimSize(rgb,0)
+	Variable red, green, blue
+	Variable index
+	for(i=0; i<numTraces; i+=1)
+		index = round(i/(numTracesden-1) * (numRows*2/3-1))	// spread entire color range over all traces.
+		red = rgb[index][0]
+		green = rgb[index][1]
+		blue =  rgb[index][2]
+		splitstring /e="[0-9|step]* - (.*)" steps[str2num(stringfromlist(i,list))], stepbase
+		name = cleanupname("s"+num2str(scan_id)+"_"+stepbase,0)
+		
+		NRB_find_and_aniso_scan(scan_id, str2num(stringfromlist(i,list)),name,red, green, blue, 2^offset)
+		offset += offsetstep
 	endfor
 	
 end
+
+Function NRB_profileslider(sa) : SliderControl
+	STRUCT WMSliderAction &sa
+
+	switch( sa.eventCode )
+		case -1: // control being killed
+			break
+		default:
+			if( sa.eventCode & 1 ) // value set
+				Variable curval = sa.curval
+				NRB_updateimageplot()
+			endif
+			break
+	endswitch
+
+	return 0
+End
+
+
+Function NRB_pop_Profilebut(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+
+
+Function NRB_autoConvert_chk(cba) : CheckBoxControl
+	STRUCT WMCheckboxAction &cba
+
+	switch( cba.eventCode )
+		case 2: // mouse up
+			Variable checked = cba.checked
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
