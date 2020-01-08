@@ -426,6 +426,7 @@ function NRB_InitNISTRSoXS()
 	variable /g bkgrunning = 1
 	variable /g bkglastRunTicks = ticks
 	variable /g bkgrunNumber = 0
+	variable /g autoConvert = 0
 	
 	
 	
@@ -516,7 +517,7 @@ function NRB_InitNISTRSoXS()
 	Button NRB_popprofilebut,pos={1152.00,47.00},size={156.00,33.00},proc=NRB_pop_Profilebut,title="Pop out for comparison",disable=1
 	TitleBox NRB_Offset_Slider_Text,pos={557.00,39.00},size={74.00,15.00},title="Offset Profiles"
 	TitleBox NRB_Offset_Slider_Text,frame=0,disable=1
-	CheckBox NRB_autoconvert,pos={250.00,30.00},size={133.00,15.00},proc=NRB_autoConvert_chk,title="Convert automatically"
+	CheckBox NRB_autoconvert,pos={250.00,30.00},size={133.00,15.00},variable=root:Packages:NikaNISTRSoXS:autoConvert,title="Convert automatically"
 	CheckBox NRB_autoconvert,value= 0,disable=0
 	
 	
@@ -634,12 +635,12 @@ function NRB_updateimageplot([autoscale])
 	wave selwave = root:Packages:NikaNISTRSoXS:steplistsel
 	variable i, num 
 	duplicate /free selwave, tempwave
-	tempwave = selwave[p]&1? 1 : 0
+	tempwave = selwave[p]&1 || selwave[p]&8? 1 : 0
 	num = sum(tempwave)
 	NRB_MakeImagePlots(num)
 	string listofsteps = ""
 	for(i=0;i<dimsize(selwave,0);i+=1)
-		if(selwave[i]&1)
+		if(selwave[i]&1 || selwave[i]&8)
 			listofsteps = addlistitem(num2str(i),listofsteps)
 		endif
 	endfor
@@ -1173,6 +1174,53 @@ function /t NRB_getfilenames()
 	setdatafolder root:Packages:NIKANISTRSoXS
 	wave selwave = root:Packages:NikaNISTRSoXS:steplistsel
 	variable i
+	string /g listofsteps = ""
+	for(i=0;i<dimsize(selwave,0);i+=1)
+		if(selwave[i])
+			listofsteps = addlistitem(num2str(i),listofsteps)
+		endif
+	endfor
+
+	svar basescanname
+	nvar saxsorwaxs, darkview
+	svar /z pname = root:Packages:NikaNISTRSoXS:pnameimages
+	wave /t steplist
+	killdatafolder /z images
+	newdatafolder /o/s images
+	string tiffnames = IndexedFile($pname, -1, ".tiff")
+	string matchingtiffs = listMatch(tiffnames,basescanname+"*")
+	string filenames = ""
+	string tifffilename = ""
+	
+	string primeordark
+	if(darkview)
+		primeordark = "*dark-"
+	else
+		primeordark = "*primary-"
+	endif
+	for(i=0;i<itemsinlist(listofsteps);i+=1)
+		if(saxsorwaxs)
+			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark + "*saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			if(strlen(tifffilename)<3)
+				tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark + "*Small*-"+stringfromlist(i,listofsteps)+".tiff"))
+			endif
+		else
+			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark + "*waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			if(strlen(tifffilename)<3)
+				tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark + "*Wide*-"+stringfromlist(i,listofsteps)+".tiff"))
+			endif
+		endif
+		filenames = addlistitem(tifffilename,filenames)
+	endfor
+	return filenames
+	
+end
+
+function /t NRB_scansteps()
+	string currentfolder =getdatafolder(1)
+	setdatafolder root:Packages:NIKANISTRSoXS
+	wave selwave = root:Packages:NikaNISTRSoXS:steplistsel
+	variable i
 	string listofsteps = ""
 	for(i=0;i<dimsize(selwave,0);i+=1)
 		if(selwave[i])
@@ -1199,9 +1247,15 @@ function /t NRB_getfilenames()
 	endif
 	for(i=0;i<itemsinlist(listofsteps);i+=1)
 		if(saxsorwaxs)
-			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark +"*saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark + "*saxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			if(strlen(tifffilename)<3)
+				tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark + "*Small*-"+stringfromlist(i,listofsteps)+".tiff"))
+			endif
 		else
-			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark +"*waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark + "*waxs*-"+stringfromlist(i,listofsteps)+".tiff"))
+			if(strlen(tifffilename)<3)
+				tifffilename = stringfromlist(0,listMatch(tiffnames,basescanname + primeordark + "*Wide*-"+stringfromlist(i,listofsteps)+".tiff"))
+			endif
 		endif
 		filenames = addlistitem(tifffilename,filenames)
 	endfor
@@ -1249,8 +1303,9 @@ Function NRB_NIKAbut(ba) : ButtonControl
 
 	switch( ba.eventCode )
 		case 2: // mouse up
-			string filelist = NRB_getfilenames()
-			NRB_convertnikafilelistsel(filelist)
+			NRB_Convertifneeded()
+			//string filelist = NRB_getfilenames()
+			//NRB_convertnikafilelistsel(filelist)
 			break
 	endswitch
 
@@ -1364,7 +1419,10 @@ Function NRB_BGTask(s)
 	NVAR runNumber= root:Packages:NikaNISTRSoXS:bkgrunNumber
 	runNumber += 1
 	NRB_Loaddir()
-	
+	nvar autoconvert = root:Packages:NikaNISTRSoXS:autoConvert
+	if(autoconvert)
+		NRB_Convertifneeded()
+	endif
 	doupdate
 	lastRunTicks= ticks
 	return 0
@@ -1615,11 +1673,12 @@ function NRB_find_and_aniso_scan(variable scan_id, variable num, string name,var
 end
 
 
+
 function /wave NRB_findscan(variable scan_id, variable num)
 	dfref foldersave = getdatafolderdfr()
 	if(!datafolderExists("root:SAS"))
 		wave /z nothing
-		print "No Conversion have been done yet"
+		//print "No Conversion have been done yet"
 		return nothing
 	endif
 	setdatafolder root:SAS
@@ -1679,6 +1738,21 @@ function /wave NRB_findscan(variable scan_id, variable num)
 		return nullwave
 	endif	
 end
+
+function NRB_Convertifneeded()
+	string filelist = NRB_getfilenames()
+	svar steplist = root:Packages:NikaNISTRSoXS:listofsteps
+	nvar scanid =  root:Packages:NikaNISTRSoXS:channels:scan_id
+	variable i
+	for(i=itemsinlist(steplist)-1;i>=0;i--)
+		wave testwave = NRB_findscan(scanid,str2num(stringfromlist(i,steplist)))
+		if(waveexists(testwave))
+			filelist = removelistitem(i,filelist)
+		endif
+	endfor
+	NRB_convertnikafilelistsel(filelist)
+end
+
 
 function /wave NRB_calc_aniso(wave /wave wavewave, variable scan_id, variable num)
 	wave rwave = wavewave[0]
@@ -1817,18 +1891,3 @@ Function NRB_pop_Profilebut(ba) : ButtonControl
 	return 0
 End
 
-
-
-Function NRB_autoConvert_chk(cba) : CheckBoxControl
-	STRUCT WMCheckboxAction &cba
-
-	switch( cba.eventCode )
-		case 2: // mouse up
-			Variable checked = cba.checked
-			break
-		case -1: // control being killed
-			break
-	endswitch
-
-	return 0
-End
