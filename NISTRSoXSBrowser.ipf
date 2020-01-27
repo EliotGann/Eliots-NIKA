@@ -108,12 +108,15 @@ function NRB_loadprimary([update,row])
 	killdatafolder /z channels
 	newdatafolder /o/s channels
 	//close /A
-
-	newpath /o/q tempfolder, (getenvironmentVariable("TMP"))
+	string tmppath = getenvironmentVariable("TMP")
+	if(strlen(tmppath)<1)
+		tmppath = getenvironmentVariable("TMPDIR")
+	endif
+	newpath /o/q tempfolder, tmppath
 
 	string tempfilename = "RSoXS"+num2str(round(abs(enoise(100000))))+".csv"
 	getfilefolderinfo /q/z /p=tempfolder tempfilename
-	copyfile /o/p=$(pname) basename+"-primary.csv" as getenvironmentVariable("TMP")+"\\"+ tempfilename
+	copyfile /o/p=$(pname) basename+"-primary.csv" as tmppath+"\\"+ tempfilename
 	LoadWave/q/O/J/D/A/K=0/P=tempfolder/W tempfilename
 	deletefile/z /p=tempfolder tempfilename
 
@@ -205,10 +208,15 @@ function NRB_loadprimary([update,row])
 		mdfilename = stringfromlist(i,metadatafilenames)
 		Splitstring /e="^"+basename+"-(.*)_monitor[.]csv$" mdfilename, monitorname
 		//print monitorname
-		newpath /o/q tempfolder, (getenvironmentVariable("TMP"))
+		
+		tmppath = getenvironmentVariable("TMP")
+		if(strlen(tmppath)<1)
+			tmppath = getenvironmentVariable("TMPDIR")
+		endif
+		newpath /o/q tempfolder, tmppath
 		tempfilename = "RSoXSmd"+num2str(round(abs(enoise(100000))))+".csv"
 		getfilefolderinfo /q/z /p=tempfolder tempfilename
-		copyfile /o/p=$(pnamemd) mdfilename as getenvironmentVariable("TMP")+"\\"+ tempfilename
+		copyfile /o/p=$(pnamemd) mdfilename as tmppath+"\\"+ tempfilename
 		LoadWave/L={0,1,0,0,2}/Q/O/J/D/n=$cleanupname(monitorname,0)/K=0/P=tempfolder/m tempfilename
 		deletefile /p=tempfolder tempfilename
 	
