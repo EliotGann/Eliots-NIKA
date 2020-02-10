@@ -54,7 +54,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		endif
 		ImageLoad/P=$(PathName)/T=tiff/O/N=$(NewWaveName) FileNameToLoad
 		string detectortype = ""
-		if(stringmatch(FileNameToLoad,"*Synced_saxs*"))
+		if(stringmatch(FileNameToLoad,"*Synced_saxs*") || stringmatch(FileNameToLoad,"*mall*"))
 			detectortype= "Small Angle CCD Detector_"
 		else
 			detectortype = "Wide Angle CCD Detector_"

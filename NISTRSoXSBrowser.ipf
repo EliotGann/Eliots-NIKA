@@ -519,7 +519,7 @@ function NRB_InitNISTRSoXS()
 	CheckBox NRB_Darkscheck,value= 0
 	TitleBox Location,pos={1236.00,1.00},size={254.00,23.00}
 	TitleBox Location,variable= root:Packages:NikaNISTRSoXS:location
-	Button NRBCopyPos,pos={220.00,619.00},size={226.00,24.00},title="Copy Location for Spreadsheet"
+	Button NRBCopyPos,pos={220.00,619.00},size={226.00,24.00},title="Copy Location for Spreadsheet",proc=NRB_copylocbut
 	Slider NRB_OffsetSLRD,pos={506.00,52.00},size={200.00,22.00},proc=NRB_profileslider
 	Slider NRB_OffsetSLRD,help={"Change the offset between profiels"}
 	Slider NRB_OffsetSLRD,limits={0,100,1},value= 26,vert= 0,ticks= 0,disable=1,variable= root:Packages:NikaNISTRSoXS:profileoffset
@@ -685,7 +685,7 @@ function NRB_MakeImagePlots(num)
 	
 	variable sizex, sizey
 	sizex = floor(863 / numx)
-	sizey = floor(832 / numy)
+	sizey = floor(786 / numy)
 	
 	variable xloc=0, yloc=0
 	variable imnum = 0
@@ -1466,7 +1466,7 @@ function /wave NRB_splitsignal(wavein,times, rises, falls, goodpulse)
 	string name = nameofwave(wavein)
 	wave /z waveout = $("_"+name)
 	if(numpnts(wavein)<2* numpnts(times))
-		print "not valid waves"
+		//print "not valid waves"
 		return waveout
 	endif
 	make /o/n=(dimsize(times,0)) $("m_"+name), $("s_"+name), $("f_"+name)
@@ -1478,7 +1478,7 @@ function /wave NRB_splitsignal(wavein,times, rises, falls, goodpulse)
 	pntlower1 = binarysearch(timesin,times[p]-1.5)
 	insertpoints /v=0 0,1,pntlower
 	make /free temprises, tempfalls
-	waveout = mean(datain,pntlower1[p]+2,pntupper[p]-0)
+	waveout = median(datain,pntlower1[p]+10,pntupper[p]-0)
 	stdwave = sqrt(variance(datain,pntlower1[p]+2,pntupper[p]-0))
 	variable i, meanvalue, alreadygood, err
 	for(i=0;i<dimsize(times,0);i+=1)
@@ -1500,12 +1500,12 @@ function /wave NRB_splitsignal(wavein,times, rises, falls, goodpulse)
 			alreadygood = goodpulse[i]
 			rises[i] = timesin(temprises[0]) // if so, change them to times (so they work for all channels)
 			falls[i] = timesin(tempfalls[0])
-			waveout[i] = mean(datain,binarysearchinterp(timesin,rises[i])+1,binarysearchinterp(timesin,falls[i])-1)
+			waveout[i] = median(datain,binarysearchinterp(timesin,rises[i])+1,binarysearchinterp(timesin,falls[i])-1)
 			stdwave[i] = sqrt(variance(datain,binarysearchinterp(timesin,rises[i])+1,binarysearchinterp(timesin,falls[i])-1))
 			goodpulse[i]=1
 		else
 			if(alreadygood) // have we already found the rising and falling times?
-				waveout[i] = mean(datain,binarysearch(timesin,rises[i])+0,binarysearch(timesin,falls[i]))
+				waveout[i] = median(datain,binarysearch(timesin,rises[i])+0,binarysearch(timesin,falls[i]))
 				stdwave[i] = sqrt(variance(datain,binarysearch(timesin,rises[i])+0,binarysearch(timesin,falls[i])))
 			else
 				goodpulse[i]=0
@@ -1609,7 +1609,7 @@ function NRB_Copyloc()
 	duplicate /free selwave, tempwave
 	tempwave = selwave[p]&1? 1 : 0
 	num = sum(tempwave)
-	NRB_MakeImagePlots(num)
+//	NRB_MakeImagePlots(num)
 	variable step = -1
 	if(num==1)
 		for(i=0;i<dimsize(selwave,0);i+=1)
@@ -1741,7 +1741,7 @@ function /wave NRB_findscan(variable scan_id, variable num)
 		return wavewave
 	else
 		//		no conversion
-		print("can't find conversion")
+		//print("can't find conversion")
 		wave /z nullwave
 		setdatafolder foldersave
 		return nullwave
@@ -1785,8 +1785,8 @@ function /wave NRB_calc_aniso(wave /wave wavewave, variable scan_id, variable nu
 	duplicate /o qwave, $nameofwave(qwave)
 	wave newrwave = $nameofwave(rwave)
 	wave newqwave = $nameofwave(qwave)
-	variable minq = min(min(wavemin(qwave0),wavemin(qwave90)),min(wavemin(qwave180),wavemin(qwave270)))
-	variable maxq = max(max(wavemax(qwave0),wavemax(qwave90)),max(wavemax(qwave180),wavemax(qwave270)))
+	variable minq = max(max(wavemin(qwave0),wavemin(qwave90)),max(wavemin(qwave180),wavemin(qwave270)))
+	variable maxq = min(min(wavemax(qwave0),wavemax(qwave90)),min(wavemax(qwave180),wavemax(qwave270)))
 	make /o/n=200 anisoq, anisor, parar, perpr
 	setscale /i x,ln(minq),ln(maxq), anisoq
 	anisoq = exp(x)
