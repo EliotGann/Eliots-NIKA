@@ -3151,9 +3151,10 @@ function /s Colwavetostring(wavein)
 	variable col, colvalue
 	string stringout="", dimlabel=""
 	matrixop /o/free colsum = sumcols(wavein)
+	matrixop /o/free colnum = numRows(wavein)
 	for(col=0;col<dimsize(wavein,1);col+=1)
 		dimlabel = getdimlabel(wavein,1,col)
-		colvalue = colsum(col)/2
+		colvalue = colsum(col)/colnum(col)
 		stringout = addlistitem(dimlabel +":"+num2str(colvalue),stringout) 	
 	endfor
 	return stringout
