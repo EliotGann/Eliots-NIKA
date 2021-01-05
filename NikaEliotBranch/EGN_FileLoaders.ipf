@@ -94,9 +94,10 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			teststring = Colwavetostring(datawave)
 			nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
 			pxsizex = 0.015 * numberbykey(detectortype+ "cam_bin_x",teststring)
+			pxsizex = pxsizex*0!=0 ? 0.06 : pxsizex
 			nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
 			pxsizey = 0.015 * numberbykey(detectortype+ "cam_bin_y",teststring)
-			
+			pxsizey = pxsizey*0!=0 ? 0.06 : pxsizey
 			
 			nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
 			SampleMeasurementTime = numberbykey(detectortype+ "cam_acquire_time",teststring)
@@ -107,11 +108,11 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
 			wavelength = 12.39842/xrayenergy
 			variable BSS, BSW, SAXST, WAXST, SamZ
-			BSS = numberbykey("Beam Stop SAXS",teststring)
-			BSW = numberbykey("Beam Stop WAXS",teststring)
-			SAXST = numberbykey("Detector SAXS Translation",teststring)
-			WAXST = numberbykey("Detector WAXS Translation",teststring)
-			SamZ = numberbykey("RSoXS Sample Downstream-Upstream",teststring)
+			//BSS = numberbykey("Beam Stop SAXS",teststring)
+			//BSW = numberbykey("Beam Stop WAXS",teststring)
+			//SAXST = numberbykey("Detector SAXS Translation",teststring)
+			//WAXST = numberbykey("Detector WAXS Translation",teststring)
+			//SamZ = numberbykey("RSoXS Sample Downstream-Upstream",teststring)
 			
 			
 			
@@ -209,16 +210,16 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		string imagenum
 		splitstring /e="^([1234567890]*)-(.{3,8})-" filenametoload, imagenum,  userfilename
 		userfilename = stringbykey("sample_name",metadata)
-		UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100000)/100)+"eV_"+detectortype[0] + "_"+ num2str(imnum)// + imagenum + "_" 
-			
+		//UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100000)/100)+"eV_"+detectortype[0] + "_"+ num2str(imnum)// + imagenum + "_" 
+		UserFileName = cleanupname(userfilename,0)+"_"+ num2str(imnum)// + imagenum + "_"
 		wave LoadedWvHere=$(NewWaveName)
 		Redimension/N=(-1,-1,0)/i 	LoadedWvHere			//this is fix for 3 layer tiff files...
 		NewNote+="DataFileName="+FileNameToLoad+";"
 		NewNote+="DataFileType="+".tif"+";.tiff"+";"
 		
-		nvar bcx = root:Packages:Convert2Dto1D:BeamCenterX
-		nvar bcy = root:Packages:Convert2Dto1D:BeamCenterY
-		nvar sdd = root:Packages:Convert2Dto1D:SampleToCCDDistance
+		//nvar bcx = root:Packages:Convert2Dto1D:BeamCenterX
+		//nvar bcy = root:Packages:Convert2Dto1D:BeamCenterY
+		//nvar sdd = root:Packages:Convert2Dto1D:SampleToCCDDistance
 		variable msdd = nan
 		variable mbcx = nan
 		variable mbcy = nan
@@ -232,9 +233,9 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			mbcy = numberByKey("RSoXS_SAXS_BCY",metadata)
 		endif
 		//if the metadata has beam center and distance locations, then use them!
-		sdd = msdd*0==0 ? msdd : sdd
-		bcx = mbcx*0==0 ? mbcx : bcx
-		bcy = mbcy*0==0 ? mbcy : bcy
+		//sdd = msdd*0==0 ? msdd : sdd
+		//bcx = mbcx*0==0 ? mbcx : bcx
+		//bcy = mbcy*0==0 ? mbcy : bcy
 		
 		nvar /z autopickq = root:Packages:SwitchNIKA:AutopickQ
 		if(nvar_exists(autopickq))

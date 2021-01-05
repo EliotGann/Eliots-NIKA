@@ -40,11 +40,30 @@ function NRB_Loaddir([update])
 	endfor
 	make /o/n=(itemsinlist(filenames),2) /t scanlist
 	scanlist[][0]= stringfromlist(p,filenames)
+	string tmppath = getenvironmentVariable("TMP")
+	if(strlen(tmppath)<1)
+		tmppath = getenvironmentVariable("TMPDIR")
+	endif
+	STRING tempfilename
+	
 	if(update==0)
 		for(i=dimsize(scanlist,0)-1;i>=0;i-=1)
-			LoadWave/Q/O/J/D/A/K=0/P=$(pname)/M /B="N=wave0;"  scanlist[i][0]+"-primary.csv"
-			wave wavein = $stringfromlist(0,s_waveNames)
-			scanlist[i][1] = num2str(dimsize(wavein,0)-1)
+			newpath /o/q tempfolder, tmppath
+			tempfilename = "RSoXSmd"+num2str(round(abs(enoise(100000))))+".csv"
+			getfilefolderinfo /q/z /p=tempfolder tempfilename
+			copyfile /o/p=$(pname) scanlist[i][0]+"-primary.csv" as tmppath+"\\"+ tempfilename
+			LoadWave/Q/O/J/D/A/K=0/M /B="N=wave0;"/P=tempfolder tempfilename
+			Variable err = GetRTError(0)
+			IF (ERR !=0)
+				deletefile /p=tempfolder tempfilename
+				DELETEPOINTS /m=0 I,1,SCANLIST
+				oldcsvs = REMOVELISTItem(I,oldcsvs)
+				err = GetRTError(1)
+			ELSE
+				deletefile /p=tempfolder tempfilename
+				wave wavein = $stringfromlist(0,s_waveNames)
+				scanlist[i][1] = num2str(dimsize(wavein,0)-1)
+			ENDIF
 		endfor
 	endif
 	ListBox  ScansLB win=NISTRSoXSBrowser, selRow=(dimsize(scanlist,0)-1)
@@ -337,7 +356,7 @@ function NRB_loadprimary([update,row])
 		saxsorwaxs = 0
 		button NRB_SAXSWAXSbut fColor=(1,26214,0),title="WAXS images\r(click to toggle)",valueColor=(0,0,0)
 	endif
-	
+	SLEEP /S 2
 	NRB_updateimageplot()
 	setdatafolder currentfolder
 	
@@ -816,6 +835,17 @@ function NRB_loadimages(listofsteps,[autoscale])
 				totmaxv = maxv
 			endif
 			success[i] = 1
+			
+			// at this point I have s_path, s_filename, imagename[i] (panel name where the image is), steplist[str2num(stringfromlist(i,listofsteps))] (text in textbox)
+			// I would like to have the UID, imagenumber = str2num(stringfromlist(i,listofsteps))
+			wave /t mdlist = root:Packages:NikaNISTRSoXS:mdlist
+			findvalue /text="uid" mdlist
+			string uid = replacestring("uid  -  ",mdlist[v_value],"")
+			string imagenumber = stringfromlist(i,listofsteps)
+			string tbtext = steplist[str2num(stringfromlist(i,listofsteps))]
+			string panelname = "NISTRSoXSBrowser#Graph2D#"+imagenames[i]
+			string path = s_path
+			string filename = s_filename
 		endif
 	endfor
 	if(autoscale)
@@ -1422,7 +1452,7 @@ Function NRB_BGTask(s)
 		return 0 // not running -- wait for user
 	endif
 	NVAR lastRunTicks= root:Packages:NikaNISTRSoXS:bkglastRunTicks
-	if( (lastRunTicks+60) >= ticks )
+	if( (lastRunTicks+120) >= ticks )
 		return 0 // not time yet, wait
 	endif
 	NVAR runNumber= root:Packages:NikaNISTRSoXS:bkgrunNumber
