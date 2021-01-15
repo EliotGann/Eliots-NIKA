@@ -17,9 +17,9 @@ Suggested Installation Method:
     usually this is in the documents/wavemetrics/ folder
     (close Igor after this step)
 
-4.) create a shortcut (windows) or alias (Mac) of RSoXSMenus.ipf and 'Boot Nika.ipf' files in the "Igor Procedures" directory
+4.) create a shortcut (windows) or alias (Mac) of the NISTRSoXSNIKA_Igor directory into the "Igor Procedures" directory
 
-5.) create a shortcut or alias of all of the rest of the files and those in the directory and subdirectory into a NIKA subdirectory (make one if there isn't one already) within the "User Procedures" directory
+5.) create a shortcut or alias of the NISTRSoXSNIKA_Users directory into the "User Procedures" directory
 
 6.) Install XMLUtils (https://www.wavemetrics.com/project/XMLutils)
 

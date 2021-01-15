@@ -1,0 +1,8 @@
+IGOR
+WAVES/T/N=(3,13)	listwave
+BEGIN
+	"SAXS 11 16 2020"	"371.52"	"491.17"	"512.12"	"20405-PS300-primary-Small Angle CCD Detector_image-0.tiff_mask.tif"	"D:RSoXS Documents:images:masks:"	"NaN"	"NaN"	"0.0009"	"67"	"0.4262"	"3"	"*"
+	"SAXS 12 01 2020"	"489.86"	"490.75"	"521.8"	"21476-PS300-primary-Small Angle CCD Detector_image-48.tiff_mask.tif"	"D:RSoXS Documents:images:masks:"	"NaN"	"NaN"	"0.00075"	"67.7"	"-94"	"3"	"*"
+	"WAXS 12 01 2020"	"400.46"	"530.99"	"38.745"	"21143-JDM_103-primary-Wide Angle CCD Detector_image-0.tiff_mask.tif"	"D:RSoXS Documents:images:masks:"	"NaN"	"NaN"	"-93.995"	"3"	"-9.9995"	"68.4"	"*"
+END
+X SetScale/P x 0,1,"", listwave; SetScale/P y 0,1,"", listwave; SetScale d 0,0,"", listwave
