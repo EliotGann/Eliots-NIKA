@@ -108,11 +108,11 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
 			wavelength = 12.39842/xrayenergy
 			variable BSS, BSW, SAXST, WAXST, SamZ
-			//BSS = numberbykey("Beam Stop SAXS",teststring)
-			//BSW = numberbykey("Beam Stop WAXS",teststring)
-			//SAXST = numberbykey("Detector SAXS Translation",teststring)
-			//WAXST = numberbykey("Detector WAXS Translation",teststring)
-			//SamZ = numberbykey("RSoXS Sample Downstream-Upstream",teststring)
+			BSS = numberbykey("Beam Stop SAXS",teststring)
+			BSW = numberbykey("Beam Stop WAXS",teststring)
+			SAXST = numberbykey("Detector SAXS Translation",teststring)
+			WAXST = numberbykey("Detector WAXS Translation",teststring)
+			SamZ = numberbykey("RSoXS Sample Downstream-Upstream",teststring)
 			
 			
 			
@@ -252,10 +252,10 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 					wave/t listwave = root:Packages:SwitchNIKA:listwave
 					make /free /n=(dimsize(listwave,0)) BSSs = str2num(listwave[p][9]), BSWs = str2num(listwave[p][11]),SAXSTs = str2num(listwave[p][8]),WAXSTs = str2num(listwave[p][10]),ccdgood
 					make /free /n=(dimsize(listwave,0))/t Sampnames = listwave[p][12]
-					ccdgood = abs(BSSs -BSS) <1 ? 1 : 0
-					ccdgood*=abs(BSWs-BSW) < 1 ? 1 : 0
-					ccdgood*=abs(SAXSTs-SAXST) < 1 ? 1 : 0
-					ccdgood*=abs(WAXSTs-WAXST) < 1 ? 1 : 0
+					ccdgood =(BSSs*0!=0) || (abs(BSSs -BSS) <1) ? 1 : 0
+					ccdgood*=(BSWs*0!=0) || (abs(BSWs-BSW) < 1) ? 1 : 0
+					ccdgood*=(SAXSTs*0!=0) || (abs(SAXSTs-SAXST) < 1) ? 1 : 0
+					ccdgood*=(WAXSTs*0!=0) || (abs(WAXSTs-WAXST) < 1) ? 1 : 0
 					svar /z samplenamelist = root:Packages:Nika1101:samplenamelist
 					if(svar_exists(samplenamelist))
 						ccdgood*=stringmatch(stringbykey(num2str(sample_id),samplenamelist,"=",","), Sampnames[p]) ? 1 : 0

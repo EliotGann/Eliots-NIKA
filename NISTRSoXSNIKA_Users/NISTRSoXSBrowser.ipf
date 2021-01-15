@@ -515,7 +515,8 @@ function NRB_InitNISTRSoXS()
 	TitleBox Pathdisp,variable= root:Packages:NikaNISTRSoXS:pathtodata
 	TabControl datadisp,pos={474.00,4.00},size={875.00,860.00},proc=NRB_datadispProc
 	TabControl datadisp,tabLabel(0)="1D data",tabLabel(1)="Images",tabLabel(2)="Profiles",value= 1
-	Button LoadDarkBut,pos={216.00,720.00},size={125.00,34.00},proc=NRB_NIKADarkbut,title="Load as Dark(s)"
+	Button LoadDarkBut,pos={216.00,720.00},size={55.00,32.00},proc=NRB_NIKADarkbut,title="Load as\r Dark(s)"
+	Button LoadDarkBut1,pos={276.00,721.00},size={55.00,32.00},proc=NRB_setupNIKA_but,title="(re)setup\rNIKA"
 	Button OpenMaskBut,pos={216.00,682.00},size={125.00,34.00},proc=NRB_NIKAMaskbut,title="Open for Mask"
 	Button BeamCenterBu,pos={344.00,682.00},size={125.00,34.00},proc=NRB_NIKABCbut,title="Open for\rBeam Geometry"
 	Button ConvSelBut,pos={344.00,721.00},size={125.00,34.00},proc=NRB_NIKAbut,title="Convert Selection"
@@ -1413,8 +1414,8 @@ end
 
 function NRB_convertnikafilelistsel(filenamelist)
 	string filenamelist
-	setup_NIKA_sectors()
 	NRB_convertpathtonika(main=1)
+	setup_NIKA_sectors()
 	doupdate
 	nvar invert = root:Packages:Convert2Dto1D:InvertImages
 	invert = 1
@@ -1547,9 +1548,38 @@ function /wave NRB_splitsignal(wavein,times, rises, falls, goodpulse)
 	return waveout
 end
 
-function setup_NIKA_sectors()
+Function NRB_setupNIKA_but(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			NRB_convertpathtonika(main=1)
+			setup_NIKA_sectors(redosetup=1)
+
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
+
+function setup_NIKA_sectors([redosetup])
+	variable redosetup
+	redosetup = paramisdefault(redosetup)? 0 : redosetup // don't redo the setup unless it's requested
+	string foldersave = getdatafolder(1)
+	setdatafolder root:packages:NIKANISTRSoXS:
+	VARIABLE /G NIKAsetup
+	if(NIKAsetup && !redosetup)
+		return 0 // don't setup NIKA again, unless it's specifically asked for
+	else
+		NIKAsetup=1// set it so that NIKA setup is now 1 if it wasn't before
+		// either NIKA wasn't setup yet, or it was but a new setup has been requested
+	endif
 
 	nvar UseSectors = root:Packages:Convert2Dto1D:UseSectors
+	nvar UseMask = root:Packages:Convert2Dto1D:UseMask
 	nvar QbinningLogarithmic = root:Packages:Convert2Dto1D:QbinningLogarithmic
 	nvar DoCircularAverage = root:Packages:Convert2Dto1D:DoCircularAverage
 	nvar UseQvector = root:Packages:Convert2Dto1D:UseQvector
@@ -1567,14 +1597,19 @@ function setup_NIKA_sectors()
 	nvar DisplayBeamCenterEG_N2DGraph = root:Packages:Convert2Dto1D:DisplayBeamCenterEG_N2DGraph
 	nvar SilentMode = root:Packages:Convert2Dto1D:SilentMode
 	svar commandstr = root:Packages:Convert2Dto1D:CnvCommandStr
+	nvar UseSubtractFixedOffset = root:Packages:Convert2Dto1D:UseSubtractFixedOffset
+	nvar SubtractFixedOffset = root:Packages:Convert2Dto1D:SubtractFixedOffset
 	
+	
+
 	UseSectors = 1
+	UseMask = 1
 	QbinningLogarithmic = 1
 	DoCircularAverage = 1
 	UseQvector = 1
 	QvectorNumberPoints = 200
 	DoSectorAverages = 1
-	//DisplayDataAfterProcessing = 0
+	DisplayDataAfterProcessing = 0
 	StoreDataInIgor = 1
 	OverwriteDataIfExists = 1
 	Use2DdataName = 0
@@ -1586,6 +1621,26 @@ function setup_NIKA_sectors()
 	DisplayBeamCenterEG_N2DGraph = 1
 	silentmode = 1
 	commandstr = "NRB_updateimageplot()"
+	UseSubtractFixedOffset = 1
+	SubtractFixedOffset = 100
+	StartSwitchNika()
+	wave /t listwave = root:Packages:SwitchNIKA:listwave
+	listwave[0][0]= {"SAXS 11 16 2020","SAXS 12 01 2020","WAXS 12 01 2020","WAXS 12 11 2020"}
+	listwave[0][1]= {"371.52","489.86","400.46","400.46"}
+	listwave[0][2]= {"491.17","490.75","530.99","530.99"}
+	listwave[0][3]= {"512.12","521.8","38.745","38.745"}
+	listwave[0][4]= {"20405-PS300-primary-Small Angle CCD Detector_image-0.tiff_mask.tif","21476-PS300-primary-Small Angle CCD Detector_image-48.tiff_mask.tif","21143-JDM_103-primary-Wide Angle CCD Detector_image-0.tiff_mask.tif"}
+	listwave[3][4]= {"21965-an_PF6_3-primary-Wide Angle CCD Detector_image-10.tiff_mask.tif"}
+	listwave[0][5]= {"D:RSoXS Documents:images:masks:","D:RSoXS Documents:images:masks:","D:RSoXS Documents:images:masks:","D:RSoXS Documents:images:masks:"}
+	listwave[0][6]= {"NaN","NaN","NaN","NaN"}
+	listwave[0][7]= {"NaN","NaN","NaN","NaN"}
+	listwave[0][8]= {"0.0009","0.00075","*","-93.999"}
+	listwave[0][9]= {"67","67.7","*","67.7"}
+	listwave[0][10]= {"0.4262","-94","-9.9995","-9.9997"}
+	listwave[0][11]= {"3","3","68.4","71.4"}
+	listwave[0][12]= {"*","*","*","*"}
+	nvar AutoPickQ = root:Packages:SwitchNIKA:AutoPickQ
+	AutoPickQ=1
 end
 
 
@@ -1780,16 +1835,21 @@ end
 
 function NRB_Convertifneeded()
 	string filelist = NRB_getfilenames()
+	string storefilelist = filelist
 	svar steplist = root:Packages:NikaNISTRSoXS:listofsteps
 	nvar scanid =  root:Packages:NikaNISTRSoXS:channels:scan_id
-	variable i
+	variable i,count,countdone
 	for(i=itemsinlist(steplist)-1;i>=0;i--)
 		wave testwave = NRB_findscan(scanid,str2num(stringfromlist(i,steplist)))
 		if(waveexists(testwave))
 			filelist = removelistitem(i,filelist)
 		endif
 	endfor
-	NRB_convertnikafilelistsel(filelist)
+	if(itemsinlist(filelist)==0) // all files were done previously, but user is asking for conversion, so give it to them!
+		NRB_convertnikafilelistsel(storefilelist)
+	else
+		NRB_convertnikafilelistsel(filelist)
+	endif
 end
 
 
