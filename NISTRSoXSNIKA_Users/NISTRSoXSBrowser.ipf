@@ -525,6 +525,7 @@ function NRB_InitNISTRSoXS()
 	Button NRB_SAXSWAXSbut,pos={235.00,767.00},size={206.00,39.00},proc=NRB_SWbutproc,title="SAXS images\r(click to toggle)"
 	Button NRB_SAXSWAXSbut,labelBack=(65535,65535,65535),fStyle=1,fColor=(0,0,20000)
 	Button NRB_SAXSWAXSbut,valueColor=(65535,65535,65535)
+	Button NRB_SelectAll_but,pos={397.00,815.00},size={55.00,32.00},proc=NRB_SelectAll,title="Select All"
 	SetVariable NRB_Mindisp,pos={639.00,41.00},size={80.00,18.00},bodyWidth=60,proc=NRB_ImageRangeChange,title="Min"
 	SetVariable NRB_Mindisp,limits={-5000,500000,1},value=minval
 	SetVariable NRB_Maxdisp,pos={737.00,41.00},size={80.00,18.00},bodyWidth=60,proc=NRB_ImageRangeChange,title="Max"
@@ -1990,3 +1991,20 @@ Function NRB_pop_Profilebut(ba) : ButtonControl
 	return 0
 End
 
+
+Function NRB_SelectAll(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			// click code here
+			wave stepsel = root:Packages:NikaNISTRSoXS:steplistsel
+			stepsel = 8
+			NRB_updateimageplot()
+			break
+		case -1: // control being killed
+			break
+	endswitch
+
+	return 0
+End
