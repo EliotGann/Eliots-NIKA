@@ -89,6 +89,8 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		
 		// Peter changed line above from $PathName to BS_metadata bc that seems to be where it should be.
 		
+		
+		// Get values from the baseline stream.  These are taken before and after every scan
 		wave /z datawave = $(stringfromlist(0,S_waveNames))
 		if(waveexists(datawave))
 			teststring = Colwavetostring(datawave)
@@ -129,16 +131,23 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		else
 			LoadWave/Q/O/J/D/A/K=0/P=BS_metadata/W  stringfromlist(0,teststring)
 		endif
-		wave /z datawave = $(stringfromlist(0,S_waveNames))
+		wave /z datawave = $(stringfromlist(0,S_waveNames)) 
+		
+		
+		// get the values from the primary stream - measurements that are taken with every measurement
 		if(waveexists(datawave))
 			nvar SampleI0=root:Packages:Convert2Dto1D:samplei0
 			//extract /free datawave, testwave,  datawave*0==0
 			//redimension /N=(dimsize(testwave,0)/3,3) testwave
 			//matrixop /o colsums = sumcols(testwave)
 			//SampleI0 = colsums[1]
-			wave /z Izero_Mesh_Drain_Current, en_monoen_readback, Synced_saxs_cam_bin_x, Synced_saxs_cam_bin_y
+			wave /z Izero_Mesh_Drain_Current, en_monoen_readback
 			if(waveexists(Izero_Mesh_Drain_Current))
 				SampleI0 = Izero_Mesh_Drain_Current[imnum]
+			endif
+			wave /z RSoXS_Au_Mesh_Current
+			if(waveexists(RSoXS_Au_Mesh_Current))
+				SampleI0 = RSoXS_Au_Mesh_Current[imnum]
 			endif
 			if(waveexists(en_monoen_readback))
 				nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
@@ -151,6 +160,62 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 				nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
 				samplemeasurementtime = RSoXS_Diagnostic_Picoammeter_exposure_time[imnum]
 			endif
+			wave /z Small_Angle_CCD_Detector_cam_acquire_time
+			if(waveexists(Small_Angle_CCD_Detector_cam_acquire_time))
+				nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
+				samplemeasurementtime = Small_Angle_CCD_Detector_cam_acquire_time[imnum]
+			endif
+			wave /z Wide_Angle_CCD_Detector_cam_acquire_time
+			if(waveexists(Wide_Angle_CCD_Detector_cam_acquire_time))
+				nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
+				samplemeasurementtime = Wide_Angle_CCD_Detector_cam_acquire_time[imnum]
+			endif
+			wave /z Synced_saxs_cam_acquire_time
+			if(waveexists(Synced_saxs_cam_acquire_time))
+				nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
+				samplemeasurementtime = Synced_saxs_cam_acquire_time[imnum]
+			endif
+			wave /z Synced_waxs_cam_acquire_time
+			if(waveexists(Synced_waxs_cam_acquire_time))
+				nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
+				samplemeasurementtime = Synced_waxs_cam_acquire_time[imnum]
+			endif
+			wave /z Synced_saxs_cam_bin_x, Synced_saxs_cam_bin_y
+			if(waveexists(Synced_saxs_cam_bin_x))
+				nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
+				pxsizex = 0.015 * Synced_saxs_cam_bin_x[imnum]
+				nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
+				pxsizey = 0.015 * Synced_saxs_cam_bin_y[imnum]
+			endif
+			wave /z Small_Angle_CCD_Detector_cam_bin_x, Small_Angle_CCD_Detector_cam_bin_y
+			if(waveexists(Synced_waxs_cam_bin_x))
+				nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
+				pxsizex = 0.015 * Small_Angle_CCD_Detector_cam_bin_x[imnum]
+				nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
+				pxsizey = 0.015 * Small_Angle_CCD_Detector_cam_bin_y[imnum]
+			endif
+			wave /z Synced_waxs_cam_bin_x, Synced_waxs_cam_bin_y
+			if(waveexists(Synced_waxs_cam_bin_x))
+				nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
+				pxsizex = 0.015 * Synced_waxs_cam_bin_x[imnum]
+				nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
+				pxsizey = 0.015 * Synced_waxs_cam_bin_y[imnum]
+			endif
+			wave /z Wide_Angle_CCD_Detector_cam_bin_x, Wide_Angle_CCD_Detector_cam_bin_y
+			if(waveexists(Wide_Angle_CCD_Detector_cam_bin_x))
+				nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
+				pxsizex = 0.015 * Wide_Angle_CCD_Detector_cam_bin_x[imnum]
+				nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
+				pxsizey = 0.015 * Wide_Angle_CCD_Detector_cam_bin_y[imnum]
+			endif
+			wave /z Small_Angle_CCD_Detector_cam_acquire_time
+			if(waveexists(Synced_saxs_cam_bin_x))
+				nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
+				pxsizex = 0.015 * Synced_saxs_cam_bin_x[imnum]
+				nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
+				pxsizey = 0.015 * Synced_saxs_cam_bin_y[imnum]
+			endif
+			wave /z Small_Angle_CCD_Detector_cam_acquire_time
 			if(waveexists(Synced_saxs_cam_bin_x))
 				nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
 				pxsizex = 0.015 * Synced_saxs_cam_bin_x[imnum]
@@ -159,6 +224,9 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			endif
 			
 		endif
+		
+		
+		// get values from the metadata loaded into the database prior to the scan
 		setdatafolder ::
 		killdatafolder /z importdata
 		string metadata=""
@@ -205,13 +273,27 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			print "Currently can't load metadata json or jsonl file"
 		endif	
 		NewNote +=metadata+";"
+		
+		// note we are not loading monitor data here.  If it is necessary, we should figure out how to include that.
+		
+		
+		
+		
+		// build the dataname from the metadata and scan info we have so far
 			
 		svar UserFileName=root:Packages:Convert2Dto1D:OutputDataName
 		string imagenum
-		splitstring /e="^([1234567890]*)-(.{3,8})-" filenametoload, imagenum,  userfilename
-		userfilename = stringbykey("sample_name",metadata)
+		splitstring /e="^([1234567890]*)-(.{3,8})-" filenametoload, imagenum,  userfilename // we can use the filename itself
+		userfilename = stringbykey("sample_name",metadata)  // we can also use any metadata information
 		//UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100000)/100)+"eV_"+detectortype[0] + "_"+ num2str(imnum)// + imagenum + "_" 
-		UserFileName = cleanupname(userfilename,0)+"_"+ num2str(imnum)// + imagenum + "_"
+		UserFileName = cleanupname(userfilename,0)+"_"+ num2str(imnum)// + imagenum + "_" // imnum is the image in the sequence
+		// to add any extra information to the name, just add it here.  
+		// values from the primary stream, store them as a variable when they are loaded aboe 
+		//  eg  energy (en_monoen_readback[imnum]), polarization (en_polarization[imnum]), 
+		// values from metadata use stringbykey("sample_name",metadata)
+		// values from baseline, use stringbykey("cam_bin_y",teststring)
+		
+		
 		wave LoadedWvHere=$(NewWaveName)
 		Redimension/N=(-1,-1,0)/i 	LoadedWvHere			//this is fix for 3 layer tiff files...
 		NewNote+="DataFileName="+FileNameToLoad+";"
