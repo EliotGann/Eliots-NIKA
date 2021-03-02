@@ -1835,6 +1835,7 @@ function /wave NRB_findscan(variable scan_id, variable num)
 end
 
 function NRB_Convertifneeded()
+	EGN_BSLoaderPanelFnct()
 	string filelist = NRB_getfilenames()
 	string storefilelist = filelist
 	svar steplist = root:Packages:NikaNISTRSoXS:listofsteps

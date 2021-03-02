@@ -72,7 +72,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		//check if baseline csv is in current dir, if so use current, else use parent
 		string imagepathdir = indexedfile($PathName,-1,".csv")
 		string baselinefile = greplist(imagepathdir,"^"+FileNametoLoad[0,6]+".*baseline")
-		
+		string loadedinfo = ""
 		//print "Baseline CSV seems to be in"
 		print stringfromlist(0,baselinefile)
 		if(strlen(stringfromlist(0,baselinefile))==0)  // if it's not in the image dir, use the parent dir.
@@ -115,9 +115,6 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			SAXST = numberbykey("Detector SAXS Translation",teststring)
 			WAXST = numberbykey("Detector WAXS Translation",teststring)
 			SamZ = numberbykey("RSoXS Sample Downstream-Upstream",teststring)
-			
-			
-			
 			nvar Sampletransmission = root:Packages:Convert2Dto1D:SampleTransmission
 			NewNote += teststring
 		endif
@@ -144,16 +141,20 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			wave /z Izero_Mesh_Drain_Current, en_monoen_readback
 			if(waveexists(Izero_Mesh_Drain_Current))
 				SampleI0 = Izero_Mesh_Drain_Current[imnum]
+				loadedinfo += "Izero_Mesh:" + num2str(SampleI0)+";"
 			endif
 			wave /z RSoXS_Au_Mesh_Current
 			if(waveexists(RSoXS_Au_Mesh_Current))
 				SampleI0 = RSoXS_Au_Mesh_Current[imnum]
+				loadedinfo += "RSoXS_Au_Mesh:" + num2str(SampleI0)+";"
 			endif
 			if(waveexists(en_monoen_readback))
 				nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
 				xrayenergy = en_monoen_readback[imnum]/1000
+				loadedinfo += "X-ray_energy:" + num2str(round(xrayenergy*100000)/100)+";"
 				nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
 				wavelength = 12.39842/xrayenergy
+				loadedinfo += "X-ray_wavelength:" + num2str(wavelength)+";"
 			endif
 			wave /z RSoXS_Diagnostic_Picoammeter_exposure_time
 			if(waveexists(RSoXS_Diagnostic_Picoammeter_exposure_time))
@@ -164,63 +165,61 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			if(waveexists(Small_Angle_CCD_Detector_cam_acquire_time))
 				nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
 				samplemeasurementtime = Small_Angle_CCD_Detector_cam_acquire_time[imnum]
+				loadedinfo += "SAXS_exposuretime : " + num2str(samplemeasurementtime)+";"
 			endif
 			wave /z Wide_Angle_CCD_Detector_cam_acquire_time
 			if(waveexists(Wide_Angle_CCD_Detector_cam_acquire_time))
 				nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
 				samplemeasurementtime = Wide_Angle_CCD_Detector_cam_acquire_time[imnum]
+				loadedinfo += "WAXS_exposuretime : " + num2str(samplemeasurementtime)+";"
 			endif
 			wave /z Synced_saxs_cam_acquire_time
 			if(waveexists(Synced_saxs_cam_acquire_time))
 				nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
 				samplemeasurementtime = Synced_saxs_cam_acquire_time[imnum]
+				loadedinfo += "SAXS_exposuretime : " + num2str(samplemeasurementtime)+";"
 			endif
 			wave /z Synced_waxs_cam_acquire_time
 			if(waveexists(Synced_waxs_cam_acquire_time))
 				nvar SampleMeasurementTime=root:Packages:Convert2Dto1D:SampleMeasurementTime
 				samplemeasurementtime = Synced_waxs_cam_acquire_time[imnum]
+				loadedinfo += "WAXS_exposuretime : " + num2str(samplemeasurementtime)+";"
 			endif
 			wave /z Synced_saxs_cam_bin_x, Synced_saxs_cam_bin_y
 			if(waveexists(Synced_saxs_cam_bin_x))
 				nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
 				pxsizex = 0.015 * Synced_saxs_cam_bin_x[imnum]
+				loadedinfo += "SAXS_pixelsize_x : " + num2str(pxsizex)+";"
 				nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
 				pxsizey = 0.015 * Synced_saxs_cam_bin_y[imnum]
+				loadedinfo += "SAXS_pixelsize_y : " + num2str(pxsizey)+";"
 			endif
 			wave /z Small_Angle_CCD_Detector_cam_bin_x, Small_Angle_CCD_Detector_cam_bin_y
 			if(waveexists(Synced_waxs_cam_bin_x))
 				nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
 				pxsizex = 0.015 * Small_Angle_CCD_Detector_cam_bin_x[imnum]
+				loadedinfo += "WAXS_pixelsize_x : " + num2str(pxsizex)+";"
 				nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
 				pxsizey = 0.015 * Small_Angle_CCD_Detector_cam_bin_y[imnum]
+				loadedinfo += "WAXS_pixelsize_y : " + num2str(pxsizey)+";"
 			endif
 			wave /z Synced_waxs_cam_bin_x, Synced_waxs_cam_bin_y
 			if(waveexists(Synced_waxs_cam_bin_x))
 				nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
 				pxsizex = 0.015 * Synced_waxs_cam_bin_x[imnum]
+				loadedinfo += "SAXS_pixelsize_x : " + num2str(pxsizex)+";"
 				nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
 				pxsizey = 0.015 * Synced_waxs_cam_bin_y[imnum]
+				loadedinfo += "SAXS_pixelsize_y : " + num2str(pxsizey)+";"
 			endif
 			wave /z Wide_Angle_CCD_Detector_cam_bin_x, Wide_Angle_CCD_Detector_cam_bin_y
 			if(waveexists(Wide_Angle_CCD_Detector_cam_bin_x))
 				nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
 				pxsizex = 0.015 * Wide_Angle_CCD_Detector_cam_bin_x[imnum]
+				loadedinfo += "WAXS_pixelsize_x : " + num2str(pxsizex)+";"
 				nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
 				pxsizey = 0.015 * Wide_Angle_CCD_Detector_cam_bin_y[imnum]
-			endif
-			wave /z Small_Angle_CCD_Detector_cam_acquire_time
-			if(waveexists(Synced_saxs_cam_bin_x))
-				nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
-				pxsizex = 0.015 * Synced_saxs_cam_bin_x[imnum]
-				nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
-				pxsizey = 0.015 * Synced_saxs_cam_bin_y[imnum]
-			endif
-			wave /z Small_Angle_CCD_Detector_cam_acquire_time
-			if(waveexists(Synced_saxs_cam_bin_x))
-				nvar pxsizex = root:Packages:Convert2Dto1D:PixelSizeX
-				pxsizex = 0.015 * Synced_saxs_cam_bin_x[imnum]
-				nvar pxsizey = root:Packages:Convert2Dto1D:PixelSizeY
-				pxsizey = 0.015 * Synced_saxs_cam_bin_y[imnum]
+				loadedinfo += "WAXS_pixelsize_y : " + num2str(pxsizey)+";"
 			endif
 			
 		endif
@@ -272,11 +271,12 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		else
 			print "Currently can't load metadata json or jsonl file"
 		endif	
+		loadedinfo += metadata + ";" + NewNote
 		NewNote +=metadata+";"
 		
 		// note we are not loading monitor data here.  If it is necessary, we should figure out how to include that.
 		
-		
+		loadedinfo += metadata +teststring
 		
 		
 		// build the dataname from the metadata and scan info we have so far
@@ -286,12 +286,65 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		splitstring /e="^([1234567890]*)-(.{3,8})-" filenametoload, imagenum,  userfilename // we can use the filename itself
 		userfilename = stringbykey("sample_name",metadata)  // we can also use any metadata information
 		//UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100000)/100)+"eV_"+detectortype[0] + "_"+ num2str(imnum)// + imagenum + "_" 
-		UserFileName = cleanupname(userfilename,0)+"_"+ num2str(imnum)// + imagenum + "_" // imnum is the image in the sequence
+		UserFileName = imagenum+"_"+cleanupname(userfilename,0)+"_"+ num2str(imnum)// + imagenum + "_" // imnum is the image in the sequence
 		// to add any extra information to the name, just add it here.  
 		// values from the primary stream, store them as a variable when they are loaded aboe 
 		//  eg  energy (en_monoen_readback[imnum]), polarization (en_polarization[imnum]), 
 		// values from metadata use stringbykey("sample_name",metadata)
 		// values from baseline, use stringbykey("cam_bin_y",teststring)
+		
+		//find name based on header and inputs
+		//Create a Global variable so we can change it with an Excute Command later
+		string foldersave = getdatafolder(1)
+		setdatafolder root:Packages:NikaNISTRSoXS
+		string/g dataname=filenametoload
+		string/g headerinfo = replacestring(" ",loadedinfo,"")
+		nvar fitskeypick1,fitskeypick2,fitskeypick3,fitskeypick4,usefitskey1,usefitskey2,usefitskey3,usefitskey4,dispheader
+		svar imagekeys
+		string fitsvalue1 = stringbykey(stringfromlist(fitskeypick1-1,imagekeys),headerinfo)
+		string fitsvalue2 = stringbykey(stringfromlist(fitskeypick2-1,imagekeys),headerinfo)
+		string fitsvalue3 = stringbykey(stringfromlist(fitskeypick3-1,imagekeys),headerinfo)
+		string fitsvalue4 = stringbykey(stringfromlist(fitskeypick4-1,imagekeys),headerinfo)
+	
+		//Split filename into components 
+		string /g loaderregexp
+		string /g namecreation
+		string /g sernum,name1,name2,imagenumstr
+		splitstring /e=loaderregexp filenametoload,sernum,name1,name2,imagenumstr
+		execute("dataname = " + namecreation)
+		//Add any header values which might be requested (these are set in updatefitsloaderpaneloptions() )
+		if(usefitskey1)
+			if(str2num(fitsvalue3)*0==0)
+				dataname += "_" + num2str(.1*round(10*str2num(fitsvalue1)))
+			else
+				dataname += "_" + fitsvalue1
+			endif
+		endif
+		if(usefitskey2)
+			if(str2num(fitsvalue3)*0==0)
+				dataname += "_" + num2str(.1*round(10*str2num(fitsvalue2)))
+			else
+				dataname += "_" + fitsvalue2
+			endif
+		endif
+		if(usefitskey3)
+			if(str2num(fitsvalue3)*0==0)
+				dataname += "_" + num2str(.1*round(10*str2num(fitsvalue3)))
+			else
+				dataname += "_" + fitsvalue3
+			endif
+		endif
+		if(usefitskey4)
+			if(str2num(fitsvalue3)*0==0)
+				dataname += "_" + num2str(.1*round(10*str2num(fitsvalue4)))
+			else
+				dataname += "_" + fitsvalue4
+			endif
+		endif
+		dataname = Replacestring(" ",dataname,"")
+		print "Name to be used as User Name = \" " + dataname + "\""
+		UserFileName = dataname
+		setdatafolder foldersave
 		
 		
 		wave LoadedWvHere=$(NewWaveName)
@@ -350,7 +403,8 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 				endif
 			endif
 		endif
-		string /g root:headerinfo = newnote
+		EGN_updateBSloaderpaneloptions()
+		string /g root:headerinfo = replacestring(" ",newnote,"")
 	
 	elseif(cmpstr(FileType,"AUSW")==0)
 		//check if we need to look into XML file (and if XML file is loaded)
@@ -3251,4 +3305,327 @@ function /s addmetadatafromjson(path, key, filename, metadatalist)
 	splitstring /e="\"" + key+ "\": \"?([^\",]*)\"?" s_value, kvalue
 	metadatalist = addlistitem(key+":"+kvalue,metadatalist)
 	return metadatalist
+end
+
+
+function defaultBSnames()
+	string currentfolder = getdatafolder(1)
+	setdatafolder root:packages:NikaNISTRSoXS
+	string /g loaderregexp="^([^_]{1,6})[^_]*?_([^_]{1,6})?.*([1234567890]{4,6})-?(.{3,6}?).fits$"
+	string /g namecreation= "name1"
+	setdatafolder currentfolder
+end
+
+function EGN_BSLoaderPanelFnct() : Panel
+	string currentfolder = getdatafolder(1)
+	DoWindow  EGN_BSLoaderPanel
+	if(V_Flag)
+		DoWindow/F EGN_BSLoaderPanel
+		setdatafolder root:packages:NikaNISTRSoXS
+		string /g imagekeys=""
+	else
+		if(!datafolderexists("root:packages:NikaNISTRSoXS"))
+			newdatafolder /s /o root:Packages:NikaNISTRSoXS
+			string /g headerinfo //change to new way to get metadata to form name
+			EGN_defaultbsexps()
+		else
+			setdatafolder root:packages:NikaNISTRSoXS
+			svar /z loaderregexp
+			svar /z namecreation
+			if(!svar_exists(loaderregexp))
+				EGN_defaultbsexps()
+			endif
+		endif
+		string /g imagekeys=""
+		
+
+		nvar/z fitskeypick1
+		if(!nvar_exists(fitskeypick1))
+			variable/g fitskeypick1=1
+		endif
+		nvar/z fitskeypick2
+		if(!nvar_exists(fitskeypick2))
+			variable/g fitskeypick2=1
+		endif
+		nvar/z fitskeypick3
+		if(!nvar_exists(fitskeypick3))
+			variable/g fitskeypick3=1
+		endif
+		nvar/z fitskeypick4
+		if(!nvar_exists(fitskeypick4))
+			variable/g fitskeypick4=1
+		endif
+
+		variable/g usefitskey1
+		variable/g usefitskey2
+		variable/g usefitskey3
+		variable/g usefitskey4
+		variable/g SupExChar
+		
+		PauseUpdate; Silent 1		// building window...
+		NewPanel /K=1 /W=(1148,127,1632,330)/N=EGN_BSLoaderPanel as "BlueSky Naming"
+		ModifyPanel /w=EGN_BSLoaderPanel fixedSize=1
+		SetDrawLayer /w=EGN_BSLoaderPanel UserBack
+		SetDrawEnv /w=EGN_BSLoaderPanel fillfgc= (65280,65280,48896)
+		DrawRect /w=EGN_BSLoaderPanel 3,119,478,201
+		SetDrawEnv /w=EGN_BSLoaderPanel fillfgc= (51456,44032,58880)
+		DrawRect /w=EGN_BSLoaderPanel 3,2,478,111
+		DrawText /w=EGN_BSLoaderPanel 43,19,"Build Name from:"
+		CheckBox mot1_ch,pos={458.00,24.00},size={10.00,10.00},title="",win=EGN_BSLoaderPanel
+		CheckBox mot1_ch,variable= root:Packages:NikaNISTRSoXS:usefitskey1,win=EGN_BSLoaderPanel
+		CheckBox mot2_ch,pos={458.00,44.00},size={10.00,10.00},title="",win=EGN_BSLoaderPanel
+		CheckBox mot2_ch,variable= root:Packages:NikaNISTRSoXS:usefitskey2,win=EGN_BSLoaderPanel
+		CheckBox mot3_ch,pos={458.00,66.00},size={10.00,10.00},title="",win=EGN_BSLoaderPanel
+		CheckBox mot3_ch,variable= root:Packages:NikaNISTRSoXS:usefitskey3,win=EGN_BSLoaderPanel
+		CheckBox mot4_ch,pos={458.00,86.00},size={10.00,10.00},title="",win=EGN_BSLoaderPanel
+		CheckBox mot4_ch,variable= root:Packages:NikaNISTRSoXS:usefitskey4,win=EGN_BSLoaderPanel
+		PopupMenu motor1_pop,pos={8.00,21.00},size={444.00,17.00},bodyWidth=392,proc=EGN_BSPopMenu_1,title="Motor 1: ",win=EGN_BSLoaderPanel
+		PopupMenu motor1_pop,mode=1,popvalue="",value= #"root:packages:NikaNISTRSoXS:imagekeys",win=EGN_BSLoaderPanel
+		PopupMenu motor2_pop,pos={8.00,42.00},size={444.00,17.00},bodyWidth=392,proc=EGN_BSPopMenu_2,title="Motor 2: ",win=EGN_BSLoaderPanel
+		PopupMenu motor2_pop,mode=1,popvalue="",value= #"root:packages:NikaNISTRSoXS:imagekeys",win=EGN_BSLoaderPanel
+		PopupMenu motor3_pop,pos={8.00,64.00},size={444.00,17.00},bodyWidth=392,proc=EGN_BSPopMenu_3,title="Motor 3: ",win=EGN_BSLoaderPanel
+		PopupMenu motor3_pop,mode=1,popvalue="",value= #"root:packages:NikaNISTRSoXS:imagekeys",win=EGN_BSLoaderPanel
+		PopupMenu motor4_pop,pos={8.00,84.00},size={444.00,17.00},bodyWidth=392,proc=EGN_BSPopMenu_4,title="Motor 4: ",win=EGN_BSLoaderPanel
+		PopupMenu motor4_pop,mode=1,popvalue="",value= #"root:packages:NikaNISTRSoXS:imagekeys",win=EGN_BSLoaderPanel
+		SetVariable setvar0,pos={9.00,124.00},size={466.00,19.00},title="Regular Expression for Naming (Advanced) :",win=EGN_BSLoaderPanel
+		SetVariable setvar0,value= root:Packages:NikaNISTRSoXS:loaderregexp,win=EGN_BSLoaderPanel
+		SetVariable setvar1,pos={9.00,149.00},size={466.00,19.00},title="Naming String Construction (Advanced) :",win=EGN_BSLoaderPanel
+		SetVariable setvar1,value= root:Packages:NikaNISTRSoXS:namecreation,win=EGN_BSLoaderPanel
+		Button button0,pos={299.00,174.00},size={141.00,21.00},proc=EGN_defaultexps,title="Set to Naming Defaults",win=EGN_BSLoaderPanel
+	endif
+	setdatafolder root:packages:NikaNISTRSoXS
+	string/g headerinfo
+	svar header = headerinfo
+	variable /g fitskeypick1  
+	variable /g fitskeypick2
+	variable /g fitskeypick3
+	variable /g fitskeypick4
+	string /g fitskeyname1
+	string /g fitskeyname2
+	string /g fitskeyname3
+	string /g fitskeyname4
+	variable /g usefitskey1
+	variable /g usefitskey2
+	variable /g usefitskey3
+	variable /g usefitskey4
+	string s1
+	variable i
+	for(i=0;i<itemsinlist(header,";");i+=1)
+		splitstring /e="^([^:]*):[^;]*$" stringfromlist(i,header,";"),s1
+		s1=ReplaceString(" ",s1,"")
+		imagekeys+=s1+";"
+	endfor
+	string imagekeystring = imagekeys
+	if(strlen(stringbykey(fitskeyname1,header))>0)
+		fitskeypick1 =whichlistitem(fitskeyname1,imagekeys)+1
+		PopupMenu motor1_pop,mode=fitskeypick1,win=EGN_BSLoaderPanel
+	else
+		PopupMenu motor1_pop,mode=fitskeypick1,win=EGN_BSLoaderPanel
+		fitskeyname1 = stringfromlist(fitskeypick1-1,imagekeys)
+	endif
+	if(strlen(stringbykey(fitskeyname2,header))>0)
+		fitskeypick2 =whichlistitem(fitskeyname2,imagekeys)+1
+		PopupMenu motor2_pop,mode=fitskeypick2,win=EGN_BSLoaderPanel
+	else
+		PopupMenu motor2_pop,mode=fitskeypick2,win=EGN_BSLoaderPanel
+		fitskeyname2 = stringfromlist(fitskeypick2-1,imagekeys)
+	endif
+	if(strlen(stringbykey(fitskeyname3,header))>0)
+		fitskeypick3 =whichlistitem(fitskeyname3,imagekeys)+1
+		PopupMenu motor3_pop,mode=fitskeypick3,win=EGN_BSLoaderPanel
+	else
+		PopupMenu motor3_pop,mode=fitskeypick3,win=EGN_BSLoaderPanel
+		fitskeyname3 = stringfromlist(fitskeypick3-1,imagekeys)
+	endif
+	if(strlen(stringbykey(fitskeyname4,header))>0)
+		fitskeypick4 =whichlistitem(fitskeyname4,imagekeys)+1
+		PopupMenu motor4_pop,mode=fitskeypick4,win=EGN_BSLoaderPanel
+	else
+		PopupMenu motor4_pop,mode=fitskeypick4,win=EGN_BSLoaderPanel
+		fitskeyname4 = stringfromlist(fitskeypick1-1,imagekeys)
+	endif
+
+	string /g fitsvalue1 = stringbykey(fitskeyname1,header)
+	string /g fitsvalue2 = stringbykey(fitskeyname2,header)
+	string /g fitsvalue3 = stringbykey(fitskeyname3,header)
+	string /g fitsvalue4 = stringbykey(fitskeyname4,header)
+	setdatafolder currentfolder
+End
+
+
+Function EGN_BSPopMenu_1(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+ 			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			string currentfolder = getdatafolder(1)
+			setdatafolder root:packages:NikaNISTRSoXS
+			variable /g fitskeypick1 = popnum
+			svar headerinfo
+			string /g fitsvalue1 = stringbykey(popstr,headerinfo)
+			string /g fitskeyname1 = popstr
+			setdatafolder currentfolder
+			break
+	endswitch
+
+	return 0
+End
+Function EGN_BSPopMenu_2(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			string currentfolder = getdatafolder(1)
+			setdatafolder root:packages:NikaNISTRSoXS
+			variable /g fitskeypick2 = popnum
+			svar headerinfo
+			string /g fitsvalue2 = stringbykey(popstr,headerinfo)
+			string /g fitskeyname2 = popstr
+			setdatafolder currentfolder
+			break
+	endswitch
+
+	return 0
+End
+
+Function EGN_BSPopMenu_3(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			string currentfolder = getdatafolder(1)
+			setdatafolder root:packages:NikaNISTRSoXS
+			variable /g fitskeypick3 = popnum
+			svar headerinfo
+			string /g fitsvalue3 = stringbykey(popstr,headerinfo)
+			string /g fitskeyname3 = popstr
+			setdatafolder currentfolder
+			break
+	endswitch
+
+	return 0
+End
+Function EGN_BSPopMenu_4(pa) : PopupMenuControl
+	STRUCT WMPopupAction &pa
+
+	switch( pa.eventCode )
+		case 2: // mouse up
+			Variable popNum = pa.popNum
+			String popStr = pa.popStr
+			string currentfolder = getdatafolder(1)
+			setdatafolder root:packages:NikaNISTRSoXS
+			variable /g fitskeypick4 = popnum
+			svar headerinfo
+			string /g fitsvalue4 = stringbykey(popstr,headerinfo)
+			string /g fitskeyname4 = popstr
+			setdatafolder currentfolder
+			break
+	endswitch
+
+	return 0
+End
+
+
+function EGN_updateBSloaderpaneloptions()
+	string currentfolder = getdatafolder(1)
+	if(!datafolderexists("root:packages:EGNika101"))
+		newdatafolder /s /o root:Packages:NikaNISTRSoXS
+		string /g headerinfo
+	else
+		setdatafolder root:packages:NikaNISTRSoXS
+	endif
+	string /g imagekeys=""
+
+	nvar/z fitskeypick1
+	if(!nvar_exists(fitskeypick1))
+		variable/g fitskeypick1=1
+	endif
+	nvar/z fitskeypick2
+	if(!nvar_exists(fitskeypick2))
+		variable/g fitskeypick2=1
+	endif
+	nvar/z fitskeypick3
+	if(!nvar_exists(fitskeypick3))
+		variable/g fitskeypick3=1
+	endif
+	nvar/z fitskeypick4
+	if(!nvar_exists(fitskeypick4))
+		variable/g fitskeypick4=1
+	endif
+	variable/g usefitskey1
+	variable/g usefitskey2
+	variable/g usefitskey3
+	variable/g usefitskey4
+	string /g fitskeyname1
+	string /g fitskeyname2
+	string /g fitskeyname3
+	string /g fitskeyname4
+	svar header = headerinfo
+	string s1
+	variable i
+	for(i=0;i<itemsinlist(header,";");i+=1)
+		splitstring /e="^([^:]*):[^;]*$" stringfromlist(i,header,";"),s1
+		s1=ReplaceString(" ",s1,"")
+		imagekeys+=s1+";"
+	endfor
+	if(strlen(stringbykey(fitskeyname1,header))>0)
+		fitskeypick1 =whichlistitem(fitskeyname1,imagekeys)+1
+		PopupMenu motor1_pop,mode=fitskeypick1, win=EGN_BSLoaderPanel
+	else
+		PopupMenu motor1_pop,mode=fitskeypick1,win=EGN_BSLoaderPanel
+		fitskeyname1 = stringfromlist(fitskeypick1-1,imagekeys)
+	endif
+	if(strlen(stringbykey(fitskeyname2,header))>0)
+		fitskeypick2 =whichlistitem(fitskeyname2,imagekeys)+1
+		PopupMenu motor2_pop,mode=fitskeypick2, win=EGN_BSLoaderPanel
+	else
+		PopupMenu motor2_pop,mode=fitskeypick2,win=EGN_BSLoaderPanel
+		fitskeyname2 = stringfromlist(fitskeypick2-1,imagekeys)
+	endif
+	if(strlen(stringbykey(fitskeyname3,header))>0)
+		fitskeypick3 =whichlistitem(fitskeyname3,imagekeys)+1
+		PopupMenu motor3_pop,mode=fitskeypick3, win=EGN_BSLoaderPanel
+	else
+		PopupMenu motor3_pop,mode=fitskeypick3,win=EGN_BSLoaderPanel
+		fitskeyname3 = stringfromlist(fitskeypick3-1,imagekeys)
+	endif
+	if(strlen(stringbykey(fitskeyname4,header))>0)
+		fitskeypick4 =whichlistitem(fitskeyname4,imagekeys)+1
+		PopupMenu motor4_pop,mode=fitskeypick4, win=EGN_BSLoaderPanel
+	else
+		PopupMenu motor4_pop,mode=fitskeypick4,win=EGN_BSLoaderPanel
+		fitskeyname4 = stringfromlist(fitskeypick1-1,imagekeys)
+	endif
+
+	string /g fitsvalue1 = stringbykey(fitskeyname1,header)
+	string /g fitsvalue2 = stringbykey(fitskeyname2,header)
+	string /g fitsvalue3 = stringbykey(fitskeyname3,header)
+	string /g fitsvalue4 = stringbykey(fitskeyname4,header)
+	setdatafolder currentfolder
+end
+
+Function EGN_defaultexps(ba) : ButtonControl
+	STRUCT WMButtonAction &ba
+
+	switch( ba.eventCode )
+		case 2: // mouse up
+			EGN_defaultbsexps()
+			break
+	endswitch
+
+	return 0
+End
+
+function EGN_defaultbsexps()
+	string currentfolder = getdatafolder(1)
+	setdatafolder root:packages:NikaNISTRSoXS
+	string /g loaderregexp="^([1234567890]{4,6})-([^_]{1,6})[^_]*?_([^_]{1,6})?.*-?(.{3,6}?).tiff$"
+	string /g namecreation= "name1"
+	setdatafolder currentfolder
 end

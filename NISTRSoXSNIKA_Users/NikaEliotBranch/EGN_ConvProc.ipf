@@ -1401,6 +1401,9 @@ Function EGNA_PopMenuProc(ctrlName,popNum,popStr) : PopupMenuControl
 		if(cmpstr(popStr,".fits")==0)
 			EGN_FitsLoaderPanelFnct()
 		endif
+		if(cmpstr(popStr,"BS_Suitcase_Tiff")==0)
+			EGN_BSLoaderPanelFnct()
+		endif
 	endif
 	if(cmpstr(ctrlName,"SelectBlank2DDataType")==0)
 		//set appropriate extension
