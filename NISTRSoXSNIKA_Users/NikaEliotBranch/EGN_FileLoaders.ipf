@@ -138,7 +138,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			//redimension /N=(dimsize(testwave,0)/3,3) testwave
 			//matrixop /o colsums = sumcols(testwave)
 			//SampleI0 = colsums[1]
-			wave /z Izero_Mesh_Drain_Current, en_monoen_readback
+			wave /z Izero_Mesh_Drain_Current, en_monoen_readback, en_energy
 			if(waveexists(Izero_Mesh_Drain_Current))
 				SampleI0 = Izero_Mesh_Drain_Current[imnum]
 				loadedinfo += "Izero_Mesh:" + num2str(SampleI0)+";"
@@ -151,6 +151,14 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			if(waveexists(en_monoen_readback))
 				nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
 				xrayenergy = en_monoen_readback[imnum]/1000
+				loadedinfo += "X-ray_energy:" + num2str(round(xrayenergy*100000)/100)+";"
+				nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
+				wavelength = 12.39842/xrayenergy
+				loadedinfo += "X-ray_wavelength:" + num2str(wavelength)+";"
+			endif
+			if(waveexists(en_energy))
+				nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
+				xrayenergy = en_energy[imnum]/1000
 				loadedinfo += "X-ray_energy:" + num2str(round(xrayenergy*100000)/100)+";"
 				nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
 				wavelength = 12.39842/xrayenergy
