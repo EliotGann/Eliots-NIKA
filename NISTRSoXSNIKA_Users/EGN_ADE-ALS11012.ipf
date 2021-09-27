@@ -970,7 +970,7 @@ function flattenimage(image,yloc,wid)
 		image -=v_avg
 	else
 		make/o/n=2 ytrace={yloc,yloc},xtrace={0,dimsize(image,1)}
-		ImageLineProfile srcWave=image width=(wid) , xWave=xTrace, yWave=yTrace
+		ImageLineProfile srcWave=image, width=(wid) , xWave=xTrace, yWave=yTrace
 		variable v_fiterror=0
 		wave w_imagelineprofile
 		removenans(W_ImageLineProfile)
