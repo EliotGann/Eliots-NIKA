@@ -148,9 +148,18 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 				SampleI0 = RSoXS_Au_Mesh_Current[imnum]
 				loadedinfo += "RSoXS_Au_Mesh:" + num2str(SampleI0)+";"
 			endif
+			wave /z en_monoen_readback
+			wave /z en_energy
 			if(waveexists(en_monoen_readback))
 				nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
 				xrayenergy = en_monoen_readback[imnum]/1000
+				loadedinfo += "X-ray_energy:" + num2str(round(xrayenergy*100000)/100)+";"
+				nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
+				wavelength = 12.39842/xrayenergy
+				loadedinfo += "X-ray_wavelength:" + num2str(wavelength)+";"
+			elseif(waveexists(en_energy))
+				nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
+				xrayenergy = en_energy[imnum]/1000
 				loadedinfo += "X-ray_energy:" + num2str(round(xrayenergy*100000)/100)+";"
 				nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
 				wavelength = 12.39842/xrayenergy
