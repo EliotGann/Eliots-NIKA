@@ -1601,6 +1601,8 @@ function setup_NIKA_sectors([redosetup])
 	nvar SilentMode = root:Packages:Convert2Dto1D:SilentMode
 	svar commandstr = root:Packages:Convert2Dto1D:CnvCommandStr
 	nvar UseSubtractFixedOffset = root:Packages:Convert2Dto1D:UseSubtractFixedOffset
+	nvar UseSolidAngle = root:Packages:Convert2Dto1D:UseSolidAngle
+	nvar UseSampleMeasTime = root:Packages:Convert2Dto1D:UseSampleMeasTime
 	nvar SubtractFixedOffset = root:Packages:Convert2Dto1D:SubtractFixedOffset
 	
 	
@@ -1625,25 +1627,27 @@ function setup_NIKA_sectors([redosetup])
 	silentmode = 1
 	commandstr = "NRB_updateimageplot()"
 	UseSubtractFixedOffset = 1
+	UseSolidAngle = 1
+	UseSampleMeasTime = 1
 	SubtractFixedOffset = 100
 	StartSwitchNika()
 	wave /t listwave = root:Packages:SwitchNIKA:listwave
-	listwave[0][0]= {"SAXS 11 16 2020","SAXS 12 01 2020","WAXS 12 01 2020","WAXS 12 11 2020"}
-	listwave[0][1]= {"371.52","489.86","400.46","400.46"}
-	listwave[0][2]= {"491.17","490.75","530.99","530.99"}
-	listwave[0][3]= {"512.12","521.8","38.745","38.745"}
+	listwave[0][0]= {"SAXS 11 16 2020","SAXS 12 01 2020","WAXS 12 01 2020","WAXS 12 11 2020","WAXS 2021"}
+	listwave[0][1]= {"371.52","489.86","400.46","400.46","397"}
+	listwave[0][2]= {"491.17","490.75","530.99","530.99","535.6"}
+	listwave[0][3]= {"512.12","521.8","38.745","38.745","36.7"}
 	listwave[0][4]= {"20405-PS300-primary-Small Angle CCD Detector_image-0.tiff_mask.tif","21476-PS300-primary-Small Angle CCD Detector_image-48.tiff_mask.tif","21143-JDM_103-primary-Wide Angle CCD Detector_image-0.tiff_mask.tif"}
-	listwave[3][4]= {"21965-an_PF6_3-primary-Wide Angle CCD Detector_image-10.tiff_mask.tif"}
-	listwave[0][5]= {"D:RSoXS Documents:images:masks:","D:RSoXS Documents:images:masks:","D:RSoXS Documents:images:masks:","D:RSoXS Documents:images:masks:"}
-	listwave[0][6]= {"NaN","NaN","NaN","NaN"}
-	listwave[0][7]= {"NaN","NaN","NaN","NaN"}
-	listwave[0][8]= {"0.0009","0.00075","*","-93.999"}
-	listwave[0][9]= {"67","67.7","*","67.7"}
-	listwave[0][10]= {"0.4262","-94","-9.9995","-9.9997"}
-	listwave[0][11]= {"3","3","68.4","71.4"}
-	listwave[0][12]= {"*","*","*","*"}
+	listwave[3][4]= {"21965-an_PF6_3-primary-Wide Angle CCD Detector_image-10.tiff_mask.tif",""}
+	listwave[0][5]= {"D:RSoXS Documents:images:masks:","D:RSoXS Documents:images:masks:","D:RSoXS Documents:images:masks:","D:RSoXS Documents:images:masks:",""}
+	listwave[0][6]= {"NaN","NaN","NaN","NaN","NaN"}
+	listwave[0][7]= {"NaN","NaN","NaN","NaN","NaN"}
+	listwave[0][8]= {"0.0009","0.00075","*","-93.999","NaN"}
+	listwave[0][9]= {"67","67.7","*","67.7","*"}
+	listwave[0][10]= {"0.4262","-94","-9.9995","-9.9997","-10"}
+	listwave[0][11]= {"3","3","68.4","71.4","71.4"}
+	listwave[0][12]= {"*","*","*","*","*"}
 	nvar AutoPickQ = root:Packages:SwitchNIKA:AutoPickQ
-	AutoPickQ=1
+	AutoPickQ=0
 end
 
 
