@@ -359,7 +359,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			endif
 		endif
 		dataname = Replacestring(" ",dataname,"")
-		print "Name to be used as User Name = \" " + dataname + "\""
+		print "Name to be used as User Name = \"" + dataname + "\""
 		UserFileName = dataname
 		setdatafolder foldersave
 		
@@ -3318,8 +3318,8 @@ end
 function /s addmetadatafromjson(path, key, filename, metadatalist)
 	string path, key, filename, metadatalist
 	string kvalue
-	grep /LIST/q/e="\"" + key+ "\": \"?([^\",]*)\"?"/P=$(path) filename
-	splitstring /e="\"" + key+ "\": \"?([^\",]*)\"?" s_value, kvalue
+	grep /LIST/q/e="^    \"" + key+ "\": \"?([^\",]*)\"?"/P=$(path) filename
+	splitstring /e="^    \"" + key+ "\": \"?([^\",]*)\"?" s_value, kvalue
 	metadatalist = addlistitem(key+":"+kvalue,metadatalist)
 	return metadatalist
 end
