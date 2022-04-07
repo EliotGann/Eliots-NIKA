@@ -932,9 +932,9 @@ function NRB_updateimages()
 		variable i
 		for(i=0;i<dimsize(imagenames,0);i+=1)
 			
-			ModifyImage /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] ''#0 log=(logimage),ctab= {minval,maxval,$colortab,0}
-			setaxis /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] left, leftmin, leftmax
-			setaxis /w=NISTRSoXSBrowser#Graph2D#$imagenames[i] bottom, botmin, botmax
+			ModifyImage /z/w=NISTRSoXSBrowser#Graph2D#$imagenames[i] ''#0 log=(logimage),ctab= {minval,maxval,$colortab,0}
+			setaxis /z/w=NISTRSoXSBrowser#Graph2D#$imagenames[i] left, leftmin, leftmax
+			setaxis /z/w=NISTRSoXSBrowser#Graph2D#$imagenames[i] bottom, botmin, botmax
 			
 		endfor
 	endif
@@ -977,14 +977,14 @@ Function NRB_axishook(s)
 			nvar /z botmax = root:Packages:NikaNISTRSoXS:botmax
 			GetWindow $s.winName activeSW
 			string subwindow = s_value
-			print subwindow
-			getaxis /w=$(subwindow) left ;variable err = GetRTError(1)
+			//print subwindow
+			getaxis /q/w=$(subwindow) left ;variable err = GetRTError(1)
 			if(err)
 				break
 			endif
 			leftmin = v_min
 			leftmax = v_max
-			getaxis /w=$(subwindow) bottom
+			getaxis /q/w=$(subwindow) bottom
 			botmin = v_min
 			botmax = v_max
 			NRB_updateimages()
@@ -1520,7 +1520,7 @@ function /wave NRB_splitsignal(wavein,times, rises, falls, goodpulse)
 			continue
 		endif
 		//meanvalue = mean(datain,pntlower[i],pntupper[i])
-		meanvalue = (9/10) *(wavemin(datain,pntlower[i],pntupper[i]) + wavemax(datain,pntlower[i],pntupper[i]))
+		meanvalue = (6/10) *(wavemin(datain,pntlower[i],pntupper[i]) + wavemax(datain,pntlower[i],pntupper[i]))
 		try
 			findlevels /B=3/EDGE=1 /Q /P /D=temprises /R=[max(0,pntlower[i]),min(numpnts(datain)-1,pntupper[i])] datain, meanvalue;AbortonRTE // look for rising and falling edges
 			findlevels /B=3/EDGE=2 /Q /P /D=tempfalls /R=[max(0,pntlower[i]),min(numpnts(datain)-1,pntupper[i])] datain, meanvalue;AbortonRTE
