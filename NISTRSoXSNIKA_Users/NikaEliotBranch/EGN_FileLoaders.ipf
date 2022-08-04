@@ -149,14 +149,22 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 				loadedinfo += "RSoXS_Au_Mesh:" + num2str(SampleI0)+";"
 			endif
 			wave /z en_monoen_readback
+			wave /z en_energy_setpoint
 			wave /z en_energy
-			if(waveexists(en_monoen_readback))
+			wave /z en_polarization
+			wave /z en_polarization_setpoint
+			wave /z RSoXS_Shutter_Opening_Time__ms_
+			wave /z SAXS_Fullframe_total
+			wave /z WAXS_Fullframe_total
+			wave /z seq_num
+			wave /z timeW
+			if(waveexists(en_energy_setpoint))
 				nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
-				xrayenergy = en_monoen_readback[imnum]/1000
-				loadedinfo += "X-ray_energy:" + num2str(round(xrayenergy*100000)/100)+";"
+				xrayenergy = en_energy_setpoint[imnum]/1000
+				loadedinfo += "X-ray_energy_setpoint:" + num2str(round(xrayenergy*100000)/100)+";"
 				nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
 				wavelength = 12.39842/xrayenergy
-				loadedinfo += "X-ray_wavelength:" + num2str(wavelength)+";"
+				loadedinfo += "X-ray_wavelength_setpoint:" + num2str(wavelength)+";"
 			elseif(waveexists(en_energy))
 				nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
 				xrayenergy = en_energy[imnum]/1000
@@ -172,6 +180,27 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 				nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
 				wavelength = 12.39842/xrayenergy
 				loadedinfo += "X-ray_wavelength:" + num2str(wavelength)+";"
+			endif
+			if(waveexists(en_polarization))
+				loadedinfo += "X-ray_polarization:" + num2str(round(en_polarization[imnum]*100)/100)+";"
+			endif
+			if(waveexists(RSoXS_Shutter_Opening_Time__ms_))
+				loadedinfo += "Shutter_Opening_time:" + num2str(round(RSoXS_Shutter_Opening_Time__ms_[imnum]*100)/100000)+";"
+			endif
+			if(waveexists(en_polarization_setpoint))
+				loadedinfo += "X-ray_polarization_setpoint:" + num2str(round(en_polarization_setpoint[imnum]*100)/100)+";"
+			endif
+			if(waveexists(SAXS_Fullframe_total))
+				loadedinfo += "SAXS_Fullframe_total:" + num2str(SAXS_Fullframe_total[imnum])+";"
+			endif
+			if(waveexists(WAXS_Fullframe_total))
+				loadedinfo += "WAXS_FullFrame_total:" + num2str(WAXS_Fullframe_total[imnum])+";"
+			endif
+			if(waveexists(seq_num))
+				loadedinfo += "seq_num:" + num2str(seq_num[imnum])+";"
+			endif
+			if(waveexists(timeW))
+				loadedinfo += "Timestamp:" + num2str(timeW[imnum])+";"
 			endif
 			wave /z RSoXS_Diagnostic_Picoammeter_exposure_time
 			if(waveexists(RSoXS_Diagnostic_Picoammeter_exposure_time))
@@ -288,12 +317,12 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		else
 			print "Currently can't load metadata json or jsonl file"
 		endif	
-		loadedinfo += metadata + ";" + NewNote
-		NewNote +=metadata+";"
+		//loadedinfo += metadata + ";" + NewNote
+		NewNote ="Primary data=;" + loadedinfo +";\nBaseline data=;"+ NewNote+";\nmetadata data=;"+ metadata+";"
 		
 		// note we are not loading monitor data here.  If it is necessary, we should figure out how to include that.
 		
-		loadedinfo += metadata +teststring
+		//loadedinfo += metadata +teststring
 		
 		
 		// build the dataname from the metadata and scan info we have so far
@@ -315,7 +344,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		string foldersave = getdatafolder(1)
 		setdatafolder root:Packages:NikaNISTRSoXS
 		string/g dataname=filenametoload
-		string/g headerinfo = replacestring(" ",loadedinfo,"")
+		string/g headerinfo = replacestring(" ",NewNote,"")
 		nvar fitskeypick1,fitskeypick2,fitskeypick3,fitskeypick4,usefitskey1,usefitskey2,usefitskey3,usefitskey4,dispheader
 		svar imagekeys
 		string fitsvalue1 = stringbykey(stringfromlist(fitskeypick1-1,imagekeys),headerinfo)

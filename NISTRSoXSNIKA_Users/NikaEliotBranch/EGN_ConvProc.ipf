@@ -698,6 +698,16 @@ Function EGNA_CheckGeometryWaves(orientation,wavelengths)		//checks if current g
 	wave/Z Qvector=$("root:Packages:Convert2Dto1D:Qvector_"+orientation+"_"+wavelengths)
 	////eliot note? move q vectors from save
 	//Check that the waves exist at all...
+	
+	
+	
+	// TODO:  2022 correction - if only wavelength changed, just scale the vectors
+	// if the exact wavelength doesn't exist, load the orientation ONLY wave, and scale it to the new wavelength
+	
+	
+	
+	
+	
 	if (!WaveExists(Qvector) || !WaveExists(HistogramWv) || !WaveExists(LUT))
 		EGNA_Create2DQWave(DataWave)			//creates 2-D Q wave does not need to be run always... //eliot changing June 2015
 		NVAR UseGrazingIncidence=root:Packages:Convert2Dto1D:UseGrazingIncidence

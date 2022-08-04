@@ -195,7 +195,7 @@ function NRB_loadprimary([update,row])
 	
 	variable stepswimages = 0
 	for(i=0;i<(dimsize(seq_num,0));i+=1)
-		tifffilename = stringfromlist(0,listMatch(matchingtiffs,basenum+"*primary*"+num2str(i)+".tiff"))
+		tifffilename = stringfromlist(0,listMatch(matchingtiffs,basenum+"*image*"+num2str(i)+".tiff"))
 		if(strlen(tifffilename)<4)
 			steplist[i] += " (no image)"
 		else
@@ -268,11 +268,19 @@ function NRB_loadprimary([update,row])
 	string metadatafilename
 	string metadata=""
 	if(strlen(jsonfiles) < 5)
+		
+		jsonfiles= indexedfile($(pnamemd),-1,".json")
 		//print "Currently can't load metadata json or jsonl file"
-		mdlist = {"could not find metadata jsonl"}
+		if(strlen(jsonfiles) < 5)
+			mdlist = {"could not find metadata jsonl"}
+		else
+			jsonfound = 1
+		endif
 	else
 		jsonfound = 1
-		metadatafilename = stringfromlist(0,greplist(jsonfiles,"^"+basename+".*jsonl"))
+	endif
+	if(jsonfound)
+		metadatafilename = stringfromlist(0,greplist(jsonfiles,"^"+basename+".*json"))
 		metadata = addmetadatafromjson(pnamemd,"scan_id",metadatafilename,metadata)
 		metadata = addmetadatafromjson(pnamemd,"institution",metadatafilename,metadata)
 		metadata = addmetadatafromjson(pnamemd,"project_name",metadatafilename,metadata)
