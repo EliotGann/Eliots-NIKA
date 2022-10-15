@@ -118,9 +118,15 @@ function NRB_loadprimary([update,row])
 	else
 		string listofjsonl = IndexedFile($pnameimages, -1, ".jsonl")
 		if(strlen(listofjsonl)>0)
-			pnamemd = pnameimages
-		else
 			pnamemd = pname
+		else
+			listofjsonl = IndexedFile($pnameimages, -1, ".json")
+			if(strlen(listofjsonl)>0)
+				pnamemd = pnameimages
+			else
+				pnamemd = pname
+			endif
+			
 		endif
 	endif
 
@@ -264,6 +270,11 @@ function NRB_loadprimary([update,row])
 	wave /t mdlist = root:Packages:NikaNISTRSoXS:mdlist
 	
 	string jsonfiles= indexedfile($(pnamemd),-1,".jsonl")
+	string jsonext = ".jsonl"
+	if(strlen(jsonfiles)==0)
+		jsonfiles= indexedfile($(pnamemd),-1,".json")
+		jsonext = ".json"
+	endif
 	variable jsonfound=0
 	string metadatafilename
 	string metadata=""
@@ -280,7 +291,7 @@ function NRB_loadprimary([update,row])
 		jsonfound = 1
 	endif
 	if(jsonfound)
-		metadatafilename = stringfromlist(0,greplist(jsonfiles,"^"+basename+".*json"))
+		metadatafilename = stringfromlist(0,greplist(jsonfiles,"^"+basename+"*"+jsonext))
 		metadata = addmetadatafromjson(pnamemd,"scan_id",metadatafilename,metadata)
 		metadata = addmetadatafromjson(pnamemd,"institution",metadatafilename,metadata)
 		metadata = addmetadatafromjson(pnamemd,"project_name",metadatafilename,metadata)
