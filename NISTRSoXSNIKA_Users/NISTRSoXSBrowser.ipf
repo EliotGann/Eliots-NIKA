@@ -243,6 +243,10 @@ function NRB_loadprimary([update,row])
 		getfilefolderinfo /q/z /p=tempfolder tempfilename
 		copyfile /o/p=$(pnamemd) mdfilename as tmppath+"\\"+ tempfilename
 		LoadWave/L={0,1,0,0,2}/Q/O/J/D/n=$cleanupname(monitorname,0)/K=0/P=tempfolder/m tempfilename
+		wave mdwave = $stringfromlist(0,s_wavenames)
+		if(mdwave[0][0]==1)
+			LoadWave/L={0,1,0,1,2}/Q/O/J/D/n=$cleanupname(monitorname,0)/K=0/P=tempfolder/m tempfilename
+		endif
 		deletefile /p=tempfolder tempfilename
 	
 		
@@ -1518,7 +1522,7 @@ function /wave NRB_splitsignal(wavein,times, rises, falls, goodpulse)
 	
 	string name = nameofwave(wavein)
 	wave /z waveout = $("_"+name)
-	if(numpnts(wavein)<2* numpnts(times))
+	if(numpnts(wavein)*2 < numpnts(times))
 		//print "not valid waves"
 		return waveout
 	endif
