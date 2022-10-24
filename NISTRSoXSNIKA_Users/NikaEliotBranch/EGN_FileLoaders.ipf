@@ -329,7 +329,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			
 		svar UserFileName=root:Packages:Convert2Dto1D:OutputDataName
 		string imagenum
-		splitstring /e="^([1234567890]*)-(.{3,8})-" filenametoload, imagenum,  userfilename // we can use the filename itself
+		splitstring /e="^([1234567890]*)-(.{3,10})-?" filenametoload, imagenum,  userfilename // we can use the filename itself
 		userfilename = stringbykey("sample_name",metadata)  // we can also use any metadata information
 		//UserFileName = cleanupname(userfilename,0)+"_"+num2str(round(xrayenergy*100000)/100)+"eV_"+detectortype[0] + "_"+ num2str(imnum)// + imagenum + "_" 
 		UserFileName = imagenum+"_"+cleanupname(userfilename,0)+"_"+ num2str(imnum)// + imagenum + "_" // imnum is the image in the sequence
@@ -360,14 +360,14 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 		execute("dataname = " + namecreation)
 		//Add any header values which might be requested (these are set in updatefitsloaderpaneloptions() )
 		if(usefitskey1)
-			if(str2num(fitsvalue3)*0==0)
+			if(str2num(fitsvalue1)*0==0)
 				dataname += "_" + num2str(.1*round(10*str2num(fitsvalue1)))
 			else
 				dataname += "_" + fitsvalue1
 			endif
 		endif
 		if(usefitskey2)
-			if(str2num(fitsvalue3)*0==0)
+			if(str2num(fitsvalue2)*0==0)
 				dataname += "_" + num2str(.1*round(10*str2num(fitsvalue2)))
 			else
 				dataname += "_" + fitsvalue2
@@ -381,7 +381,7 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			endif
 		endif
 		if(usefitskey4)
-			if(str2num(fitsvalue3)*0==0)
+			if(str2num(fitsvalue4)*0==0)
 				dataname += "_" + num2str(.1*round(10*str2num(fitsvalue4)))
 			else
 				dataname += "_" + fitsvalue4

@@ -872,7 +872,7 @@ function NRB_loadimages(listofsteps,[autoscale])
 		endif
 	endfor
 	if(autoscale)
-		setaxis /A /w=NISTRSoXSBrowser#Graph2D#$imagenames[0]
+		setaxis /z/A /w=NISTRSoXSBrowser#Graph2D#$imagenames[0]
 		doupdate
 		getaxis /q/w=NISTRSoXSBrowser#Graph2D#$imagenames[0] left
 		leftmin = v_min
