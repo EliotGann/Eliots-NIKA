@@ -4030,20 +4030,14 @@ function PolarizationTopGraph([name,normtoFirstEn])
 		smooth /s=4 51,A
 		string enstring
 		splitstring /e="([^_]*)eV" nameofwave(A), enstring
-		En[index] = str2num(enstring)
+		if(strlen(enstring)>1)
+			En[index] = str2num(enstring)
+		else
+			En[index] = numberbykey("X-ray_energy",note(A))
+		endif
 		Awaves[index] = $getwavesdatafolder(A,2)
 		Axwaves[index] = $getwavesdatafolder(Ax,2)
-		killwaves /z asdf
-		wave /z A = asdf
-		wave /z Ax = asdf
-		wave /z perph = asdf
-		wave /z perphx = asdf
-		wave /z parah = asdf
-		wave /z parahx = asdf
-		wave /z perpv = asdf
-		wave /z perpvx = asdf
-		wave /z parav = asdf
-		wave /z paravx = asdf
+ 
 	endfor
 	// make energy vs anisotropy vs q imageplot
 	sort En, Atot, En, Awaves, Axwaves, etot
@@ -4055,18 +4049,18 @@ function PolarizationTopGraph([name,normtoFirstEn])
 	endfor
 	make /free/n=(index,200) UnScaledMesh
 	redimension /n=(200,200) Mesh
-	setscale /i y,minq,maxq,UnScaledMesh
-	setscale /i x,minq,maxq, Mesh
-	for(j=0;j<index;j+=1)
-		wave tempx = Axwaves[j]
-		wave temp = Awaves[j]
-		unscaledMesh[j][] = interp(y,tempx,temp)
+	setscale /i x,minq,maxq, UnScaledMesh, Mesh // x is q
+	setscale /i y,wavemin(En),wavemax(En), UnScaledMesh, Mesh // y is energy
+	for(j=0;j<index;j+=1) // cycle through energies
+		wave tempx = Axwaves[j] // q wave
+		wave temp = Awaves[j] // intensity wave
+		unscaledMesh[][j] = interp(x,tempx,temp) // interpolate q onto a single axis for each energy
 	endfor
-	make /n=(index) /free tempwave
-	setscale /i y,en[0],en[index],Mesh
+	make /n=(index) /free tempwave // one point for each energy
+//	setscale /i y,en[0],en[index],Mesh
 	for(j=0;j<200;j+=1)
-		tempwave = unscaledMesh[p][j]
-		mesh[j][] = interp(y,en,tempwave)
+		tempwave = unscaledMesh[j][p] // intensity vs energy for this q
+		mesh[j][] = interp(y,en,tempwave) // interpolate to the evenly spaced energies
 	endfor
 	if(normtoFirstEn)
 		wave tempx = Axwaves[0]
