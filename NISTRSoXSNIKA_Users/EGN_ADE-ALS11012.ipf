@@ -3813,14 +3813,14 @@ function PolarizationTopGraph([name,normtoFirstEn])
 			continue
 		endif
 		j+= groupnum -1
-		hd = whichlistitem(removeending(greplist(grouplist,"90_20'?$"),";"),tracelist)
-		hl = whichlistitem(removeending(greplist(grouplist,"180_20'?$"),";"),tracelist)
-		hu = whichlistitem(removeending(greplist(grouplist,"270_20'?$"),";"),tracelist)
-		hr = whichlistitem(removeending(greplist(grouplist,"_0_20'?$"),";"),tracelist)
-		vd = -1//whichlistitem(removeending(greplist(grouplist,"90_90_20'?$"),";"),tracelist)
-		vl = -1//whichlistitem(removeending(greplist(grouplist,"90_180_20'?$"),";"),tracelist)
-		vu = -1//whichlistitem(removeending(greplist(grouplist,"90_270_20'?$"),";"),tracelist)
-		vr = -1//whichlistitem(removeending(greplist(grouplist,"90_360_20'?$"),";"),tracelist)
+		hd = whichlistitem(removeending(greplist(grouplist,"_0_90_20'?$"),";"),tracelist)
+		hl = whichlistitem(removeending(greplist(grouplist,"_0_180_20'?$"),";"),tracelist)
+		hu = whichlistitem(removeending(greplist(grouplist,"_0_270_20'?$"),";"),tracelist)
+		hr = whichlistitem(removeending(greplist(grouplist,"_0_0_20'?$"),";"),tracelist)
+		vd = whichlistitem(removeending(greplist(grouplist,"_90_90_20'?$"),";"),tracelist)
+		vl = whichlistitem(removeending(greplist(grouplist,"_90_180_20'?$"),";"),tracelist)
+		vu = whichlistitem(removeending(greplist(grouplist,"_90_270_20'?$"),";"),tracelist)
+		vr = whichlistitem(removeending(greplist(grouplist,"_90_360_20'?$"),";"),tracelist)
 		// combine into average parallel and perpindicular r and q waves (largest range possible) for different polarizations
 		if((hd<0 && hu<0) || (hr<0 && hl<0))
 			// horizontal polarization is not complete, so skip it
