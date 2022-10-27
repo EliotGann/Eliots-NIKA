@@ -4029,12 +4029,12 @@ function PolarizationTopGraph([name,normtoFirstEn])
 		etot[index] = sqrt(Variance(smA))
 		smooth /s=4 51,A
 		string enstring, polstr, angstr
-		//splitstring /e="_([0-9]*\.?[0-9]+?[eV]?)_A" nameofwave(A), enstring
-		//if(strlen(enstring)>1)
-		//	En[index] = str2num(enstring)
-		//else
+		splitstring /e="_([0-9]*\.?[0-9]+?[eV]?)_A" nameofwave(A), enstring
+		if(strlen(enstring)>1)
+			En[index] = str2num(enstring)
+		else
 			En[index] = numberbykey("X-ray_energy",note(A))
-		//endif
+		endif
 
 		Awaves[index] = $getwavesdatafolder(A,2)
 		Axwaves[index] = $getwavesdatafolder(Ax,2)
