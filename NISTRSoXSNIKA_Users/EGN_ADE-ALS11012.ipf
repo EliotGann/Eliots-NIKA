@@ -3802,12 +3802,12 @@ function PolarizationTopGraph([name,normtoFirstEn])
 	variable index
 	for(j=0;j<num;j+=1)
 		tracename = stringfromlist(j,tracelist)
-		splitstring /e="^'?(.*)_(90|180|270|0)_20'?$" tracename,basename
+		splitstring /e="^'?(.*_)(0|90)_(90|180|270|0)_20'?$" tracename,basename
 		if(strlen(basename)<1)
 			print "Tracename: \"" + tracename + "\" could not by parced"
 			continue
 		endif
-		grouplist = greplist(tracelist,"^'?"+basename+".*_(90|180|270|0)_20'?$")
+		grouplist = greplist(tracelist,"^'?"+basename+".*(0|90)_(90|180|270|0)_20'?$")
 		groupnum = itemsinlist(grouplist)
 		if(groupnum<2)
 			continue
@@ -4028,13 +4028,14 @@ function PolarizationTopGraph([name,normtoFirstEn])
 		Atot[index] = mean(A)
 		etot[index] = sqrt(Variance(smA))
 		smooth /s=4 51,A
-		string enstring
-		splitstring /e="([^_]*)eV" nameofwave(A), enstring
-		if(strlen(enstring)>1)
-			En[index] = str2num(enstring)
-		else
+		string enstring, polstr, angstr
+		//splitstring /e="_([0-9]*\.?[0-9]+?[eV]?)_A" nameofwave(A), enstring
+		//if(strlen(enstring)>1)
+		//	En[index] = str2num(enstring)
+		//else
 			En[index] = numberbykey("X-ray_energy",note(A))
-		endif
+		//endif
+
 		Awaves[index] = $getwavesdatafolder(A,2)
 		Axwaves[index] = $getwavesdatafolder(Ax,2)
  
