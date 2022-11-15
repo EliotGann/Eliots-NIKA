@@ -3573,8 +3573,8 @@ function setqrange(row)
 	nvar bcx = root:Packages:Convert2Dto1D:BeamCenterX
 	nvar bcy = root:Packages:Convert2Dto1D:BeamCenterY
 	nvar sdd = root:Packages:Convert2Dto1D:SampleToCCDDistance
-	nvar flatten_line = root:Packages:EGNika101:flatten_line
-	nvar flatten_width = root:Packages:EGNika101:flatten_width
+	nvar /z flatten_line = root:Packages:EGNika101:flatten_line
+	nvar /z flatten_width = root:Packages:EGNika101:flatten_width
 	name = listwave[row][0] 
 	bcx = str2num(listwave[row][1])
 	bcy = str2num(listwave[row][2])

@@ -252,7 +252,7 @@ function NRB_loadprimary([update,row])
 		
 		
 		wave mdwave = $stringfromlist(0,s_wavenames)
-		wave newchannelwave = NRB_splitsignal(mdwave,times, rises, falls, goodpulse)
+		wave /z newchannelwave = NRB_splitsignal(mdwave,times, rises, falls, goodpulse)
 		if(waveexists(newchannelwave))
 			insertpoints /M=0 0,1, channellist, channellistsel
 			channellist[0][1] = nameofwave(newchannelwave)
@@ -1788,7 +1788,7 @@ end
 
 function NRB_find_and_aniso_scan(variable scan_id, variable num, string name,variable color_red,variable color_green,variable color_blue, variable offset)
 	
-	wave waves = NRB_findscan(scan_id , num)
+	wave /z waves = NRB_findscan(scan_id , num)
 	if(waveexists(waves))
 		wave anisowaves = NRB_calc_aniso(waves, scan_id, num)
 		NRB_graph_aniso(anisowaves,name,color_red,color_green,color_blue, offset)
@@ -1812,8 +1812,8 @@ function /wave NRB_findscan(variable scan_id, variable num)
 	string match
 	do
 		setdatafolder foldername
-		wave rwave = $stringfromlist(0,wavelist("r_*_C",";",""))
-		wave qwave = $stringfromlist(0,wavelist("q_*_C",";",""))
+		wave /z rwave = $stringfromlist(0,wavelist("r_*_C",";",""))
+		wave /z qwave = $stringfromlist(0,wavelist("q_*_C",";",""))
 		if(waveexists(rwave) && waveexists(qwave))
 			match = greplist(note(rwave),matchstr,0,";")
 			if(strlen(match)>2)
@@ -1868,10 +1868,10 @@ function NRB_Convertifneeded()
 	string filelist = NRB_getfilenames()
 	string storefilelist = filelist
 	svar steplist = root:Packages:NikaNISTRSoXS:listofsteps
-	nvar scanid =  root:Packages:NikaNISTRSoXS:channels:scan_id
+	nvar /z scanid =  root:Packages:NikaNISTRSoXS:channels:scan_id
 	variable i,count,countdone
 	for(i=itemsinlist(steplist)-1;i>=0;i--)
-		wave testwave = NRB_findscan(scanid,str2num(stringfromlist(i,steplist)))
+		wave /z testwave = NRB_findscan(scanid,str2num(stringfromlist(i,steplist)))
 		if(waveexists(testwave))
 			filelist = removelistitem(i,filelist)
 		endif
@@ -1946,7 +1946,7 @@ function NRB_graph_aniso(wave /wave anisowaves,string name,variable color_red,va
 end
 
 function NRB_loadprofiles(string list)
-	nvar scan_id =  root:Packages:NikaNISTRSoXS:channels:scan_id
+	nvar /z scan_id =  root:Packages:NikaNISTRSoXS:channels:scan_id
 	variable i
 	string stepbase, name
 	string traces = traceNameList("NISTRSoXSBrowser#profiles",";",1)
