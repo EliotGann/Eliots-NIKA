@@ -9,6 +9,7 @@
 #include "ccdplotting"
 #include "EGN_Loader"
 #include "GIWAXSLatticeCalcs"
+#include "OpenPoleFigurePanel"
 //#include "GIWAXSbkgRemoval-v4"
 
 Function /s loadfitsfilenika(filename,path,refnum,NewWaveName)
@@ -2700,7 +2701,7 @@ function GI_ReHistImage()
 	//	variable diff6=cmpstr(oldSampleToCCDDistance,num2str(SampleToCCDDistance))!=0 || cmpstr(oldBeamCenterX,num2str(BeamCenterX))!=0 || cmpstr(oldBeamCenterY,num2str(BeamCenterY))!=0
 	//	variable diff7 = cmpstr(oldPixelSizeX,num2str(PixelSizeX))!=0 || cmpstr(oldPixelSizeY,num2str(PixelSizeY))!=0  || cmpstr(oldHorizontalTilt,num2str(HorizontalTilt))!=0  || cmpstr(oldVerticalTilt,num2str(VerticalTilt))!=0
 	//	if(diff6 || diff7)
-			EGNA_Create2DQWave(data) // need qz and qxy 2d waves which are created here
+	EGNA_Create2DQWave(data) // need qz and qxy 2d waves which are created here
 		//endif
 		
 	wave qxywave
@@ -2823,12 +2824,11 @@ function GI_ReHistImage()
 //	endfor
 
 	ADE_UpdatePlot()
-
-	
 	
 	//smooth 4,data
 	setdatafolder foldersave
 end
+
 function ADE_UpdatePlot()
 	NVAR DisplayProcessed2DData=root:Packages:Convert2Dto1D:DisplayProcessed2DData
 	NVAR DisplayRaw2DData=root:Packages:Convert2Dto1D:DisplayRaw2DData
@@ -2850,11 +2850,24 @@ function ADE_UpdatePlot()
 	endif
 	Redimension/S CCDImageToConvert_dis
 	Redimension/S waveToDisplay
+	/////////////////Subh add/////////////////////////
+	NVar Volume = root:Packages:Convert2Dto1D:Volume
+	NVar AcqTime = root:Packages:Convert2Dto1D:AcqTime
+	waveToDisplay = waveToDisplay/(volume*AcqTime)
+	/////////////////Subh add/////////////////////////
 	if(ImageDisplayLogScaled)
 		MatrixOp/O CCDImageToConvert_dis =  log(waveToDisplay)
 	else
 		MatrixOp/O CCDImageToConvert_dis = waveToDisplay
 	endif
+	
+	NVAR /z SectorsUseRAWData=root:Packages:Convert2Dto1D:SectorsUseRAWData
+	NVAR /z SectorsUseCorrData=root:Packages:Convert2Dto1D:SectorsUseCorrData
+
+	SectorsUseRAWData = 1
+	SectorsUseCorrData = 0				
+	EGN_MakeSectorGraph()
+	
 end
 
 Function PopGI_Angle(sva) : SetVariableControl
@@ -2961,14 +2974,29 @@ function Gi_Options() : Panel
 	NVAR phiangle=root:Packages:Convert2Dto1D:phiangle
 	svar YAxisPlot=root:Packages:Convert2Dto1D:YAxisPlot
 	svar XAxisPlot=root:Packages:Convert2Dto1D:XAxisPlot
+	
+	NVar Volume = root:Packages:Convert2Dto1D:Volume
+	NVar AcqTime = root:Packages:Convert2Dto1D:AcqTime
+	
 	variable yitemnum = whichlistitem(YAxisplot,"Pixel X;Pixel Y;Angle X;AngleY;Qx;Qy;Qz;Qxy")
 	variable xitemnum = whichlistitem(XAxisplot,"Pixel X;Pixel Y;Angle X;AngleY;Qx;Qy;Qz;Qxy")
 	yitemnum = yitemnum<0 ? 1 : yitemnum+1
 	xitemnum = xitemnum<0 ? 1 : xitemnum+1
 	reflbeam = reflbeam>0 ? reflbeam : 1
+	
+	nvar /z Volume = root:Packages:Convert2Dto1D:Volume
+	if (!nvar_exists(volume))
+		variable /g root:Packages:Convert2Dto1D:Volume = 1
+	endif
+	
+	nvar /z AcqTime = root:Packages:Convert2Dto1D:AcqTime
+	if (!nvar_exists(acqtime))
+		variable /g root:Packages:Convert2Dto1D:AcqTime = 1
+	endif
+
 	//phiangle=0
 	dowindow /k GiOptions
-	NewPanel /N=GiOptions/k=1 /W=(1117,82,1314,257) as "Grazing Incidence Options"
+	NewPanel /N=GiOptions/k=1 /W=(1117,82,1314,325) as "Grazing Incidence Options"
 	ModifyPanel fixedSize=1
 	PopupMenu GLCenter,pos={6,26},size={177,20},proc=PopGI_Center,title="Center Location: "
 	PopupMenu GLCenter,mode=1,popvalue="Direct Beam",value= #"\"Direct Beam;Reflected Beam;Average\""
@@ -2981,6 +3009,11 @@ function Gi_Options() : Panel
 	SetVariable GI_AlphaBox1,pos={13,105},size={143,15},title="Incident Angle = "
 	SetVariable GI_AlphaBox1,value= root:Packages:Convert2Dto1D:Phiangle,proc=PopGI_Angle
 	Button GIWAXS_Load,pos={40,129},size={95,36},proc=GIWAXS_Load,title="Find Lattice\rParameters"
+	
+	SetVariable setvar_AcqTime,pos={8,175},size={135,15},bodyWidth=100,title="Acq. Time [ s]"
+	SetVariable setvar_AcqTime,limits={0,inf,0},value= root:Packages:Convert2Dto1D:AcqTime,live= 1
+	SetVariable setvar_Volume,pos={8,205},size={135,15},bodyWidth=100,title="Volume [ a.u.]"
+	SetVariable setvar_Volume,limits={0,inf,0},value= root:Packages:Convert2Dto1D:Volume,live= 1
 EndMacro
 
 Function JointHistogram_eliot(w0,w1,weight,hist)
