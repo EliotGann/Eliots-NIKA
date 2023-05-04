@@ -668,4 +668,30 @@ Function CheckProcUpdate(cba) : CheckBoxControl
 	return 0
 End
 
+//this function calculates orientation parameter from sine corrected pole figure from angle 0 to 90
+//either enter full path to wave or set data folder where the pole figure wave is located
+function orientparam(sincorrpolefig, minX, maxX)
+	wave sincorrpolefig
+	variable MinX, maxX
+	
+	duplicate/O/R=(MinX,maxX) SinCorrPoleFig Normalisation  //Subh add
+	duplicate/O/R=(MinX,maxX) SinCorrPoleFig Zaehler        //Subh add
+	duplicate/O/R=(MinX,maxX) SinCorrPoleFig AngleInRad     //Subh add
+	
+	Variable Offset = dimOffset(SinCorrPoleFig,0)
+	Variable delta = dimDelta(SinCorrPoleFig,0)
+	AngleInRad = x/180*pi	
+		
+	Zaehler = Normalisation * (cos(AngleInRad))^2  //Subh add
+	
+	//The Integration is from a small angle to pi/half to avoid the evanescent field near the horizon
+	//Its hard to estimate the error due to the missing wedge in the data 
+	variable Orientation = 0.5*(3*AreaXY(AngleInRad,Zaehler,MinX/180*pi,MaxX/180*pi)/AreaXY(AngleInRad,Normalisation,MinX*180/pi,MaxX/180*pi)-1)    //Subh add
+	print "foldername = ", getdatafolder(1)
+	print "Orientation = ", Orientation  //Subh add
+	
+	Killwaves/Z Normalisation, Zaehler, AngleInRad
+	return Orientation
+end
+
 ///////////////////////////////////////////////////////////////////////////////////////
