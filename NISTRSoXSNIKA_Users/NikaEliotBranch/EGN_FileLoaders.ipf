@@ -107,6 +107,9 @@ Function EGNA_UniversalLoader(PathName,FileName,FileType,NewWaveName)
 			//this is only in case energy is not in the primary scan (it was not scanned), we can get the baseline energy
 			nvar xrayenergy = root:Packages:Convert2Dto1D:XrayEnergy 
 			xrayenergy = numberbykey("en_energy_setpoint",teststring)/1000
+			if(xrayenergy*0!=0)
+				xrayenergy = numberbykey("en_monoen_readback",teststring)/1000
+			endif
 			nvar wavelength = root:Packages:Convert2Dto1D:Wavelength
 			wavelength = 12.39842/xrayenergy
 			variable BSS, BSW, SAXST, WAXST, SamZ
