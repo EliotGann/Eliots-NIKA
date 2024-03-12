@@ -5770,10 +5770,10 @@ Function NI1U_UpdateQAxisInImage()
 	
 	//and now we need to add the transform axes to the image
 	if(stringmatch(ImgRecreationStr, "*MT_left*" ))
-		TicksForTransformAxis("CCDImageToConvertFig", "left",  7, 1, 5,"MT_left", 0,1)
+		TicksForTransformAxis("CCDImageToConvertFig", "left",  7, 1, 5,"MT_left", 0,1, 1)
 	endif
 	if(stringmatch(ImgRecreationStr, "*MT_top*" ))
-		TicksForTransformAxis("CCDImageToConvertFig", "top",  7, 1, 5,"MT_top",0 ,1)
+		TicksForTransformAxis("CCDImageToConvertFig", "top",  7, 1, 5,"MT_top",0 ,1, 1)
 	endif
 	
 end
