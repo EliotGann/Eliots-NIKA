@@ -1087,7 +1087,8 @@ Function EGNA_CreateLUT(orientation,wavelengths)
 	//radius data are masked now 
 
 	wavestats/Q MaskedQ2DWave
-	make/O/N=(V_npnts)  $("Qdistribution1D_"+orientation+"_"+wavelengths), $("LUT_"+orientation+"_"+wavelengths)
+	make/O/N=(V_npnts)  $("Qdistribution1D_"+orientation+"_"+wavelengths)
+	make/O/N=(V_npnts)/I $("LUT_"+orientation+"_"+wavelengths)
 	wave LUT=$("LUT_"+orientation+"_"+wavelengths)
 	wave Qdistribution1D=$("Qdistribution1D_"+orientation+"_"+wavelengths)
 	redimension/S Qdistribution1D
